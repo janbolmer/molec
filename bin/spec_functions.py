@@ -694,7 +694,7 @@ def bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, r
 
 	p = bokeh_fig(title="X-shooter spectrum of GRB120815A", x_axis_label='Observed Wavelength', tools="hover",
 		y_axis_label='Normalized Flux', y_range=[-0.6, 1.5], x_range=[w1*(1+redshift), w1*(1+redshift)+40],
-		plot_height=300, plot_width=1200, toolbar_location="above")
+		plot_height=400, plot_width=1200, toolbar_location="above")
 
 
 	for i in np.arange(0, len(a_name), 1):
@@ -702,7 +702,7 @@ def bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, r
 		vline = Span(location=a_wav[i], dimension='height', line_color='green', \
 			line_width=1, line_dash='dashed')
 
-		atom_label = Label(x=a_wav[i]+0.2, y=1.4, text=a_name[i], text_font_size="12pt",
+		atom_label = Label(x=a_wav[i]+0.2, y=0.2, text=a_name[i], text_font_size="12pt",
 			text_color="green", text_font="helvetica")
 
 		p.renderers.extend([vline])
@@ -740,7 +740,7 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, a_name, a_wa
 
 	fig = figure(figsize=(9, 4))
 	
-	ax1 = fig.add_axes([0.16, 0.20, 0.82, 0.78])
+	ax1 = fig.add_axes([0.16, 0.22, 0.82, 0.76])
 
 	y_fill = [1 for wav in wav_aa]
 
@@ -754,7 +754,7 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, a_name, a_wa
 	ax1.fill_between(wav_aa, y_min, y_max, color='black', alpha=0.4)
 	ax1.fill_between(wav_aa, y_min2, y_max2, color='black', alpha=0.6)
 	
-	lg = ax1.legend(numpoints=1, fontsize=16, loc=1)
+	lg = ax1.legend(numpoints=1, fontsize=16, loc=3)
 	lg.get_frame().set_edgecolor("white")
 	lg.get_frame().set_facecolor('#f0f0f0')
 	

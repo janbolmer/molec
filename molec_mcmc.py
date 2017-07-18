@@ -4,7 +4,8 @@
 MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and
 other lines
 =========================================================================
-.....
+e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
+		-w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e GeII FeII
 =========================================================================
 -target    	target name
 -file 		path to spectrum data file
@@ -272,7 +273,7 @@ if __name__ == "__main__":
 
 		plot_H2vib(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, a_name, a_wav)
 
-		sns_H2vib_plot(var_list=CSV_LST, file="H2vib_fit.pickle")
+		sns_H2vib_plot(var_list=CSV_LST, file="H2vib_fit.pickle", redshift=redshift)
 
 		bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
 			a_name, a_wav, w1, w2)
