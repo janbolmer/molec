@@ -506,7 +506,7 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 	ax3.set_xlim([max(wav_aa)-wav_range*2, max(wav_aa)-wav_range*1])
 	ax2.set_xlim([max(wav_aa)-wav_range*1, max(wav_aa)])
 	
-	fig.savefig("fit_spec.pdf")
+	fig.savefig("H2_fit_spec.pdf")
 	
 ##################################################################################### 
 

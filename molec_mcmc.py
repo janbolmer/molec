@@ -51,7 +51,7 @@ def model_csv_file(model):
 
 	if model == "H2":
 		CSV_LST = ['NTOTH2', 'TEMP', 'B', 'A_Z', 'N_H', 'B_H', 'A_Z_H']
-	if model == "H2vib":
+	elif model == "H2vib":
 		CSV_LST = ['MH2S', 'A_Z']
 	else:
 		sys.exit("ERROR: Choose one of the following models: H2, H2vib \
@@ -63,21 +63,21 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst):
 
 	tau = 1 / np.array(n_flux_err)**2
 
-	NTOTH2 	= pymc.Uniform('NTOTH2',lower=16., 	upper=22.0, doc='NTOTH2')
-	TEMP 	= pymc.Uniform('TEMP', 	lower=1., 	upper=800, 	doc='TEMP')
-	B 		= pymc.Uniform('B',     lower=1., 	upper=80.0, doc='B')	
-	A_Z 	= pymc.Uniform('A_Z', 	lower=-50, upper=+50, doc='A_Z')
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=16., upper=22.0, doc='NTOTH2')
+	TEMP = pymc.Uniform('TEMP', lower=1., upper=800, doc='TEMP')
+	B = pymc.Uniform('B', lower=1., upper=80.0, doc='B')	
+	A_Z = pymc.Uniform('A_Z', lower=-50, upper=+50, doc='A_Z')
 	
-	N_H 	= pymc.Uniform('N_H',   lower=21.0, upper=22.2,  doc='N_H')
-	B_H 	= pymc.Uniform('B_H', 	lower=1, 	upper=25, 	doc='B_H')
-	A_Z_H 	= pymc.Uniform('A_Z_H',	lower=-50,	upper=+50, doc='A_Z_H')
+	N_H = pymc.Uniform('N_H', lower=21.0, upper=22.2, doc='N_H')
+	B_H = pymc.Uniform('B_H', lower=1, upper=25, doc='B_H')
+	A_Z_H = pymc.Uniform('A_Z_H', lower=-50, upper=+50, doc='A_Z_H')
 	
 	vars_dic = {}
 
 	for elmt in line_lst: 
-		N_E 	= pymc.Uniform('N_' + elmt, lower=16.0, upper=19.0, doc='N_' + elmt)
-		B_E 	= pymc.Uniform('B_' + elmt, lower=1.0, upper=30, doc='B_' + elmt)
-		A_Z_E 	= pymc.Uniform('A_Z_' + elmt, lower=-50, upper=+50, doc='A_Z_' + elmt)
+		N_E = pymc.Uniform('N_' + elmt, lower=16.0, upper=19.0, doc='N_' + elmt)
+		B_E = pymc.Uniform('B_' + elmt, lower=1.0, upper=30, doc='B_' + elmt)
+		A_Z_E = pymc.Uniform('A_Z_' + elmt, lower=-50, upper=+50, doc='A_Z_' + elmt)
 		CSV_LST.extend(('N_' + elmt, 'B_' + elmt, 'A_Z_' + elmt))
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
@@ -115,15 +115,15 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst):
 
 	tau = 1 / np.array(n_flux_err)**2
 
-	MH2S 	= pymc.Uniform('MH2S', lower=0.000, upper=0.40, doc='MH2S')
-	A_Z 	= pymc.Uniform('A_Z', lower=-150, upper=+150, value=10, doc='A_Z')
+	MH2S = pymc.Uniform('MH2S', lower=0.000, upper=0.40, doc='MH2S')
+	A_Z = pymc.Uniform('A_Z', lower=-150, upper=+150, value=10, doc='A_Z')
 
 	vars_dic = {}
 
 	for elmt in line_lst: 
-		N_E 	= pymc.Uniform('N_' + elmt, 	lower=5.0, upper=20.0, doc='N_' + elmt)
-		B_E 	= pymc.Uniform('B_' + elmt, 	lower=1.0, 	upper=30, 	doc='B_' + elmt)
-		A_Z_E 	= pymc.Uniform('A_Z_' + elmt,	lower=-150,	upper=+150, 	doc='A_Z_' + elmt)
+		N_E = pymc.Uniform('N_' + elmt, lower=5.0, upper=20.0, doc='N_' + elmt)
+		B_E = pymc.Uniform('B_' + elmt, lower=1.0, 	upper=30, doc='B_' + elmt)
+		A_Z_E = pymc.Uniform('A_Z_' + elmt,	lower=-150,	upper=+150, doc='A_Z_' + elmt)
 		CSV_LST.extend(('N_' + elmt, 'B_' + elmt, 'A_Z_' + elmt))
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
@@ -140,9 +140,9 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst):
 
 		if len(vars_dic) > 1:
 			for key in vars_dic:
-				A_Z_E = vars_dic[key][2]/100000.00
-				h2vib_spec = synspec.add_ion(wav_aa, h2vib_spec, redshift, key, broad=vars_dic[key][1], \
-					Natom=vars_dic[key][0], A_REDSHIFT=A_Z_E)
+				A_Z_E = vars_dic[key][2]/100000.0
+				h2vib_spec = synspec.add_ion(wav_aa, h2vib_spec, redshift, key, \
+					broad=vars_dic[key][1], Natom=vars_dic[key][0], A_REDSHIFT=A_Z_E)
 
 		return h2vib_spec
 
