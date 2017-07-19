@@ -22,11 +22,8 @@ m_e = 9.1095e-28
 e = 4.8032e-10
 c = 2.998e10
 
-##################################################################################### 
-
-##################################################################################### 
-
-##################################################################################### 
+#========================================================================
+#========================================================================
 
 def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 
@@ -87,18 +84,17 @@ def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 	return wav_aa, n_flux, n_flux_err
 
 
-##################################################################################### 
+#========================================================================
+#========================================================================
 
-##################################################################################### 
-
-##################################################################################### 
 
 def get_lines(redshift):
 
 	a_name, a_wav = [], []
 	atom_file = open("atoms/atom.dat", "r")
 	for line in atom_file:
-		if not line.startswith("#") and not line.startswith("H2") and not line.startswith("HD"):
+		if not line.startswith("#") and not line.startswith("H2") \
+		   and not line.startswith("HD") and not line.startswith("CO"):
 			s = line.split()
 			if float(s[2]) > 0.000001:
 				a_name.append(str(s[0]))
@@ -139,154 +135,9 @@ def get_lines(redshift):
 	return a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav
 
 
-##################################################################################### 
+#========================================================================
+#========================================================================
 
-##################################################################################### 
-
-##################################################################################### 
-
-
-def quick_plot(x, y, redshift):
-
-	wav_aa = x
-
-	wav_range = (max(x)-min(x))/4.0
-
-	a_name, a_wav = [], []
-	atom_file = open("atoms/atom.dat", "r")
-	for line in atom_file:
-		if not line.startswith("#") and not line.startswith("H2") and not line.startswith("HD"):
-			s = line.split()
-			a_name.append(str(s[0]))
-			a_wav.append(float(s[1])*(1+redshift))
-	atom_file.close()
-
-	h2_name, h2_wav = [], []
-	h2_file = open("atoms/h2.dat", "r")
-	for line in h2_file:
-		s = line.split()
-		h2_name.append(str(s[0]).strip("H2"))
-		h2_wav.append(float(s[1])*(1+redshift))
-	h2_file.close()
-
-
-	fig = figure(figsize=(12, 10))
-	
-	ax1 = fig.add_axes([0.07, 0.09, 0.92, 0.13])
-	ax2 = fig.add_axes([0.07, 0.29, 0.92, 0.13])
-	ax3 = fig.add_axes([0.07, 0.48, 0.92, 0.13])
-	ax4 = fig.add_axes([0.07, 0.67, 0.92, 0.13])
-	ax5 = fig.add_axes([0.07, 0.86, 0.92, 0.13])
-
-
-	ax1.errorbar(x, y, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
-	ax2.errorbar(x, y, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
-	ax3.errorbar(x, y, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
-	ax4.errorbar(x, y, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
-	ax5.errorbar(x, y, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
-
-
-	for i in np.arange(0, len(a_name), 1):
-		if min(wav_aa) < a_wav[i] < (max(wav_aa)-wav_range*3):
-			ax5.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax5.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
-		if (max(wav_aa)-wav_range*3) < a_wav[i] < (max(wav_aa)-wav_range*2):
-			ax4.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax4.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
-		if (max(wav_aa)-wav_range*2) < a_wav[i] < (max(wav_aa)-wav_range*1):
-			ax3.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax3.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
-		if (max(wav_aa)-wav_range*1) < a_wav[i] < max(wav_aa):
-			ax2.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax2.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)			
-
-	for i in np.arange(0, len(h2_name), 1):
-		if min(wav_aa) < h2_wav[i] < (max(wav_aa)-wav_range*3):
-			ax5.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6, color="red")
-			ax5.axvline(h2_wav[i], linestyle="dashed", color="red", linewidth=0.6)
-		if (max(wav_aa)-wav_range*3) < h2_wav[i] < (max(wav_aa)-wav_range*2):
-			ax4.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6, color="red")
-			ax4.axvline(h2_wav[i], linestyle="dashed", color="red", linewidth=0.6)
-		if (max(wav_aa)-wav_range*2) < h2_wav[i] < (max(wav_aa)-wav_range*1):
-			ax3.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6, color="red")
-			ax3.axvline(h2_wav[i], linestyle="dashed", color="red", linewidth=0.6)
-		if (max(wav_aa)-wav_range*1) < h2_wav[i] < max(wav_aa):
-			ax2.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6, color="red")
-			ax2.axvline(h2_wav[i], linestyle="dashed", color="red", linewidth=0.6)
-
-	ax1.set_xlabel(r"$\sf Observed\, Wavelength (\AA)$", fontsize=24)
-	ax3.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
-	ax1.set_ylim([-0.8, 1.8])
-	ax2.set_ylim([-0.8, 1.8])
-	ax3.set_ylim([-0.8, 1.8])
-	ax4.set_ylim([-0.8, 1.8])
-	ax5.set_ylim([-0.8, 1.8])
-
-	
-	ax5.set_xlim([min(wav_aa), max(wav_aa)-wav_range*3])
-	ax4.set_xlim([max(wav_aa)-wav_range*3, max(wav_aa)-wav_range*2])
-	ax3.set_xlim([max(wav_aa)-wav_range*2, max(wav_aa)-wav_range*1])
-	ax2.set_xlim([max(wav_aa)-wav_range*1, max(wav_aa)])
-
-	for axis in ['top','bottom','left','right']:
-	  ax1.spines[axis].set_linewidth(2)
-	ax1.tick_params(which='major', length=8, width=2)
-	ax1.tick_params(which='minor', length=4, width=1.5)
-
-	for axis in ['top','bottom','left','right']:
-	  ax2.spines[axis].set_linewidth(2)
-	ax2.tick_params(which='major', length=8, width=2)
-	ax2.tick_params(which='minor', length=4, width=1.5)
-	
-	for axis in ['top','bottom','left','right']:
-	  ax3.spines[axis].set_linewidth(2)
-	ax3.tick_params(which='major', length=8, width=2)
-	ax3.tick_params(which='minor', length=4, width=1.5)
-
-	for axis in ['top','bottom','left','right']:
-	  ax4.spines[axis].set_linewidth(2)
-	ax4.tick_params(which='major', length=8, width=2)
-	ax4.tick_params(which='minor', length=4, width=1.5)
-
-	for axis in ['top','bottom','left','right']:
-	  ax5.spines[axis].set_linewidth(2)
-	ax5.tick_params(which='major', length=8, width=2)
-	ax5.tick_params(which='minor', length=4, width=1.5)
-
-	for tick in ax1.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax1.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-
-	for tick in ax2.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax2.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-
-	for tick in ax3.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax3.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-
-	for tick in ax4.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax4.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-
-	for tick in ax5.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax5.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-
-	fig.savefig("quick_plot.pdf")
-	show()
-
-
-##################################################################################### 
-
-##################################################################################### 
-
-##################################################################################### 
 
 def voigt(x, y):
 	z = x + 1j*y
@@ -299,12 +150,8 @@ def H(a,x):
 	Q = 1.5/x**2
 	return H0 - a / np.sqrt(np.pi) / P * ( H0 ** 2 * (4. * P**2 + 7. * P + 4. + Q) - Q - 1.0)
 
-##################################################################################### 
-
-##################################################################################### 
-
-##################################################################################### 
-
+#========================================================================
+#======================================================================== 
 
 def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift):
 	C_a = np.sqrt(np.pi) * e**2 * f * lamb * 1E-8 / m_e / c / broad
@@ -314,11 +161,8 @@ def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift):
 	tau = C_a * N_ion * H(a, x)
 	return np.exp(-tau)
 
-##################################################################################### 
-
-##################################################################################### 
-
-##################################################################################### 
+#========================================================================
+#========================================================================
 
 def fNHII(T, J):
 	# Para molecular hydrogen
@@ -329,17 +173,14 @@ def fNHII(T, J):
 		I = 1
 	# Statistical weights
 	gj = (2*J + 1) * (2*I + 1)
-	# Energy difference between the different states / from Dabrowski, I. 1984, Can. J. Phys., 62, 1639
+	# Energy difference between the different states 
+	# from Dabrowski, I. 1984, Can. J. Phys., 62, 1639
 	dE0J = {0:0, 1:170.5, 2:509.9, 3:1015.2, 4:1681.7, 5:2503.9, 6:3474.4, 7:4586.4}
 	nj = gj * np.exp(-dE0J[J]/T)
 	return nj
 
-
-##################################################################################### 
-
-##################################################################################### 
-
-##################################################################################### 
+#========================================================================
+#========================================================================
 
 
 def get_h2_dic():
@@ -380,12 +221,9 @@ def get_co():
 				co_dic[line] = float(lamb), float(f), float(gamma)
 	return co_dic
 
-##################################################################################### 
 
-##################################################################################### 
-
-##################################################################################### 
-
+#========================================================================
+#========================================================================
 
 def tell_lines(intensity=-0.2, file = 'atoms/tel_lines_uves.dat'):
 	file = open(file, 'r')
@@ -422,28 +260,34 @@ def skylines(intensity=10, file= "atoms/sky_lines.dat"):
 			wlprev, intprev = float(line[0]), float(line[1])
 	return sky, yval 
 
-##################################################################################### 
 
-##################################################################################### 
+#========================================================================
+#========================================================================
 
-##################################################################################### 
 
 def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
-		a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav):
+		a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav, target):
 
 	sns.set_style("white")
 
-	wav_range = (max(wav_aa)-min(wav_aa))/4.0
+	wav_range = (max(wav_aa)-min(wav_aa))/5.0
 
-	fig = figure(figsize=(12, 10))
+	fig = figure(figsize=(10, 12))
 	
-	ax1 = fig.add_axes([0.07, 0.09, 0.92, 0.13])
-	ax2 = fig.add_axes([0.07, 0.29, 0.92, 0.13])
-	ax3 = fig.add_axes([0.07, 0.48, 0.92, 0.13])
-	ax4 = fig.add_axes([0.07, 0.67, 0.92, 0.13])
-	ax5 = fig.add_axes([0.07, 0.86, 0.92, 0.13])
+	#ax1 = fig.add_axes([0.07, 0.09, 0.92, 0.13])
+	#ax2 = fig.add_axes([0.07, 0.29, 0.92, 0.13])
+	#ax3 = fig.add_axes([0.07, 0.48, 0.92, 0.13])
+	#ax4 = fig.add_axes([0.07, 0.67, 0.92, 0.13])
+	#ax5 = fig.add_axes([0.07, 0.86, 0.92, 0.13])
 
-	for axis in [ax1, ax2, ax3, ax4, ax5]:
+	ax1 = fig.add_axes([0.07, 0.09, 0.92, 0.10])
+	ax2 = fig.add_axes([0.07, 0.26, 0.92, 0.10])
+	ax3 = fig.add_axes([0.07, 0.42, 0.92, 0.10])
+	ax4 = fig.add_axes([0.07, 0.59, 0.92, 0.10])
+	ax5 = fig.add_axes([0.07, 0.74, 0.92, 0.10])
+	ax6 = fig.add_axes([0.07, 0.89, 0.92, 0.10])
+
+	for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
 		axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
 			drawstyle='steps-mid', label=r"$\sf Data$")
@@ -467,7 +311,10 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 			tick.label.set_fontsize(18)
 
 	for i in np.arange(0, len(a_name), 1):
-		if min(wav_aa) < a_wav[i] < (max(wav_aa)-wav_range*3):
+		if min(wav_aa) < a_wav[i] < (max(wav_aa)-wav_range*4):
+			ax6.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
+			ax6.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
+		if (max(wav_aa)-wav_range*4) < (max(wav_aa)-wav_range*3):
 			ax5.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
 			ax5.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
 		if (max(wav_aa)-wav_range*3) < a_wav[i] < (max(wav_aa)-wav_range*2):
@@ -481,7 +328,10 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 			ax2.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)			
 	
 	for i in np.arange(0, len(h2_name), 1):
-		if min(wav_aa) < h2_wav[i] < (max(wav_aa)-wav_range*3):
+		if min(wav_aa) < h2_wav[i] < (max(wav_aa)-wav_range*4):
+			ax6.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8,color="#a50f15")
+			ax6.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)
+		if (max(wav_aa)-wav_range*4) < (max(wav_aa)-wav_range*3):
 			ax5.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8, color="#a50f15")
 			ax5.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)
 		if (max(wav_aa)-wav_range*3) < h2_wav[i] < (max(wav_aa)-wav_range*2):
@@ -501,18 +351,18 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 	ax1.set_xlabel(r"$\sf Observed\, Wavelength (\AA)$", fontsize=24)
 	ax3.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
 	ax1.axhline(1, color="#2171b5", linewidth=2)
-	ax5.set_xlim([min(wav_aa), max(wav_aa)-wav_range*3])
+
+	ax6.set_xlim([min(wav_aa), max(wav_aa)-wav_range*4])
+	ax5.set_xlim([max(wav_aa)-wav_range*4, max(wav_aa)-wav_range*3])
 	ax4.set_xlim([max(wav_aa)-wav_range*3, max(wav_aa)-wav_range*2])
 	ax3.set_xlim([max(wav_aa)-wav_range*2, max(wav_aa)-wav_range*1])
 	ax2.set_xlim([max(wav_aa)-wav_range*1, max(wav_aa)])
 	
-	fig.savefig("H2_fit_spec.pdf")
+	fig.savefig(target + "_H2_fit_spec.pdf")
 	
-##################################################################################### 
 
-##################################################################################### 
-
-##################################################################################### 
+#========================================================================
+#========================================================================
 
 def plot_H2_hist(res_file="save_results.dat", z = 2.358):
 
@@ -548,12 +398,8 @@ def plot_H2_hist(res_file="save_results.dat", z = 2.358):
 	fig.savefig("histograms.pdf")
 	show()
 
-
-##################################################################################### 
-
-##################################################################################### 
-
-##################################################################################### 
+#========================================================================
+#======================================================================== 
 
 def plot_H2_trace(res_file="save_results.dat", z = 2.358):
 
@@ -593,11 +439,8 @@ def plot_H2_trace(res_file="save_results.dat", z = 2.358):
 	fig.savefig("traces.pdf")
 	show()
 
-##################################################################################### 
-
-############################## CREATE BOKEH PLOT #################################### 
-
-##################################################################################### 
+#========================================================================
+#========================================================================
 
 def bokeh_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
 	a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav):
@@ -677,9 +520,6 @@ def bokeh_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, redshif
 
 
 
-
-
-
 def bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
 	a_name, a_wav, w1, w2):
 
@@ -727,14 +567,12 @@ def bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, r
 	bokeh_show(row(inputs, p, width=800), browser="safari")
 
 
-##################################################################################### 
-
-################################# PLOT H2 VIB #######################################
-
-##################################################################################### 
+#========================================================================
+#======================================================================== 
 
 
-def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, a_name, a_wav):
+def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, \
+	y_fit, a_name, a_wav, aex_name, aex_wav, target):
 
 	sns.set_style("white")
 
@@ -764,8 +602,13 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, a_name, a_wa
 
 	for i in np.arange(0, len(a_name), 1):
 		if min(wav_aa) < a_wav[i] < (max(wav_aa)):
-			ax1.text(a_wav[i]+0.2, 0.0, a_name[i], fontsize=8)
+			ax1.text(a_wav[i]+0.2, -0.1, a_name[i], fontsize=8)
 			ax1.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
+
+	for i in np.arange(0, len(aex_name), 1):
+		if min(wav_aa) < aex_wav[i] < (max(wav_aa)):
+			ax1.text(aex_wav[i]+0.2, -0.3, aex_name[i], fontsize=8)
+			ax1.axvline(aex_wav[i], linestyle="dashed", color="gray", linewidth=0.6)
 
 	for axis in ['top','bottom','left','right']:
 	  ax1.spines[axis].set_linewidth(2)
@@ -777,7 +620,7 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, a_name, a_wa
 	for tick in ax1.yaxis.get_major_ticks():
 		tick.label.set_fontsize(18)
 
-	fig.savefig("H2vib_fit_spec.pdf")
+	fig.savefig(target + "_H2vib_fit_spec.pdf")
 
 
 

@@ -40,9 +40,14 @@ vibH2data = np.genfromtxt("atoms/vibH2/" + vibH2[2])
 h2swl, modspec, tauspec = [vibH2data[:, i] for i in [0, 1, 2]]
 tauspec   = np.array(tauspec[::-1])
 
+
+#========================================================================
+#========================================================================
+
 class SynSpec:
 
-	def add_ion(self, wav_range, synspec, redshift, atom_name, broad, Natom, A_REDSHIFT):
+	def add_ion(self, wav_range, synspec, redshift, atom_name, broad, \
+		Natom, A_REDSHIFT):
 	
 		spec = synspec
 		broad = broad * 1E5
@@ -56,10 +61,12 @@ class SynSpec:
 					lamb = float(a[1])
 					f = float(a[2])
 					gamma = float(a[3])
-					spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, redshift)
+					spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+						redshift)
 		return spec
 
-	def add_single_ion(self, wav_range, synspec, redshift, lamb, f, gamma, broad, N_ion, A_REDSHIFT_ION):
+	def add_single_ion(self, wav_range, synspec, redshift, lamb, f, gamma, \
+		broad, N_ion, A_REDSHIFT_ION):
 
 		spec = synspec
 		broad = broad * 1E5
@@ -81,11 +88,13 @@ class SynSpec:
 			else:
 				broad = b["ALL"] * 1E5
 			N_exc_ion = 10**N_exc[exc_ion]
-			spec *= addAbs(wav_range, N_exc_ion, lamb, f, gamma, broad, redshift)
+			spec *= addAbs(wav_range, N_exc_ion, lamb, f, gamma, broad, \
+				redshift)
 
 		return spec
 
-	def add_H2(self, wav_range, synspec, redshift, broad, NTOTH2, TEMP, A_REDSHIFT, NROT):
+	def add_H2(self, wav_range, synspec, redshift, broad, NTOTH2, \
+		TEMP, A_REDSHIFT, NROT):
 
 
 		spec = synspec
@@ -106,11 +115,13 @@ class SynSpec:
 				f = float(h2[2])
 				gamma = float(h2[3])
 				nion = NH2[h2[0]]
-				spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, redshift)
+				spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+					redshift)
 
 		return spec
 	
-	def add_vibH2(self, wav_range, synspec, redshift, h2swl, modspec, tauspec, RES=6000, MH2S=0.03, A_REDSHIFT=0.0):
+	def add_vibH2(self, wav_range, synspec, redshift, h2swl, modspec, \
+		tauspec, RES=6000, MH2S=0.03, A_REDSHIFT=0.0):
 
 		spec = synspec
 
@@ -125,7 +136,8 @@ class SynSpec:
 		return spec
 
 
-	def addCO(self, wav_range, synspec, redshift, broad, NTOTCO, TEMP, A_REDSHIFT):
+	def addCO(self, wav_range, synspec, redshift, broad, NTOTCO, \
+		TEMP, A_REDSHIFT):
 
 		# WORK IN PROGRESS
 
@@ -147,12 +159,14 @@ class SynSpec:
 			f = float(co[2])
 			gamma = float(co[3])
 			nion = NH2[h2[0]]
-			spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, redshift)
+			spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+				redshift)
 
 		return spec
 
 
-
+#========================================================================
+#========================================================================
 
 
 
