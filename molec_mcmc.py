@@ -63,14 +63,14 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst):
 
 	tau = 1 / np.array(n_flux_err)**2
 
-	NTOTH2 = pymc.Uniform('NTOTH2',lower=16., upper=22.0, doc='NTOTH2')
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=10., upper=22.0, doc='NTOTH2')
 	TEMP = pymc.Uniform('TEMP', lower=1., upper=800, doc='TEMP')
 	B = pymc.Uniform('B', lower=1., upper=80.0, doc='B')	
-	A_Z = pymc.Uniform('A_Z', lower=-50, upper=+50, doc='A_Z')
+	A_Z = pymc.Uniform('A_Z', lower=-100, upper=+100, doc='A_Z')
 	
-	N_H = pymc.Uniform('N_H', lower=21.0, upper=22.2, doc='N_H')
-	B_H = pymc.Uniform('B_H', lower=1, upper=25, doc='B_H')
-	A_Z_H = pymc.Uniform('A_Z_H', lower=-50, upper=+50, doc='A_Z_H')
+	N_H = pymc.Uniform('N_H', lower=17.0, upper=23.0, doc='N_H')
+	B_H = pymc.Uniform('B_H', lower=1, upper=40, doc='B_H')
+	A_Z_H = pymc.Uniform('A_Z_H', lower=-100, upper=+100, doc='A_Z_H')
 	
 	vars_dic = {}
 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(usage=__doc__)
 	parser.add_argument('-t','--target',dest="target",nargs=1,default="GRB", type=str)
 	parser.add_argument('-f','--file',dest="file",nargs=1,default="spectra/GRB120815Auvb.txt")
-	parser.add_argument('-red','--redshift',dest="redshift",nargs=1, default=2.358, type=float)
+	parser.add_argument('-red','--redshift',dest="redshift",nargs=1, default=[2.358], type=float)
 	parser.add_argument('-m','--model',dest="model", nargs=1, default="H2", type=str)
 	parser.add_argument('-nrot','--nrot',dest="nrot",nargs=1, default=[3], type=int)
 	parser.add_argument('-e','--elements',dest="elements",nargs='+', default=["FeII", "SiII"])
