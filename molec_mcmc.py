@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 __author__ = "Jan Bolmer"
-__copyright__ = "Copyright 2007, The Cogent Project"
+__copyright__ = "Copyright 2017"
 __credits__ = ["Thomas Kruehler"] # https://github.com/Kruehlio/H2sim
 __version__ = "0.1"
 __maintainer__ = "Jan Bolmer"
