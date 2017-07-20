@@ -87,6 +87,25 @@ def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 #========================================================================
 #========================================================================
 
+def aa_to_velo(wav_aa, flux, flux_err, line, redshift, wrange=15):
+	c = 299792.458
+	rline = line * (1 + redshift)
+	velocity, fluxv, fluxv_err = [], [], []
+	for i in np.arange(0, len(wav_aa), 1):
+		velo = abs(wav_aa[i]-rline)*c/rline
+		if wav_aa[i] < rline and wav_aa[i] > rline-wrange:
+			velocity.append(-velo)
+			fluxv.append(flux[i])
+			fluxv_err.append(flux_err[i])
+		if wav_aa[i] > rline and wav_aa[i] < rline+wrange:
+			velocity.append(velo)
+			fluxv.append(flux[i])
+			fluxv_err.append(flux_err[i])
+	return velocity, fluxv, fluxv_err
+
+#========================================================================
+#========================================================================
+
 
 def get_lines(redshift):
 
