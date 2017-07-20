@@ -1,5 +1,13 @@
 #! /usr/bin/python
 
+__author__ = "Jan Bolmer"
+__copyright__ = "Copyright 2007, The Cogent Project"
+__credits__ = ["Thomas Kruehler"] # https://github.com/Kruehlio/H2sim
+__version__ = "0.1"
+__maintainer__ = "Jan Bolmer"
+__email__ = "jbolmer@eso.org"
+__status__ = "Production"
+
 """
 MCMC sampler for fitting X-shooter spectra (using PyMC) with HI, H2 and
 other lines
@@ -18,8 +26,13 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -ignore 	list of intervals (restframe) to be ignored when fitting the
 			data, e.g. [[1090., 1092.0], [1140, 1180]]
 -res 		spectral resolution for rebinning the H2vib model from Draine
-
+-par 		Parameter file with Column Densities, b and redshift for each
+			given element [.csv format]. Values can be fixed or given as
+			a Uniform Distribution for PyMC (see the para.csv example)
+			(first line: element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,
+			R_val,R_low,R_up)
 =========================================================================
+
 =========================================================================
 """
 
@@ -53,7 +66,7 @@ c = 2.998e10
 def model_csv_file(model):
 
 	if model == "H2":
-		CSV_LST = ['NTOTH2', 'TEMP', 'B', 'A_Z', 'N_H', 'B_H', 'A_Z_H']
+		CSV_LST = ['NTOTH2', 'TEMP', 'B', 'A_Z']
 	elif model == "H2vib":
 		CSV_LST = ['MH2S', 'A_Z']
 	else:
@@ -67,7 +80,7 @@ def model_csv_file(model):
 #========================================================================
 
 
-def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst): 
+def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic): 
 
 	tau = 1 / np.array(n_flux_err)**2
 
@@ -76,46 +89,67 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst):
 	B = pymc.Uniform('B', lower=0., upper=40.0, doc='B')	
 	A_Z = pymc.Uniform('A_Z', lower=-150, upper=+150, doc='A_Z')
 	
-	N_H = pymc.Uniform('N_H', lower=20.91, upper=21.01, doc='N_H')
-	B_H = pymc.Uniform('B_H', lower=1, upper=40, doc='B_H')
-	A_Z_H = pymc.Uniform('A_Z_H', lower=-150, upper=+150, doc='A_Z_H')
-
 	vars_dic = {}
 
-	for elmt in line_lst: 
-		N_E = pymc.Uniform('N_' + elmt, lower=0., upper=20.0, doc='N_' + elmt)
-		B_E = pymc.Uniform('B_' + elmt, lower=0., upper=30, doc='B_' + elmt)
-		A_Z_E = pymc.Uniform('A_Z_' + elmt, lower=-150, upper=+150, doc='A_Z_' + elmt)
-		CSV_LST.extend(('N_' + elmt, 'B_' + elmt, 'A_Z_' + elmt))
+	for elmt in line_lst:
+		if not elmt in par_dic:
+			if elmt == "HI":
+				N_E = pymc.Uniform('N_'+elmt,lower=19.0,upper=23.0, \
+					doc='N_'+elmt)
+				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30, \
+					doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100,upper=+100, \
+					doc='A_Z_'+elmt)
+			else:
+				N_E = pymc.Uniform('N_'+elmt,lower=0.,upper=20.0, \
+					doc='N_'+elmt)
+				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30, \
+					doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100,upper=+100, \
+					doc='A_Z_'+elmt)
+
+			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+
+		else:
+			if par_dic[elmt][0] == 0:
+				N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2], \
+					upper=par_dic[elmt][3],doc='N_'+elmt)
+				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5], \
+					upper=par_dic[elmt][6],doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8], \
+					upper=par_dic[elmt][9],doc='A_Z_'+elmt)
+
+				CSV_LST.extend(('N_'+elmt, 'B_'+elmt, 'A_Z_'+elmt))
+
+			if par_dic[elmt][0] == 1:
+				N_E = par_dic[elmt][1]
+				B_E = par_dic[elmt][4]
+				A_Z_E = par_dic[elmt][7]
+
+	
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
 	@pymc.deterministic(plot=False)
 	def H2(wav_aa=wav_aa, A_REDSHIFT=A_Z, NTOTH2=NTOTH2, TEMP=TEMP, BROAD=B, \
-			redshift=redshift, N_H=N_H, BROAD_H=B_H, A_REDSHIFT_H=A_Z_H, \
-			vars_dic=vars_dic):
+			redshift=redshift, vars_dic=vars_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
-		A_REDSHIFT_H = float(A_REDSHIFT_H)/100000.0
 
 		norm_spec = np.ones(len(wav_aa))
 		synspec = SynSpec()
 
-		# add H2 1
+		# add H2 
 		h2spec = synspec.add_H2(wav_aa, norm_spec, redshift, broad=BROAD, \
 			NTOTH2=NTOTH2, TEMP=TEMP, A_REDSHIFT=A_REDSHIFT, NROT=NROT)
-		# add HI
-
-		h2spec_HI = synspec.add_ion(wav_aa, h2spec, redshift, "HI", \
-			broad=BROAD_H, Natom=N_H, A_REDSHIFT=A_REDSHIFT_H)
 
 		# add lines
 		for key in vars_dic:
 			A_Z_E = vars_dic[key][2]/100000.00
-			h2spec_HI_lines = synspec.add_ion(wav_aa, h2spec_HI, redshift, \
-				key, broad=vars_dic[key][1], Natom=vars_dic[key][0], \
+			h2spec = synspec.add_ion(wav_aa, h2spec, redshift, key,
+				broad=vars_dic[key][1], Natom=vars_dic[key][0], \
 				A_REDSHIFT=A_Z_E)
 
-		return h2spec_HI_lines
+		return h2spec
 
 	y_val = pymc.Normal('y_val', mu=H2, tau=tau, value=n_flux, observed=True)
 	return locals()
@@ -126,7 +160,8 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst):
 
 
 
-def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, res):
+def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
+	res, par_dic):
 
 	tau = 1 / np.array(n_flux_err)**2
 
@@ -136,9 +171,14 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, res):
 	vars_dic = {}
 
 	for elmt in line_lst: 
-		N_E = pymc.Uniform('N_' + elmt, lower=0., upper=20.0, doc='N_' + elmt)
-		B_E = pymc.Uniform('B_' + elmt, lower=0., upper=30, doc='B_' + elmt)
-		A_Z_E = pymc.Uniform('A_Z_' + elmt, lower=-250,	upper=+250, doc='A_Z_' + elmt)
+
+		N_E = pymc.Uniform('N_' + elmt, lower=0., upper=20.0, \
+			doc='N_' + elmt)
+		B_E = pymc.Uniform('B_' + elmt, lower=0., upper=30, \
+			doc='B_' + elmt)
+		A_Z_E = pymc.Uniform('A_Z_' + elmt, lower=-250,	upper=+250, \
+			doc='A_Z_' + elmt)
+
 		CSV_LST.extend(('N_' + elmt, 'B_' + elmt, 'A_Z_' + elmt))
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
@@ -173,12 +213,12 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, res):
 
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin, \
-	model_used, line_lst, target, res=6000):
+	model_used, line_lst, target, par_dic, res=6000):
 
 	if model == "H2":
 
 		MDL = pymc.MCMC(model_H2(wav_aa, n_flux, n_flux_err, redshift, \
-			line_lst), db='pickle', dbname='H2_fit.pickle')
+			line_lst, par_dic), db='pickle', dbname='H2_fit.pickle')
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
 		MDL.db.close()
@@ -196,7 +236,7 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin, \
 	if model == "H2vib":
 
 		MDL = pymc.MCMC(model_H2vib(wav_aa, n_flux, n_flux_err, redshift, \
-			line_lst, res), db='pickle', dbname='H2vib_fit.pickle')
+			line_lst, res, par_dic), db='pickle', dbname='H2vib_fit.pickle')
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
 		MDL.db.close()
@@ -243,6 +283,8 @@ if __name__ == "__main__":
 		default=[100], type=int)
 	parser.add_argument('-sp','--save_pickle',dest="save_pickle", \
 		nargs=1, default=True, type=bool)
+	parser.add_argument('-par','--par',dest="par", nargs=1, \
+		default=[None], type=str)
 	args = parser.parse_args()
 
 	target = args.target[0]
@@ -258,9 +300,18 @@ if __name__ == "__main__":
 	iterations = args.iterations[0]
 	burn_in = args.burn_in[0]
 	save_pickle = args.save_pickle
+	para_file = args.par[0]
+
+	print para_file
 
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
+
+
+	par_dic = {}
+
+	if para_file != None:
+		par_dic = get_paras(para_file)
 
 	NROT = []
 	for i in np.arange(0, nrot+1, 1):
@@ -282,7 +333,7 @@ if __name__ == "__main__":
 	wav_aa, n_flux, n_flux_err = get_data_ign(spec_file, redshift, ignore_lst, wl1=w1, wl2=w2)
 	
 	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux, n_flux_err, iterations, \
-		burn_in, 1, model_used=model, line_lst=elements, target=target, res=res)
+		burn_in, 1, model_used=model, line_lst=elements, target=target, par_dic=par_dic, res=res)
 	
 	print "\n MCMC finished \n"
 	time.sleep(1.0)
@@ -290,7 +341,7 @@ if __name__ == "__main__":
 	print "using", iterations, "iterations", "and a burn-in of", burn_in
 	print "Wavelenth range:", w1, "to", w2, "/ ignored are", ignore_lst
 	time.sleep(1.0)
-	print "\n Plotting Results \n"
+	print "\n Plotting Results (Lines are plotted for the input redshift!)\n"
 
 	if model == "H2":
 
@@ -322,7 +373,7 @@ if __name__ == "__main__":
 	os.system("mv *.pdf plots")
 	print "Plots Moved to plots directory"
 
-	os.system("mv *.csv results")
+	os.system("mv *ts.csv results")
 	print "Result .csv files moved to results directory"
 
 	sys.exit("Script Finished")

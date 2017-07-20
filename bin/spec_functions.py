@@ -8,6 +8,8 @@ from scipy.ndimage import gaussian_filter1d as gauss1d
 from scipy.interpolate import splrep, splev
 from scipy.special import wofz
 
+import importlib
+
 import bokeh
 from bokeh.plotting import figure as bokeh_fig
 from bokeh.plotting import show as bokeh_show
@@ -110,14 +112,14 @@ def aa_to_velo(wav_aa, flux, flux_err, line, redshift, wrange=15):
 def get_lines(redshift):
 
 	a_name, a_wav = [], []
-	atom_file = open("atoms/atom.dat", "r")
+	atom_file = open("atoms/atom_excited.dat", "r")
 	for line in atom_file:
 		if not line.startswith("#") and not line.startswith("H2") \
 		   and not line.startswith("HD") and not line.startswith("CO"):
 			s = line.split()
-			if float(s[2]) > 0.000001:
-				a_name.append(str(s[0]))
-				a_wav.append(float(s[1])*(1+redshift))
+			#if float(s[2]) > 0.008:
+			a_name.append(str(s[0]))
+			a_wav.append(float(s[1])*(1+redshift))
 	atom_file.close()
 	
 	ai_name, ai_wav = [], []
@@ -280,6 +282,21 @@ def skylines(intensity=10, file= "atoms/sky_lines.dat"):
 	return sky, yval 
 
 
+
+#========================================================================
+#========================================================================
+
+def get_paras(para_file):
+
+	par_dic = {}
+	par = pd.read_csv(para_file, delimiter=',')
+	for i in np.arange(0, len(par), 1):
+		par_dic[par['element'][i]] = par['fixed'][i], par['N_val'][i], \
+		par['N_low'][i],par['N_up'][i],par['B_val'][i],par['B_low'][i],par['B_up'][i], \
+		par['R_val'][i],par['R_low'][i],par['R_up'][i]
+
+	return par_dic
+
 #========================================================================
 #========================================================================
 
@@ -287,24 +304,18 @@ def skylines(intensity=10, file= "atoms/sky_lines.dat"):
 def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
 		a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav, target):
 
-	sns.set_style("white")
+	sns.set_style("white", {'legend.frameon': True})
 
 	wav_range = (max(wav_aa)-min(wav_aa))/5.0
 
 	fig = figure(figsize=(10, 12))
 	
-	#ax1 = fig.add_axes([0.07, 0.09, 0.92, 0.13])
-	#ax2 = fig.add_axes([0.07, 0.29, 0.92, 0.13])
-	#ax3 = fig.add_axes([0.07, 0.48, 0.92, 0.13])
-	#ax4 = fig.add_axes([0.07, 0.67, 0.92, 0.13])
-	#ax5 = fig.add_axes([0.07, 0.86, 0.92, 0.13])
-
-	ax1 = fig.add_axes([0.07, 0.09, 0.92, 0.10])
-	ax2 = fig.add_axes([0.07, 0.26, 0.92, 0.10])
-	ax3 = fig.add_axes([0.07, 0.42, 0.92, 0.10])
-	ax4 = fig.add_axes([0.07, 0.59, 0.92, 0.10])
-	ax5 = fig.add_axes([0.07, 0.74, 0.92, 0.10])
-	ax6 = fig.add_axes([0.07, 0.89, 0.92, 0.10])
+	ax1 = fig.add_axes([0.08, 0.08, 0.90, 0.11])
+	ax2 = fig.add_axes([0.08, 0.25, 0.90, 0.11])
+	ax3 = fig.add_axes([0.08, 0.41, 0.90, 0.11])
+	ax4 = fig.add_axes([0.08, 0.58, 0.90, 0.11])
+	ax5 = fig.add_axes([0.08, 0.73, 0.90, 0.11])
+	ax6 = fig.add_axes([0.08, 0.88, 0.90, 0.11])
 
 	for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
@@ -314,7 +325,15 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 		axis.plot(wav_aa, y_fit, label=r"$\sf Fit$", color="#2171b5", linewidth=2, alpha=0.9)
 		axis.fill_between(wav_aa, y_min, y_max, color='#2171b5', alpha=0.2)
 		axis.fill_between(wav_aa, y_min2, y_max2, color='#2171b5', alpha=0.4)
-		axis.set_ylim([-0.8, 1.8])
+		axis.set_ylim([-0.85, 2.25])
+
+		axis.axhline(0.0, linestyle="dashed", color="black", linewidth=2)
+
+		y_fill = [1 for wav in wav_aa]
+
+		if not axis == ax1:
+			axis.fill_between(wav_aa, y_fit, y_fill, color="#2171b5", alpha=0.3)
+
 
 		for wav_rng in ignore_lst:
 			axis.axvspan(wav_rng[0]*(1+redshift), wav_rng[1]*(1+redshift), \
@@ -330,43 +349,104 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 			tick.label.set_fontsize(18)
 
 	for i in np.arange(0, len(a_name), 1):
+
 		if min(wav_aa) < a_wav[i] < (max(wav_aa)-wav_range*4):
-			ax6.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax6.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
-		if (max(wav_aa)-wav_range*4) < (max(wav_aa)-wav_range*3):
-			ax5.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax5.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
+			if i%2 == 0:
+				ax6.text(a_wav[i]+0.2, 1.6, a_name[i], fontsize=5, color="#41ae76")
+				ax6.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			elif i%3 == 0:
+				ax6.text(a_wav[i]+0.2, 1.8, a_name[i], fontsize=5, color="#41ae76")
+				ax6.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			else:
+				ax6.text(a_wav[i]+0.2, 2.0, a_name[i], fontsize=5, color="#41ae76")
+				ax6.axvline(a_wav[i],  ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)				
+
+		if (max(wav_aa)-wav_range*4) < a_wav[i] < (max(wav_aa)-wav_range*3):
+			if i%2 == 0:
+				ax5.text(a_wav[i]+0.2, 1.6, a_name[i], fontsize=5, color="#41ae76")
+				ax5.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			elif i%3 == 0:
+				ax5.text(a_wav[i]+0.2, 1.8, a_name[i], fontsize=5, color="#41ae76")
+				ax5.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			else:
+				ax5.text(a_wav[i]+0.2, 2.0, a_name[i], fontsize=5, color="#41ae76")
+				ax5.axvline(a_wav[i],  ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)	
+
 		if (max(wav_aa)-wav_range*3) < a_wav[i] < (max(wav_aa)-wav_range*2):
-			ax4.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax4.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
+			if i%2 == 0:
+				ax4.text(a_wav[i]+0.2, 1.6, a_name[i], fontsize=5, color="#41ae76")
+				ax4.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			elif i%3 == 0:
+				ax4.text(a_wav[i]+0.2, 1.8, a_name[i], fontsize=5, color="#41ae76")
+				ax4.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			else:
+				ax4.text(a_wav[i]+0.2, 2.0, a_name[i], fontsize=5, color="#41ae76")
+				ax4.axvline(a_wav[i],  ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)	
+
 		if (max(wav_aa)-wav_range*2) < a_wav[i] < (max(wav_aa)-wav_range*1):
-			ax3.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax3.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
+			if i%2 == 0:
+				ax3.text(a_wav[i]+0.2, 1.6, a_name[i], fontsize=5, color="#41ae76")
+				ax3.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			elif i%3 == 0:
+				ax3.text(a_wav[i]+0.2, 1.8, a_name[i], fontsize=5, color="#41ae76")
+				ax3.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			else:
+				ax3.text(a_wav[i]+0.2, 2.0, a_name[i], fontsize=5, color="#41ae76")
+				ax3.axvline(a_wav[i],  ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)	
+
 		if (max(wav_aa)-wav_range*1) < a_wav[i] < max(wav_aa):
-			ax2.text(a_wav[i]+0.2, 1.5, a_name[i], fontsize=6)
-			ax2.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)			
+			if i%2 == 0:
+				ax2.text(a_wav[i]+0.2, 1.6, a_name[i], fontsize=5, color="#41ae76")
+				ax2.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			elif i%3 == 0:
+				ax2.text(a_wav[i]+0.2, 1.8, a_name[i], fontsize=5, color="#41ae76")
+				ax2.axvline(a_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)
+			else:
+				ax2.text(a_wav[i]+0.2, 2.0, a_name[i], fontsize=5, color="#41ae76")
+				ax2.axvline(a_wav[i],  ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=0.4)			
 	
 	for i in np.arange(0, len(h2_name), 1):
 		if min(wav_aa) < h2_wav[i] < (max(wav_aa)-wav_range*4):
-			ax6.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8,color="#a50f15")
-			ax6.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)
-		if (max(wav_aa)-wav_range*4) < (max(wav_aa)-wav_range*3):
-			ax5.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8, color="#a50f15")
-			ax5.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)
-		if (max(wav_aa)-wav_range*3) < h2_wav[i] < (max(wav_aa)-wav_range*2):
-			ax4.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8, color="#a50f15")
-			ax4.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)
-		if (max(wav_aa)-wav_range*2) < h2_wav[i] < (max(wav_aa)-wav_range*1):
-			ax3.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8, color="#a50f15")
-			ax3.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)
-		if (max(wav_aa)-wav_range*1) < h2_wav[i] < max(wav_aa):
-			ax2.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=8, color="#a50f15")
-			ax2.axvline(h2_wav[i], linestyle="dashed", color="#a50f15", linewidth=0.6)	
+			if i%2 == 0:
+				ax6.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6,color="#a50f15")
+				ax6.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+			else:
+				ax6.text(h2_wav[i]+0.2, -0.8, h2_name[i], fontsize=6,color="#a50f15")
+				ax6.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
 
-	lg = ax1.legend(numpoints=1, fontsize=12, loc=4)
-	lg.get_frame().set_edgecolor("white")
-	lg.get_frame().set_facecolor('#f0f0f0')
-	
+		if (max(wav_aa)-wav_range*4) < h2_wav[i] < (max(wav_aa)-wav_range*3):
+			if i%2 == 0:
+				ax5.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6,color="#a50f15")
+				ax5.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+			else:
+				ax5.text(h2_wav[i]+0.2, -0.8, h2_name[i], fontsize=6,color="#a50f15")
+				ax5.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+
+		if (max(wav_aa)-wav_range*3) < h2_wav[i] < (max(wav_aa)-wav_range*2):
+			if i%2 == 0:
+				ax4.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6,color="#a50f15")
+				ax4.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+			else:
+				ax4.text(h2_wav[i]+0.2, -0.8, h2_name[i], fontsize=6,color="#a50f15")
+				ax4.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+
+		if (max(wav_aa)-wav_range*2) < h2_wav[i] < (max(wav_aa)-wav_range*1):
+			if i%2 == 0:
+				ax3.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6,color="#a50f15")
+				ax3.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+			else:
+				ax3.text(h2_wav[i]+0.2, -0.8, h2_name[i], fontsize=6,color="#a50f15")
+				ax3.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+		if (max(wav_aa)-wav_range*1) < h2_wav[i] < max(wav_aa):
+			if i%2 == 0:
+				ax2.text(h2_wav[i]+0.2, -0.5, h2_name[i], fontsize=6,color="#a50f15")
+				ax2.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+			else:
+				ax2.text(h2_wav[i]+0.2, -0.8, h2_name[i], fontsize=6,color="#a50f15")
+				ax2.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
+
+	lg = ax1.legend(numpoints=1, fontsize=10, loc=1)
+
 	ax1.set_xlabel(r"$\sf Observed\, Wavelength (\AA)$", fontsize=24)
 	ax3.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
 	ax1.axhline(1, color="#2171b5", linewidth=2)
