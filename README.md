@@ -7,7 +7,6 @@ molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A
 -w1 985 -w2 1120 -m H2 -nrot 5 -it 200 -bi 10 -par para.csv
 
 
-![alt text](https://github.com/Jan91/molec/blob/master/plots/GRB120815A_H2_fit_spec.pdf)
 
 !!! Under Construction - I am learning Git here !!!
 

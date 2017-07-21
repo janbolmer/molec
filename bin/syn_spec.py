@@ -10,7 +10,6 @@ from scipy.special import wofz
 
 from spec_functions import *
 
-
 # get H2, CO and other lines
 
 h2 = open ('atoms/h2.dat', 'r')
@@ -24,7 +23,6 @@ co.close()
 af = open ('atoms/atom.dat', 'r')
 atom = af.readlines()
 af.close()
-
 
 #H2 vib model from Draine 2000, 2002
 
@@ -40,16 +38,44 @@ vibH2data = np.genfromtxt("atoms/vibH2/" + vibH2[2])
 h2swl, modspec, tauspec = [vibH2data[:, i] for i in [0, 1, 2]]
 tauspec   = np.array(tauspec[::-1])
 
-
 #========================================================================
 #========================================================================
 
-class SynSpec:
+class SynSpec(object):
+	"""
+	Class for adding absorption lines to a normalized spectrum,
+	including absorption lines from ions and excited transitions as
+	well as H2, H2* and CO.
 
-	def add_ion(self, wav_range, synspec, redshift, atom_name, broad, \
-		Natom, A_REDSHIFT):
-	
-		spec = synspec
+	Arguments:
+		wav_range:	(rest-frame) wavelength range to be covered
+		redshift: 	redshift
+
+	Methods:
+		add_ion: 	adds absorption lines for given ion/element
+		add_H2:		adds Lyman and Werner bands of H2
+		add_vibH2:	adds vibrational excited levels of H2*
+		add CO:		adds CO bandheads
+
+	"""
+
+	def __init__(self, wav_range, redshift):
+
+		self.wav_range = wav_range
+		self.redshift = redshift
+
+
+	def add_ion(self, spectrum, atom_name, broad, Natom, A_REDSHIFT):
+		'''
+		broad:			Broadening parameter in km/s
+		atom_name:		Same naming convention as in atom.dat
+		Natom:			Total column densities
+		A_REDSHIFT:		Offset in redshift in #/100000.0
+		'''
+
+		redshift = self.redshift
+		wav_range = self.wav_range
+		spec = spectrum
 		broad = broad * 1E5
 		nion = 10**Natom
 		redshift = redshift + A_REDSHIFT
@@ -65,39 +91,20 @@ class SynSpec:
 						redshift)
 		return spec
 
-	def add_single_ion(self, wav_range, synspec, redshift, lamb, f, gamma, \
-		broad, N_ion, A_REDSHIFT_ION):
 
-		spec = synspec
-		broad = broad * 1E5
-		N_ion = 10**N_ion
-		redshift = redshift + A_REDSHIFT_ION
-		spec *= addAbs(wav_range, N_ion, lamb, f, gamma, broad, redshift)
+	def add_H2(self, spectrum, broad, NTOTH2, TEMP, A_REDSHIFT, NROT):
+		'''
+		Adding H2
+		broad:		Broadening parameter in km/s
+		NTOTH2:		Total column density of H2
+		TEMP:		Temperature of H2 (Kelvin)
+		A_REDSHIFT:	Offset in redshift in #/100000.0
+		NROT:		Rotational levels to consider, maximum 7
+		'''
 
-		return spec
-
-	def add_exc_ion(self, wav_range, synspec, redshift, exc_ion_list):
-	
-		spec = synspec
-		exc_ion_dic = get_exc_ion_dic()
-
-		for exc_ion in exc_ion_list:
-			lamb, f, gamma = exc_ion_dic[exc_ion]
-			if b.has_key(exc_ion):
-				broad = b[exc_ion] * 1E5
-			else:
-				broad = b["ALL"] * 1E5
-			N_exc_ion = 10**N_exc[exc_ion]
-			spec *= addAbs(wav_range, N_exc_ion, lamb, f, gamma, broad, \
-				redshift)
-
-		return spec
-
-	def add_H2(self, wav_range, synspec, redshift, broad, NTOTH2, \
-		TEMP, A_REDSHIFT, NROT):
-
-
-		spec = synspec
+		redshift = self.redshift
+		wav_range = self.wav_range
+		spec = spectrum
 
 		nJ, NH2 = [], {}
 		for J in NROT:
@@ -120,10 +127,18 @@ class SynSpec:
 
 		return spec
 	
-	def add_vibH2(self, wav_range, synspec, redshift, h2swl, modspec, \
-		tauspec, RES=6000, MH2S=0.03, A_REDSHIFT=0.0):
+	def add_vibH2(self, spectrum, h2swl, modspec, tauspec, RES=0.15, \
+					MH2S=0.03, A_REDSHIFT=0.0):
+		'''
+		Adding H*
+		RES:		Resolution of spectrum in AA
+		MH2S: 		Multiplier of Draine model with NH2* = 6.73E+1
+		A_REDSHIFT:	Offset in redshift in #/100000.0
+		'''
 
-		spec = synspec
+		redshift = self.redshift
+		wav_range = self.wav_range
+		spec = spectrum
 
 		h2swl 	  = np.array([1/i*1E8*(1+redshift + A_REDSHIFT) for i in h2swl][::-1])
 		modscale  = np.exp(-1*(tauspec-1.9845E-01)*MH2S)
@@ -136,12 +151,12 @@ class SynSpec:
 		return spec
 
 
-	def addCO(self, wav_range, synspec, redshift, broad, NTOTCO, \
-		TEMP, A_REDSHIFT):
+	def addCO(self, spectrum, broad, NTOTCO, TEMP, A_REDSHIFT):
 
 		# WORK IN PROGRESS
-
-		spec = synspec
+		redshift = self.redshift
+		wav_range = self.wav_range
+		spec = spectrum
 		broad = broad * 1E5
 		redshift = redshift + A_REDSHIFT
 
@@ -163,23 +178,6 @@ class SynSpec:
 				redshift)
 
 		return spec
-
-
-#========================================================================
-#========================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

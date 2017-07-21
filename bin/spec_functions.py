@@ -1,5 +1,15 @@
 #! /usr/bin/python
 
+"""
+Colection of various functions
+=========================================================================
+=========================================================================
+get_data:	reading data
+=========================================================================
+=========================================================================
+"""
+
+
 import matplotlib as plt
 import matplotlib.pyplot as pyplot
 from pylab import *
@@ -28,26 +38,29 @@ c = 2.998e10
 #========================================================================
 
 def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
+	'''
+	To do: use a dictionary
+	'''
 
 	wav_aa, n_flux, n_flux_err, flux, flux_err = [], [], [], [], []
 	data = open(file, "r")
 	if wl_range==False:
 		for line in data:
 			if not "GRB" in line:
-				wav_aa 		= np.append(wav_aa, float(line.split()[0]))
-				flux 		= np.append(flux, float(line.split()[1]))
-				flux_err 	= np.append(flux_err, float(line.split()[2]))
-				n_flux 		= np.append(n_flux, float(line.split()[6]))
-				n_flux_err 	= np.append(n_flux_err, float(line.split()[7]))
+				wav_aa = np.append(wav_aa,float(line.split()[0]))
+				flux = np.append(flux,float(line.split()[1]))
+				flux_err = np.append(flux_err,float(line.split()[2]))
+				n_flux = np.append(n_flux,float(line.split()[6]))
+				n_flux_err = np.append(n_flux_err,float(line.split()[7]))
 	if wl_range==True: 
 		for line in data:
 			if not "GRB" in line:
 				if (wl1*(1+z)) <= float(line.split()[0]) <= (wl2*(1+z)):
-					wav_aa 		= np.append(wav_aa, float(line.split()[0]))
-					flux 		= np.append(flux, float(line.split()[1]))
-					flux_err 	= np.append(flux_err, float(line.split()[2]))
-					n_flux 		= np.append(n_flux, float(line.split()[6]))
-					n_flux_err 	= np.append(n_flux_err, float(line.split()[7]))
+					wav_aa = np.append(wav_aa,float(line.split()[0]))
+					flux = np.append(flux,float(line.split()[1]))
+					flux_err = np.append(flux_err,float(line.split()[2]))
+					n_flux = np.append(n_flux,float(line.split()[6]))
+					n_flux_err = np.append(n_flux_err,float(line.split()[7]))
 	data.close()
 	return wav_aa, n_flux, n_flux_err, flux, flux_err
 
@@ -73,18 +86,17 @@ def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 				tester = 0.0
 				for i in np.arange(0, len(wl_low), 1):
 					if wl_low[i] < wav < wl_up[i]:
-						wav_aa 		= np.append(wav_aa, float(line.split()[0]))
-						n_flux 		= np.append(n_flux, 1.0)
-						n_flux_err 	= np.append(n_flux_err, 0.01)
+						wav_aa = np.append(wav_aa,float(line.split()[0]))
+						n_flux = np.append(n_flux,1.0)
+						n_flux_err = np.append(n_flux_err,0.01)
 						tester += 1.0
 				if tester == 0.0:
-					wav_aa 		= np.append(wav_aa, float(line.split()[0]))
-					n_flux 		= np.append(n_flux, float(line.split()[6]))
-					n_flux_err 	= np.append(n_flux_err, float(line.split()[7]))
+					wav_aa = np.append(wav_aa,float(line.split()[0]))
+					n_flux = np.append(n_flux,float(line.split()[6]))
+					n_flux_err = np.append(n_flux_err,float(line.split()[7]))
 
 	data.close()
 	return wav_aa, n_flux, n_flux_err
-
 
 #========================================================================
 #========================================================================

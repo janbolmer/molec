@@ -2,13 +2,13 @@
 
 __author__ = "Jan Bolmer"
 __copyright__ = "Copyright 2017"
-__credits__ = ["Thomas Kruehler"] # https://github.com/Kruehlio/H2sim
+__credits__ = "Thomas Kruehler" # https://github.com/Kruehlio/H2sim
 __version__ = "0.1"
 __maintainer__ = "Jan Bolmer"
 __email__ = "jbolmer@eso.org"
 __status__ = "Production"
 
-"""
+'''
 MCMC sampler for fitting X-shooter spectra (using PyMC) with HI, H2 and
 other lines
 =========================================================================
@@ -25,16 +25,20 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -wl 		Wavelength end - restframe
 -ignore 	list of intervals (restframe) to be ignored when fitting the
 			data, e.g. [[1090., 1092.0], [1140, 1180]]
--res 		spectral resolution for rebinning the H2vib model from Draine
+-res 		spectral resolution in AA for rebinning the H2vib model from
+			Draine
 -par 		Parameter file with Column Densities, b and redshift for each
 			given element [.csv format]. Values can be fixed or given as
 			a Uniform Distribution for PyMC (see the para.csv example)
 			(first line: element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,
 			R_val,R_low,R_up)
 =========================================================================
+Typical are: 	HI, FeII, MnII, NV, SiII, SII, CIV, OI, CII, NiII, SiIV,
+				AlII, AlIII, CI, ZnII, CrII, MgII, MgI
 
+and:			FeIIa, FeIIb, OIa, SiIIa, NiIIa
 =========================================================================
-"""
+'''
 
 import pymc, math, argparse, os, sys, time
 
@@ -62,8 +66,12 @@ c = 2.998e10
 #========================================================================
 #========================================================================
 
-
 def model_csv_file(model):
+	'''
+	Creates a list of variable names for the given model
+	(and checks if the model is either H2, H2vib or CO)
+	The lists are used for plotting the results.
+	'''
 
 	if model == "H2":
 		CSV_LST = ['NTOTH2', 'TEMP', 'B', 'A_Z']
@@ -75,12 +83,13 @@ def model_csv_file(model):
 
 	return CSV_LST
 
-
 #========================================================================
 #========================================================================
-
 
 def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic): 
+	'''
+	Defines the model for H2
+	'''
 
 	tau = 1 / np.array(n_flux_err)**2
 
@@ -126,7 +135,6 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 				B_E = par_dic[elmt][4]
 				A_Z_E = par_dic[elmt][7]
 
-	
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
 	@pymc.deterministic(plot=False)
@@ -136,16 +144,16 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 
 		norm_spec = np.ones(len(wav_aa))
-		synspec = SynSpec()
+		synspec = SynSpec(wav_aa, redshift)
 
-		# add H2 
-		h2spec = synspec.add_H2(wav_aa, norm_spec, redshift, broad=BROAD, \
+		# add H2
+		h2spec = synspec.add_H2(norm_spec, broad=BROAD, \
 			NTOTH2=NTOTH2, TEMP=TEMP, A_REDSHIFT=A_REDSHIFT, NROT=NROT)
 
-		# add lines
+		# add other lines
 		for key in vars_dic:
 			A_Z_E = vars_dic[key][2]/100000.00
-			h2spec = synspec.add_ion(wav_aa, h2spec, redshift, key,
+			h2spec = synspec.add_ion(h2spec, key,
 				broad=vars_dic[key][1], Natom=vars_dic[key][0], \
 				A_REDSHIFT=A_Z_E)
 
@@ -157,7 +165,6 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 
 #========================================================================
 #========================================================================
-
 
 
 def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
@@ -189,16 +196,16 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 
 		norm_spec = np.ones(len(wav_aa))
-		synspec = SynSpec()
+		synspec = SynSpec(wav_aa, redshift)
 	
-		h2vib_spec = synspec.add_vibH2(wav_aa, norm_spec, redshift, h2swl, \
-			modspec, tauspec, RES=res, MH2S=MH2S, A_REDSHIFT=A_REDSHIFT)
+		h2vib_spec = synspec.add_vibH2(norm_spec, h2swl, modspec, \
+			tauspec, RES=res, MH2S=MH2S, A_REDSHIFT=A_REDSHIFT)
 
-		if len(vars_dic) > 1:
+		if len(vars_dic) >= 1:
 			for key in vars_dic:
 				A_Z_E = vars_dic[key][2]/100000.0
-				h2vib_spec = synspec.add_ion(wav_aa, h2vib_spec, redshift, \
-					key, broad=vars_dic[key][1], Natom=vars_dic[key][0], \
+				h2vib_spec = synspec.add_ion(h2vib_spec, key, \
+					broad=vars_dic[key][1], Natom=vars_dic[key][0], \
 					A_REDSHIFT=A_Z_E)
 
 		return h2vib_spec
@@ -257,61 +264,53 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin, \
 
 if __name__ == "__main__":
 
+	start = time.time()
 	print "\n Parsing Arguments \n"
 
 	parser = argparse.ArgumentParser(usage=__doc__)
-	parser.add_argument('-t','--target',dest="target",nargs=1, \
-		default="GRB", type=str)
-	parser.add_argument('-f','--file',dest="file",nargs=1, \
-		default=["spectra/GRB120815Auvb.txt"], type=str)
-	parser.add_argument('-red','--redshift',dest="redshift",nargs=1, \
-		default=[2.358], type=float)
-	parser.add_argument('-m','--model',dest="model", nargs=1, \
-		default=["H2"], type=str)
-	parser.add_argument('-nrot','--nrot',dest="nrot",nargs=1, \
-		default=[3], type=int)
-	parser.add_argument('-e','--elements',dest="elements",nargs='+', \
-		default=["FeII", "SiII"])
-	parser.add_argument('-w1','--w1',dest="w1", nargs=1, default=[980.0])
-	parser.add_argument('-w2','--w2',dest="w2", nargs=1, default=[1120.0])
-	parser.add_argument('-ign','--ignore',dest="ignore",nargs=1, default=[])
-	parser.add_argument('-res','--resolution',dest="resolution",nargs=1, \
-		default=[6000], type=float)
-	parser.add_argument('-it','--iterations',dest="iterations",nargs=1, \
-		default=[1000], type=int)
-	parser.add_argument('-bi','--burn_in',dest="burn_in",nargs=1, \
-		default=[100], type=int)
-	parser.add_argument('-sp','--save_pickle',dest="save_pickle", \
-		nargs=1, default=True, type=bool)
-	parser.add_argument('-par','--par',dest="par", nargs=1, \
-		default=[None], type=str)
+	parser.add_argument('-t','--target',dest="target",default="GRB",
+						type=str)
+	parser.add_argument('-f','--file',dest="file",
+		default="spectra/GRB120815Auvb.txt", type=str)
+	parser.add_argument('-red','--redshift',dest="redshift", default=2.358,
+						type=float)
+	parser.add_argument('-m','--model',dest="model",default="H2",type=str)
+	parser.add_argument('-nrot','--nrot',dest="nrot",default=3,type=int)
+	parser.add_argument('-e','--elements',dest="elements", nargs='+',
+						default=["FeII", "SiII"])
+	parser.add_argument('-w1','--w1',dest="w1", default=980.0, type=float)
+	parser.add_argument('-w2','--w2',dest="w2", default=1120.0, type=float)
+	parser.add_argument('-ign','--ignore',dest="ignore",nargs=1,default=[])
+	parser.add_argument('-res','--resolution',dest="resolution",
+						default=0.15,type=float)
+	parser.add_argument('-it','--iterations',dest="iterations",
+						default=1000, type=int)
+	parser.add_argument('-bi','--burn_in',dest="burn_in",
+						default=100, type=int)
+	parser.add_argument('-sp','--save_pickle',dest="save_pickle",
+						default=True, type=bool)
+	parser.add_argument('-par','--par',dest="par", default=None, type=str)
 	args = parser.parse_args()
 
-	target = args.target[0]
-	spec_file = str(args.file[0])
-	model = args.model[0]
+	target = args.target
+	spec_file = args.file
+	model = args.model
 	elements = args.elements
-	redshift = args.redshift[0]
-	nrot = int(args.nrot[0])
-	w1 = float(args.w1[0])
-	w2 = float(args.w2[0])
+	redshift = args.redshift
+	nrot = args.nrot
+	w1 = args.w1
+	w2 = args.w2
 	ignore_lst = args.ignore
-	res = args.resolution[0]
-	iterations = args.iterations[0]
-	burn_in = args.burn_in[0]
+	res = args.resolution
+	iterations = args.iterations
+	burn_in = args.burn_in
 	save_pickle = args.save_pickle
-	para_file = args.par[0]
-
-	print para_file
+	para_file = args.par
 
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
 
-
 	par_dic = {}
-
-	if para_file != None:
-		par_dic = get_paras(para_file)
 
 	NROT = []
 	for i in np.arange(0, nrot+1, 1):
@@ -322,8 +321,14 @@ if __name__ == "__main__":
 	time.sleep(1.0)
 	print "\n Fitting", target, "at redshift", redshift, "\n"
 	time.sleep(1.0)
-	print "\n Starting MCMC - This might take a while ... \n"
+
+	if para_file != None:
+		par_dic = get_paras(para_file)
+		print "\n Using parameters given in:", para_file
+
 	time.sleep(1.0)
+
+	print "\n Starting MCMC - This might take a while ... \n"
 
 	a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav = get_lines(redshift)
 
@@ -366,17 +371,18 @@ if __name__ == "__main__":
 
 	if save_pickle != False:
 		os.system("rm -r *.pickle")
-		print "Pickle Files Deleted"
+		print "\n Pickle Files Deleted"
 	if save_pickle != True:
-		print "Pickle Files Saved"
+		print "\n Pickle Files Saved"
 
 	os.system("mv *.pdf plots")
-	print "Plots Moved to plots directory"
+	print "\n Plots Moved to plots directory"
 
 	os.system("mv *ts.csv results")
-	print "Result .csv files moved to results directory"
+	print "\n Result .csv files moved to results directory"
 
-	sys.exit("Script Finished")
+ 	dur = str(round((time.time() - start)/60, 1))
+	sys.exit("\n Script Finished after " + dur + " minutes")
 
 
 	#plot_H2_hist(res_file="save_results.dat", z = redshift)
