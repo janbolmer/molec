@@ -1,16 +1,14 @@
-MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and
-other lines
+# MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and other lines
 
 e.g.:
 molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A
 -e HI FeII SiII NV SII MgII SiIIa SIV ZnII FeIIa ArI OVI
 -w1 985 -w2 1120 -m H2 -nrot 5 -it 200 -bi 10 -par para.csv
 
-!!! Under Construction - I am learning Git here !!!
+# !!! Under Construction - I am learning Git here !!!
 
 I am making use of the H2sim from Thomas Kruehler:
 https://github.com/Kruehlio/H2sim
-
 
 # Literature:
 
@@ -76,16 +74,16 @@ https://github.com/Kruehlio/H2sim
 
 [[https://www.aanda.org/articles/aa/pdf/2015/03/aa25553-14.pdf| Balashev et al. 2015 - Neutral chlorine and molecular hydrogen at high redshift]]
 
-# Other Related Papers:
+## Other Related Papers:
 
-[[http://iopscience.iop.org/article/10.1086/338112/pdf|Tumlinson et al. 2002 - A Far Ultraviolet Spectroscopic Explorer Survey of Interstellar Molecular Hydrogen in the Small and Large Magellanic Clouds]]
+[Tumlinson et al. 2002 - A Far Ultraviolet Spectroscopic Explorer Survey of Interstellar Molecular Hydrogen in the Small and Large Magellanic Clouds](http://iopscience.iop.org/article/10.1086/338112/pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2013/12/aa21834-13.pdf| De Cia et al. 2013 - Dust-to-metal ratios in damped Lyman-α absorbers]]
+[De Cia et al. 2013 - Dust-to-metal ratios in damped Lyman-α absorbers](https://www.aanda.org/articles/aa/pdf/2013/12/aa21834-13.pdf)
 
-[[http://iopscience.iop.org/article/10.1088/0004-637X/804/1/51/pdf|Cucchiara et al. 2015 - Unveiling the Secrets of Metallicity and Massive Star Formation Using DLAs along Gamma-Ray Bursts]]
+[Cucchiara et al. 2015 - Unveiling the Secrets of Metallicity and Massive Star Formation Using DLAs along Gamma-Ray Bursts](http://iopscience.iop.org/article/10.1088/0004-637X/804/1/51/pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2017/03/aa29228-16.pdf| Wiseman et al. 2017 - Evolution of the dust-to-metals ratio in high-redshift galaxies probed by GRB-DLAs]]
+[Wiseman et al. 2017 - Evolution of the dust-to-metals ratio in high-redshift galaxies probed by GRB-DLAs](https://www.aanda.org/articles/aa/pdf/2017/03/aa29228-16.pdf)
 
-# Molecular Absorption From CH+:
+## Molecular Absorption From CH+:
 
 [Fynbo et al. 2014 - The mysterious optical afterglow spectrum of GRB 140506A at z = 0.889](https://www.aanda.org/articles/aa/pdf/2014/12/aa24726-14.pdf)
