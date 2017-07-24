@@ -10,7 +10,9 @@ molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A
 ## Paramter File
 
 has to be a .csv file with the first line as:
+
 In case fixes is set to 1 - it will use the values given
+
 for N_val, B_val and R_val
 
 ```csv
