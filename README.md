@@ -6,6 +6,14 @@ molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A -e HI FeII F
 -w1 985 -w2 1120 -m H2 -nrot 5 -it 200 -bi 10 -par para.csv
 ```
 
+## Paramter File
+
+```csv
+element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,R_val,R_low,R_up
+HI, 0, 22.0, 21.80, 22.10, 20., 15.0, 40.0, 0.0, -100, 100
+FeII, 0, 18.0, 17.0, 20.0, 20., 0.0, 40.0, 0.0, -100, 100
+```
+
 # !!! Under Construction - I am learning Git here !!!
 
 I am making use of the H2sim from Thomas Kruehler:
