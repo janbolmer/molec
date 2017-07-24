@@ -20,7 +20,11 @@ co = open ('atoms/co.dat', 'r')
 co_lines = co.readlines()
 co.close()
 
-af = open ('atoms/atom.dat', 'r')
+hd = open ('atoms/hd.dat', 'r')
+hd_lines = hd.readlines()
+hd.close()
+
+af = open ('atoms/atom_excited.dat', 'r')
 atom = af.readlines()
 af.close()
 
@@ -56,14 +60,13 @@ class SynSpec(object):
 		add_H2:		adds Lyman and Werner bands of H2
 		add_vibH2:	adds vibrational excited levels of H2*
 		add CO:		adds CO bandheads
-
+		add HD:		adds HD lines
 	"""
 
 	def __init__(self, wav_range, redshift):
 
 		self.wav_range = wav_range
 		self.redshift = redshift
-
 
 	def add_ion(self, spectrum, atom_name, broad, Natom, A_REDSHIFT):
 		'''
@@ -90,7 +93,6 @@ class SynSpec(object):
 					spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
 						redshift)
 		return spec
-
 
 	def add_H2(self, spectrum, broad, NTOTH2, TEMP, A_REDSHIFT, NROT):
 		'''
@@ -141,16 +143,15 @@ class SynSpec(object):
 		spec = spectrum
 
 		# do this only for wav_range to save computing time?
-		h2swl 	  = np.array([1/i*1E8*(1+redshift + A_REDSHIFT) for i in h2swl][::-1])
-		modscale  = np.exp(-1*(tauspec-1.9845E-01)*MH2S)
+		h2swl = np.array([1/i*1E8*(1+redshift+A_REDSHIFT) for i in h2swl][::-1])
+		modscale = np.exp(-1*(tauspec-1.9845E-01)*MH2S)
 		modsmooth = gauss1d(modscale, 0.07/RES)
-		tckp = splrep(h2swl, modsmooth, s = 3, k = 2)
+		tckp = splrep(h2swl, modsmooth, s=3, k=2)
 		modint = splev(wav_range, tckp)
 
 		spec *= modint
 
 		return spec
-
 
 	def addCO(self, spectrum, broad, NTOTCO, TEMP, A_REDSHIFT):
 
@@ -180,6 +181,12 @@ class SynSpec(object):
 
 		return spec
 
+	def addHD(self, spectrum, broad, NTOTHD, TEMP, A_REDSHIFT):
+
+		print "hallo world"
+
+#========================================================================
+#========================================================================
 
 
 

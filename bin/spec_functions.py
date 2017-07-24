@@ -43,6 +43,7 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 	'''
 
 	wav_aa, n_flux, n_flux_err, flux, flux_err = [], [], [], [], []
+
 	data = open(file, "r")
 	if wl_range==False:
 		for line in data:
@@ -62,6 +63,7 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 					n_flux = np.append(n_flux,float(line.split()[6]))
 					n_flux_err = np.append(n_flux_err,float(line.split()[7]))
 	data.close()
+
 	return wav_aa, n_flux, n_flux_err, flux, flux_err
 
 def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
@@ -120,7 +122,6 @@ def aa_to_velo(wav_aa, flux, flux_err, line, redshift, wrange=15):
 #========================================================================
 #========================================================================
 
-
 def get_lines(redshift):
 
 	# make this better!
@@ -128,18 +129,18 @@ def get_lines(redshift):
 	a_name, a_wav = [], []
 	atom_file = open("atoms/atom_excited.dat", "r")
 	for line in atom_file:
-		if not line.startswith("#") and not line.startswith("H2") \
-		   and not line.startswith("HD") and not line.startswith("CO"):
+		if not line.startswith(("#", "HD", "H2", "CO")):
 			s = line.split()
 			#if float(s[2]) > 0.008:
 			a_name.append(str(s[0]))
 			a_wav.append(float(s[1])*(1+redshift))
 	atom_file.close()
 	
+	# MGII lines for intervening system
 	ai_name, ai_wav = [], []
 	atomi_file = open("atoms/atom.dat", "r")
 	for line in atomi_file:
-		if not line.startswith("#") and not line.startswith("H2") and not line.startswith("HD"):
+		if not line.startswith(("#", "HD", "H2", "CO")):
 			if line.startswith("Mg"):
 				s = line.split()
 				ai_name.append(str(s[0]))
@@ -149,7 +150,7 @@ def get_lines(redshift):
 	aex_name, aex_wav = [], []
 	atomex_file = open("atoms/atom.dat", "r")
 	for line in atomex_file:
-		if not line.startswith("#") and not line.startswith("H2") and not line.startswith("HD"):
+		if not line.startswith(("#", "HD", "H2", "CO")):
 			s = line.split()
 			if float(s[2]) > 0.001:
 				aex_name.append(str(s[0]))
@@ -169,10 +170,8 @@ def get_lines(redshift):
 
 	return a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav
 
-
 #========================================================================
 #========================================================================
-
 
 def voigt(x, y):
 	z = x + 1j*y
@@ -295,12 +294,17 @@ def skylines(intensity=10, file= "atoms/sky_lines.dat"):
 			wlprev, intprev = float(line[0]), float(line[1])
 	return sky, yval 
 
-
-
 #========================================================================
 #========================================================================
 
 def get_paras(para_file):
+	'''
+	Reads the Parameters from the given .csv file
+	Example:
+	element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,R_val,R_low,R_up
+	HI, 0, 22.0, 21.80, 22.10, 20., 15.0, 40.0, 0.0, -100, 100
+	FeII, 0, 18.0, 17.0, 20.0, 20., 0.0, 40.0, 0.0, -100, 100
+	'''
 
 	par_dic = {}
 	par = pd.read_csv(para_file, delimiter=',')
@@ -364,6 +368,7 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 
 	for i in np.arange(0, len(a_name), 1):
 
+		# Better Solution than this mess?
 		if min(wav_aa) < a_wav[i] < (max(wav_aa)-wav_range*4):
 			if i%2 == 0:
 				ax6.text(a_wav[i]+0.2, 1.6, a_name[i], fontsize=5, color="#41ae76")

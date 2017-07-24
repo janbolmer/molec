@@ -8,7 +8,7 @@ from pylab import *
 
 import seaborn as sns
 
-def sns_pair_plot(var_list, file, redshift):
+def sns_pair_plot(target, var_list, file, redshift):
 
 	data = pd.read_pickle(file)
 	
@@ -17,17 +17,19 @@ def sns_pair_plot(var_list, file, redshift):
 	data_f = {}
 
 	for var in var_list:
-		if not var.startswith("A") and not var.startswith("B_"):
+		if var in ['NTOTH2', 'TEMP', 'B']:
 			data_f[var] = data[var][0]
+		if var == 'A_Z':
+			data_f[var] = data[var][0]/100000.0 + redshift
 
 	df = pd.DataFrame(data_f)
 
 	g = sns.pairplot(df)
 
-	g.savefig("H2_pairplot.pdf")
+	g.savefig(target + "H2_pairplot.pdf")
 
 
-def sns_H2vib_plot(var_list, file, redshift):
+def sns_H2vib_plot(target, var_list, file, redshift):
 
 	var_list = var_list
 
@@ -38,14 +40,14 @@ def sns_H2vib_plot(var_list, file, redshift):
 	data_f = {}
 
 	for var in var_list:
-		if not var.startswith("B_") and not var.startswith("A_"):
+		if not var.startswith(("B_", "A_")):
 			data_f[var] = data[var][0]
-		if var.startswith("A_"):
-			data_f[var] = data[var][0] + redshift
+		if var == "A_Z":
+			data_f[var] = data[var][0]/100000.0 + redshift
 
 	df = pd.DataFrame(data_f)
 
 	g = sns.pairplot(df)
 
-	g.savefig("H2vib_pairplot.pdf")
+	g.savefig(target + "H2vib_pairplot.pdf")
 

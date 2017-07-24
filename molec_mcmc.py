@@ -20,7 +20,7 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -model  	Model to use: H2, H2vib or CO
 -elements 	list of additional elements to be included, e.g.: FeII, SiII
 -redshift 	redshift
--nrot 		number of H2 rotational levels, 1-7
+-nrot 		number of H2 rotational levels to be fitted, 1-7
 -w1 		Wavelength start - restframe
 -wl 		Wavelength end - restframe
 -ignore 	list of intervals (restframe) to be ignored when fitting the
@@ -363,6 +363,9 @@ if __name__ == "__main__":
 			redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, aex_name, \
 			aex_wav, h2_name, h2_wav, target=target)
 
+		sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
+					redshift=redshift)
+
 		#bokeh_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, \
 		#y_fit, redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, \
 		#aex_name, aex_wav, h2_name, h2_wav)
@@ -373,7 +376,7 @@ if __name__ == "__main__":
 		plot_H2vib(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, \
 			a_name, a_wav, aex_name, aex_wav, target=target)
 
-		sns_H2vib_plot(var_list=CSV_LST, file="H2vib_fit.pickle", \
+		sns_H2vib_plot(target, var_list=CSV_LST, file="H2vib_fit.pickle", \
 						redshift=redshift)
 
 		#bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, \
