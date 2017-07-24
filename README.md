@@ -2,7 +2,8 @@
 
 ```bash
 e.g.:
-molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A -e HI FeII FeIIa SiII NV SII MgII SiIIa SIV ZnII FeIIa ArI OVI
+molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A
+-e HI FeII FeIIa SiII NV SII MgII SiIIa SIV ZnII FeIIa ArI OVI
 -w1 985 -w2 1120 -m H2 -nrot 5 -it 200 -bi 10 -par para.csv
 ```
 
