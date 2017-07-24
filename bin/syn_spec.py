@@ -36,7 +36,7 @@ vibH2 = ["h2abs_list_n3_b5_260_1000.dat",
 
 vibH2data = np.genfromtxt("atoms/vibH2/" + vibH2[2])
 h2swl, modspec, tauspec = [vibH2data[:, i] for i in [0, 1, 2]]
-tauspec   = np.array(tauspec[::-1])
+tauspec = np.array(tauspec[::-1])
 
 #========================================================================
 #========================================================================
@@ -140,6 +140,7 @@ class SynSpec(object):
 		wav_range = self.wav_range
 		spec = spectrum
 
+		# do this only for wav_range to save computing time?
 		h2swl 	  = np.array([1/i*1E8*(1+redshift + A_REDSHIFT) for i in h2swl][::-1])
 		modscale  = np.exp(-1*(tauspec-1.9845E-01)*MH2S)
 		modsmooth = gauss1d(modscale, 0.07/RES)
@@ -153,7 +154,7 @@ class SynSpec(object):
 
 	def addCO(self, spectrum, broad, NTOTCO, TEMP, A_REDSHIFT):
 
-		# WORK IN PROGRESS
+		# WORK IN PROGRESS - How to add CO band heads?
 		redshift = self.redshift
 		wav_range = self.wav_range
 		spec = spectrum

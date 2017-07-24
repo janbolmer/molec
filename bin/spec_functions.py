@@ -39,14 +39,14 @@ c = 2.998e10
 
 def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 	'''
-	To do: use a dictionary
+	To do: use a dictionary and pandas to read the data
 	'''
 
 	wav_aa, n_flux, n_flux_err, flux, flux_err = [], [], [], [], []
 	data = open(file, "r")
 	if wl_range==False:
 		for line in data:
-			if not "GRB" in line:
+			if not line.startswith(("GRB", "Resolution", "PSFFWHM")):
 				wav_aa = np.append(wav_aa,float(line.split()[0]))
 				flux = np.append(flux,float(line.split()[1]))
 				flux_err = np.append(flux_err,float(line.split()[2]))
@@ -54,7 +54,7 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 				n_flux_err = np.append(n_flux_err,float(line.split()[7]))
 	if wl_range==True: 
 		for line in data:
-			if not "GRB" in line:
+			if not line.startswith(("GRB", "Resolution", "PSFFWHM")):
 				if (wl1*(1+z)) <= float(line.split()[0]) <= (wl2*(1+z)):
 					wav_aa = np.append(wav_aa,float(line.split()[0]))
 					flux = np.append(flux,float(line.split()[1]))
@@ -80,7 +80,7 @@ def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 		wl_up.append(wav_rng[1]*(1+z))
 
 	for line in data:
-		if not "GRB" in line:
+		if not line.startswith(("GRB", "Resolution", "PSFFWHM")):
 			if wl1 <= float(line.split()[0]) <= wl2:
 				wav = float(line.split()[0])
 				tester = 0.0
@@ -123,6 +123,8 @@ def aa_to_velo(wav_aa, flux, flux_err, line, redshift, wrange=15):
 
 def get_lines(redshift):
 
+	# make this better!
+
 	a_name, a_wav = [], []
 	atom_file = open("atoms/atom_excited.dat", "r")
 	for line in atom_file:
@@ -145,7 +147,7 @@ def get_lines(redshift):
 	atomi_file.close()
 	
 	aex_name, aex_wav = [], []
-	atomex_file = open("atoms/atom_excited.dat", "r")
+	atomex_file = open("atoms/atom.dat", "r")
 	for line in atomex_file:
 		if not line.startswith("#") and not line.startswith("H2") and not line.startswith("HD"):
 			s = line.split()
@@ -685,7 +687,7 @@ def bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, r
 def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, \
 	y_fit, a_name, a_wav, aex_name, aex_wav, target):
 
-	sns.set_style("white")
+	sns.set_style("white", {'legend.frameon': True})
 
 	fig = figure(figsize=(9, 4))
 	
@@ -709,17 +711,22 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, \
 	
 	ax1.set_xlabel(r"$\sf Observed\, Wavelength (\AA)$", fontsize=24)
 	ax1.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
-	ax1.set_ylim([-0.6, 1.5])
+	ax1.set_ylim([-0.5, 1.6])
+	ax1.set_yticks([-0.2, 0.0, 0.5, 1.0, 1.5])
 
-	for i in np.arange(0, len(a_name), 1):
-		if min(wav_aa) < a_wav[i] < (max(wav_aa)):
-			ax1.text(a_wav[i]+0.2, -0.1, a_name[i], fontsize=8)
-			ax1.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
+	#for i in np.arange(0, len(a_name), 1):
+	#	if min(wav_aa) < a_wav[i] < (max(wav_aa)):
+	#		ax1.text(a_wav[i]+0.2, -0.1, a_name[i], fontsize=8)
+	#		ax1.axvline(a_wav[i], linestyle="dashed", color="black", linewidth=0.6)
 
 	for i in np.arange(0, len(aex_name), 1):
 		if min(wav_aa) < aex_wav[i] < (max(wav_aa)):
-			ax1.text(aex_wav[i]+0.2, -0.3, aex_name[i], fontsize=8)
-			ax1.axvline(aex_wav[i], linestyle="dashed", color="gray", linewidth=0.6)
+			if not aex_name[i].startswith("CO"):
+				if i%2 == 0:
+					ax1.text(aex_wav[i]+0.2, 1.45, aex_name[i], fontsize=8)
+				else:
+					ax1.text(aex_wav[i]+0.2, 1.35, aex_name[i], fontsize=8)
+				ax1.axvline(aex_wav[i], linestyle="dashed", color="gray", linewidth=0.6)
 
 	for axis in ['top','bottom','left','right']:
 	  ax1.spines[axis].set_linewidth(2)

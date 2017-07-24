@@ -86,7 +86,7 @@ def model_csv_file(model):
 #========================================================================
 #========================================================================
 
-def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic): 
+def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 	'''
 	Defines the model for H2
 	'''
@@ -95,9 +95,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0., upper=22.0, doc='NTOTH2')
 	TEMP = pymc.Uniform('TEMP', lower=0., upper=800, doc='TEMP')
-	B = pymc.Uniform('B', lower=0., upper=40.0, doc='B')	
-	A_Z = pymc.Uniform('A_Z', lower=-150, upper=+150, doc='A_Z')
-	
+	B = pymc.Uniform('B', lower=0., upper=40.0, doc='B')
+	A_Z = pymc.Uniform('A_Z', lower=-100, upper=+100, doc='A_Z')
+
 	vars_dic = {}
 
 	for elmt in line_lst:
@@ -172,19 +172,19 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 
 	tau = 1 / np.array(n_flux_err)**2
 
-	MH2S = pymc.Uniform('MH2S', lower=0., upper=0.4, doc='MH2S')
-	A_Z = pymc.Uniform('A_Z', lower=-150, upper=+150, doc='A_Z')
+	MH2S = pymc.Uniform('MH2S',lower=0.,upper=0.4,doc='MH2S')
+	A_Z = pymc.Uniform('A_Z',lower=-100,upper=+100,doc='A_Z')
 
 	vars_dic = {}
 
-	for elmt in line_lst: 
+	for elmt in line_lst:
 
-		N_E = pymc.Uniform('N_' + elmt, lower=0., upper=20.0, \
+		N_E = pymc.Uniform('N_'+elmt,lower=0.,upper=20.0, \
 			doc='N_' + elmt)
-		B_E = pymc.Uniform('B_' + elmt, lower=0., upper=30, \
+		B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30, \
 			doc='B_' + elmt)
-		A_Z_E = pymc.Uniform('A_Z_' + elmt, lower=-250,	upper=+250, \
-			doc='A_Z_' + elmt)
+		A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150,upper=+150, \
+			doc='A_Z_'+elmt)
 
 		CSV_LST.extend(('N_' + elmt, 'B_' + elmt, 'A_Z_' + elmt))
 		vars_dic[elmt] = N_E, B_E, A_Z_E
@@ -197,7 +197,7 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 
 		norm_spec = np.ones(len(wav_aa))
 		synspec = SynSpec(wav_aa, redshift)
-	
+
 		h2vib_spec = synspec.add_vibH2(norm_spec, h2swl, modspec, \
 			tauspec, RES=res, MH2S=MH2S, A_REDSHIFT=A_REDSHIFT)
 
@@ -229,15 +229,15 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin, \
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
 		MDL.db.close()
-	
+
 		MDL.write_csv(target + "_H2_results.csv", variables=CSV_LST)
-	
+
 		y_min 	= MDL.stats()[model_used]['quantiles'][2.5]
 		y_max 	= MDL.stats()[model_used]['quantiles'][97.5]
 		y_min2 	= MDL.stats()[model_used]['quantiles'][25]
 		y_max2 	= MDL.stats()[model_used]['quantiles'][75]
 		y_fit 	= MDL.stats()[model_used]['mean']
-	
+
 		return y_min, y_max, y_min2, y_max2, y_fit
 
 	if model == "H2vib":
@@ -247,15 +247,15 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin, \
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
 		MDL.db.close()
-	
+
 		MDL.write_csv(target + "_H2vib_results.csv", variables=CSV_LST)
-	
+
 		y_min 	= MDL.stats()[model_used]['quantiles'][2.5]
 		y_max 	= MDL.stats()[model_used]['quantiles'][97.5]
 		y_min2 	= MDL.stats()[model_used]['quantiles'][25]
 		y_max2 	= MDL.stats()[model_used]['quantiles'][75]
 		y_fit 	= MDL.stats()[model_used]['mean']
-	
+
 		return y_min, y_max, y_min2, y_max2, y_fit
 
 
@@ -280,7 +280,8 @@ if __name__ == "__main__":
 						default=["FeII", "SiII"])
 	parser.add_argument('-w1','--w1',dest="w1", default=980.0, type=float)
 	parser.add_argument('-w2','--w2',dest="w2", default=1120.0, type=float)
-	parser.add_argument('-ign','--ignore',dest="ignore",nargs=1,default=[])
+	parser.add_argument('-ign','--ignore',dest="ignore", nargs='+',
+						default=[])
 	parser.add_argument('-res','--resolution',dest="resolution",
 						default=0.15,type=float)
 	parser.add_argument('-it','--iterations',dest="iterations",
@@ -300,12 +301,20 @@ if __name__ == "__main__":
 	nrot = args.nrot
 	w1 = args.w1
 	w2 = args.w2
-	ignore_lst = args.ignore
+	ignore = args.ignore
 	res = args.resolution
 	iterations = args.iterations
 	burn_in = args.burn_in
 	save_pickle = args.save_pickle
 	para_file = args.par
+
+
+	ignore_lst = []
+	for itrvl in ignore:
+		tmp_lst = []
+		s = itrvl.split(",")
+		tmp_lst.extend((float(s[0]), float(s[1])))
+		ignore_lst.append(tmp_lst)
 
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
@@ -336,10 +345,10 @@ if __name__ == "__main__":
 		redshift, wl_range=True, wl1=w1, wl2=w2)
 
 	wav_aa, n_flux, n_flux_err = get_data_ign(spec_file, redshift, ignore_lst, wl1=w1, wl2=w2)
-	
+
 	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux, n_flux_err, iterations, \
 		burn_in, 1, model_used=model, line_lst=elements, target=target, par_dic=par_dic, res=res)
-	
+
 	print "\n MCMC finished \n"
 	time.sleep(1.0)
 	print "Model used:", model, "with J =", NROT, "and", elements
@@ -364,7 +373,8 @@ if __name__ == "__main__":
 		plot_H2vib(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, \
 			a_name, a_wav, aex_name, aex_wav, target=target)
 
-		sns_H2vib_plot(var_list=CSV_LST, file="H2vib_fit.pickle", redshift=redshift)
+		sns_H2vib_plot(var_list=CSV_LST, file="H2vib_fit.pickle", \
+						redshift=redshift)
 
 		#bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, \
 			#y_fit, redshift, ignore_lst, a_name, a_wav, w1, w2)
@@ -387,15 +397,3 @@ if __name__ == "__main__":
 
 	#plot_H2_hist(res_file="save_results.dat", z = redshift)
 	#plot_H2_trace(res_file="save_results.dat", z = redshift)
-
-
-
-
-
-
-
-
-
-
-
-
