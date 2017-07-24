@@ -9,11 +9,10 @@ molec_mcmc.py -f spectra/GRB120815Auvb.txt -red 2.358 -t GRB120815A
 
 ## Paramter File
 
-has to be a .csv file with the first line as:
+has to be a .csv file with the first line as shown below.
 
-In case fixes is set to 1 - it will use the values given
-
-for N_val, B_val and R_val
+(In case fixed is set to 1 it will use the values given for N_val, B_val and R_val.
+Otherwise it will take Uniform Probability Distributions as Prior from low to up.)
 
 ```csv
 element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,R_val,R_low,R_up
