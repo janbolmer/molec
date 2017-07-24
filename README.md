@@ -44,35 +44,35 @@ https://github.com/Kruehlio/H2sim
 
 ## Similar but on QSOs:
 
-[[http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1985MNRAS.212..517L&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf|Levshakov & Varshalovich 1985 - Molecular hydrogen in the z=2.811 absorbing material toward the quasar PKS 0528-250.]]
+[Levshakov & Varshalovich 1985 - Molecular hydrogen in the z=2.811 absorbing material toward the quasar PKS 0528-250](http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1985MNRAS.212..517L&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2002/47/aah2875e.pdf| Ledoux et al. 2002 - Detection of molecular hydrogen in a near Solar-metallicity damped Lyman-α system at zabs ≈ 2 toward Q 0551−366]]
+[Ledoux et al. 2002 - Detection of molecular hydrogen in a near Solar-metallicity damped Lyman-α system at zabs ≈ 2 toward Q 0551−366](https://www.aanda.org/articles/aa/pdf/2002/47/aah2875e.pdf)
 
-[[https://arxiv.org/pdf/astro-ph/0201477.pdf|Petitjean et al. 2002 - Molecular hydrogen at z = 1.973 toward Q0013-004: dust depletion pattern in damped Lyman α systems]]
+[Petitjean et al. 2002 - Molecular hydrogen at z = 1.973 toward Q0013-004: dust depletion pattern in damped Lyman α systems](https://arxiv.org/pdf/astro-ph/0201477.pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2003/42/aah4641.pdf |Reimers et al. 2003 - Detection of molecular hydrogen at z = 1.15 toward HE 0515-4414]]
+[Reimers et al. 2003 - Detection of molecular hydrogen at z = 1.15 toward HE 0515-4414](https://www.aanda.org/articles/aa/pdf/2003/42/aah4641.pdf)
 
-[[https://arxiv.org/pdf/astro-ph/0302582.pdf|Ledoux et al. 2003 - The Very Large Telescope Ultraviolet and Visible Echelle Spectrograph survey for molecular hydrogen in high-redshift damped Lyman α systems]]
+[Ledoux et al. 2003 - The Very Large Telescope Ultraviolet and Visible Echelle Spectrograph survey for molecular hydrogen in high-redshift damped Lyman α systems](https://arxiv.org/pdf/astro-ph/0302582.pdf)
 
-[[https://arxiv.org/pdf/astro-ph/0506555.pdf|Srianand et al. 2005 - The VLT-UVES survey for molecular hydrogen in high-redshift damped Lyman α systems: physical conditions in the neutral gas]]
+[Srianand et al. 2005 - The VLT-UVES survey for molecular hydrogen in high-redshift damped Lyman α systems: physical conditions in the neutral gas](https://arxiv.org/pdf/astro-ph/0506555.pdf)
 
-[[http://iopscience.iop.org/article/10.1086/444368/pdf|Cui et al. 2005 - Molecular Hydrogen in the Damped Lyα Absorber of Q1331+170]]
+[Cui et al. 2005 - Molecular Hydrogen in the Damped Lyα Absorber of Q1331+170](http://iopscience.iop.org/article/10.1086/444368/pdf)
 
-[[http://iopscience.iop.org/article/10.1086/503278/pdf|Ledoux et al. 2006 - Molecular hydrogen in a DLA Az z = 4.224]]
+[Ledoux et al. 2006 - Molecular hydrogen in a DLA Az z = 4.224](http://iopscience.iop.org/article/10.1086/503278/pdf)
 
-[[http://iopscience.iop.org/article/10.1086/498053/pdf|Gillmon et al. 2006 - A FUSE Survey Of Interstellar Molecular Hydrogen Toward High-Latitude AGNs]]
+[Gillmon et al. 2006 - A FUSE Survey Of Interstellar Molecular Hydrogen Toward High-Latitude AGNs](http://iopscience.iop.org/article/10.1086/498053/pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2006/36/aa5769-06.pdf|Petitjean et al. 2006 - Metallicity as a criterion to select H_2-bearing damped Lyman-α systems]]
+[Petitjean et al. 2006 - Metallicity as a criterion to select H_2-bearing damped Lyman-α systems](https://www.aanda.org/articles/aa/pdf/2006/36/aa5769-06.pdf)
 
-[[Physical conditions in the neutral interstellar medium at z = 2.43 toward Q 2348-011]]
+[Noterdaeme et al. 2007 - Excitation mechanisms in newly discovered H_2-bearing damped Lyman-α clouds: systems with low molecular fractions](https://www.aanda.org/articles/aa/pdf/2007/41/aa8021-07.pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2007/41/aa8021-07.pdf|Noterdaeme et al. 2007 - Excitation mechanisms in newly discovered H_2-bearing damped Lyman-α clouds: systems with low molecular fractions]]
+[Noterdaeme et al. 2007 - Physical conditions in the neutral interstellar medium at z = 2.43 toward Q 2348-011](https://www.aanda.org/articles/aa/pdf/2007/26/aa6897-06.pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2007/26/aa6897-06.pdf|Noterdaeme et al. 2007 - https://www.aanda.org/articles/aa/pdf/2008/14/aa8780-07.pdf|Noterdaeme et al. 2008 - Molecular hydrogen in high-redshift damped Lyman-α systems: the VLT/UVES database]]
+[Noterdaeme et al. 2008 - Molecular hydrogen in high-redshift damped Lyman-α systems: the VLT/UVES database](https://www.aanda.org/articles/aa/pdf/2008/14/aa8780-07.pdf)
 
-[[https://arxiv.org/pdf/1011.5312.pdf| Fynbo et al. 2011 - Galaxy counterparts of metal-rich damped Lyα absorbers – II. A solar-metallicity and dusty DLA at z = 2.58]]
+[Fynbo et al. 2011 - Galaxy counterparts of metal-rich damped Lyα absorbers – II. A solar-metallicity and dusty DLA at z = 2.58](https://arxiv.org/pdf/1011.5312.pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2015/03/aa25553-14.pdf| Balashev et al. 2015 - Neutral chlorine and molecular hydrogen at high redshift]]
+[Balashev et al. 2015 - Neutral chlorine and molecular hydrogen at high redshift](https://www.aanda.org/articles/aa/pdf/2015/03/aa25553-14.pdf)
 
 ## Other Related Papers:
 
