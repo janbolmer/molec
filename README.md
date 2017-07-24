@@ -85,7 +85,13 @@ https://github.com/Kruehlio/H2sim
 
 * [Noterdaeme et al. 2008 - Molecular hydrogen in high-redshift damped Lyman-α systems: the VLT/UVES database](https://www.aanda.org/articles/aa/pdf/2008/14/aa8780-07.pdf)
 
+* [Noterdaeme et al. 2011 - The evolution of the cosmic microwave background temperature Measurements of TCMB at high redshift from carbon monoxide excitation](https://www.aanda.org/articles/aa/pdf/2011/02/aa16140-10.pdf)
+
 * [Fynbo et al. 2011 - Galaxy counterparts of metal-rich damped Lyα absorbers – II. A solar-metallicity and dusty DLA at z = 2.58](https://arxiv.org/pdf/1011.5312.pdf)
+
+* [Srianand et al. 2012 - Search for cold gas in z > 2 damped Lyα systems: 21-cm and H2 absorption](https://academic.oup.com/mnras/article-lookup/doi/10.1111/j.1365-2966.2011.20342.x)
+
+* [Balashev et al. 2014 - Molecular hydrogen absorption systems in Sloan Digital Sky Survey](https://academic.oup.com/mnras/article-lookup/doi/10.1093/mnras/stu275)
 
 * [Balashev et al. 2015 - Neutral chlorine and molecular hydrogen at high redshift](https://www.aanda.org/articles/aa/pdf/2015/03/aa25553-14.pdf)
 
