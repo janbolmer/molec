@@ -30,17 +30,17 @@ https://github.com/Kruehlio/H2sim
 
 ## Detection of Molecules in GRBs:
 
-[[https://www.aanda.org/articles/aa/pdf/2006/21/aa5056-06.pdf|Fynbo et al. 2006 - Probing cosmic chemical evolution with gamma-ray bursts: GRB 060206 at z = 4.048]]
+* [Fynbo et al. 2006 - Probing cosmic chemical evolution with gamma-ray bursts: GRB 060206 at z = 4.048](https://www.aanda.org/articles/aa/pdf/2006/21/aa5056-06.pdf)
 
-[[http://iopscience.iop.org/article/10.1088/0004-637X/701/2/L63/pdf| Sheffer et al. 2009 - GRB 080607]]
+* [Sheffer et al. 2009 - GRB 080607](http://iopscience.iop.org/article/10.1088/0004-637X/701/2/L63/pdf)
 
-[[http://iopscience.iop.org/article/10.1088/0004-637X/691/1/L27/pdf| Prochaska et al. 2009 - GRB 080607]]
+* [Prochaska et al. 2009 - GRB 080607](http://iopscience.iop.org/article/10.1088/0004-637X/691/1/L27/pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2013/09/aa21772-13.pdf| Krühler et al. 2013 - GRB 120815A]]
+* [Krühler et al. 2013 - GRB 120815A](https://www.aanda.org/articles/aa/pdf/2013/09/aa21772-13.pdf)
 
-[[https://www.aanda.org/articles/aa/pdf/2014/04/aa23057-13.pdf| D’Elia et al. 2014 - GRB 120327A]]
+* [D’Elia et al. 2014 - GRB 120327A](https://www.aanda.org/articles/aa/pdf/2014/04/aa23057-13.pdf)
 
-[[http://mnras.oxfordjournals.org/content/451/1/167.full.pdf| Friis et al. 2015 - GRB 121024A]]
+* [Friis et al. 2015 - GRB 121024A](http://mnras.oxfordjournals.org/content/451/1/167.full.pdf)
 
 ## Similar but on QSOs:
 
