@@ -92,7 +92,6 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
-
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0., upper=22.0, doc='NTOTH2')
 	TEMP = pymc.Uniform('TEMP', lower=0., upper=800, doc='TEMP')
 	B = pymc.Uniform('B', lower=0., upper=40.0, doc='B')
@@ -142,8 +141,8 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 			redshift=redshift, vars_dic=vars_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
-
-		norm_spec = np.ones(len(wav_aa))
+		norm_spec = np.ones(len(wav_aa)) 	# think about if this makes sense
+											# add Background multiplier
 		synspec = SynSpec(wav_aa, redshift)
 
 		# add H2
@@ -171,7 +170,6 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 	res, par_dic):
 
 	tau = 1 / np.array(n_flux_err)**2
-
 	MH2S = pymc.Uniform('MH2S',lower=0.,upper=0.4,doc='MH2S')
 	A_Z = pymc.Uniform('A_Z',lower=-100,upper=+100,doc='A_Z')
 
@@ -194,13 +192,14 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 				vars_dic=vars_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
-
 		norm_spec = np.ones(len(wav_aa))
 		synspec = SynSpec(wav_aa, redshift)
 
+		# add H2*
 		h2vib_spec = synspec.add_vibH2(norm_spec, h2swl, modspec, \
 			tauspec, RES=res, MH2S=MH2S, A_REDSHIFT=A_REDSHIFT)
 
+		# add other lines
 		if len(vars_dic) >= 1:
 			for key in vars_dic:
 				A_Z_E = vars_dic[key][2]/100000.0

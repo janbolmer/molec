@@ -68,6 +68,9 @@ class SynSpec(object):
 		self.wav_range = wav_range
 		self.redshift = redshift
 
+	def __len__(self):
+		return len(wav_range)
+
 	def add_ion(self, spectrum, atom_name, broad, Natom, A_REDSHIFT):
 		'''
 		broad:			Broadening parameter in km/s
