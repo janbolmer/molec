@@ -1,3 +1,11 @@
+## # !!! Under Construction - I am learning Git here !!!
+### To Do:
+
+* include multiple components
+
+* test on synthetic spectra
+
+
 # MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and other lines
 
 ```bash
@@ -19,8 +27,6 @@ element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,R_val,R_low,R_up
 HI, 0, 22.0, 21.80, 22.10, 20., 15.0, 40.0, 0.0, -100, 100
 FeII, 0, 18.0, 17.0, 20.0, 20., 0.0, 40.0, 0.0, -100, 100
 ```
-
-# !!! Under Construction - I am learning Git here !!!
 
 I am making use of the H2sim from Thomas Kruehler:
 https://github.com/Kruehlio/H2sim

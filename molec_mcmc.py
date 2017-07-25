@@ -46,8 +46,6 @@ import numpy as np
 import pandas as pd
 
 import matplotlib as plt
-import matplotlib.pyplot as pyplot
-from pylab import *
 
 from scipy.special import wofz
 from scipy.interpolate import interp1d
@@ -92,42 +90,96 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
-	NTOTH2 = pymc.Uniform('NTOTH2',lower=0., upper=22.0, doc='NTOTH2')
-	TEMP = pymc.Uniform('TEMP', lower=0., upper=800, doc='TEMP')
-	B = pymc.Uniform('B', lower=0., upper=40.0, doc='B')
-	A_Z = pymc.Uniform('A_Z', lower=-100, upper=+100, doc='A_Z')
+	#NTOTH2 = pymc.Uniform('NTOTH2',lower=0.,upper=22.0,doc='NTOTH2')
+	TEMP = pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
+	#B = pymc.Uniform('B',lower=0., upper=40.0,doc='B')
+	A_Z = pymc.Uniform('A_Z',lower=-100,upper=+100,doc='A_Z')
+
+
+	#@pymc.stochastic(dtype=float)
+	#def B(value=12, t_l=1.0, t_h=40.0, turn1=10.0, turn2=20.0, doc="B"):
+	#	'''
+	#	The broadening parameter is more likely to be
+	#	between 0-10 than between 10-20 and 20-40 km/s
+	#	'''
+	#	if t_l <= value <= turn1:
+	#		#print 1./(t_h-t_l)
+	#		return 1./(t_h-t_l)
+	#	if turn1 < value <= turn2: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.5
+	#	if turn2 < value <= t_h: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.25		
+	#	else:
+	#		#invalid values
+	#		return -np.inf
+
+	@pymc.stochastic(dtype=float)
+	def B(value=8, alpha=2, x_m=1, doc="B"):
+		'''
+		Pareto function for alpha=2 and x_m = 1
+		'''
+		pp = 0.0
+		if value >= x_m:
+			pp = alpha/(value+alpha)
+		else:
+			#invalid values
+			pp = -np.inf
+		return pp
+
+
+	@pymc.stochastic(dtype=float)
+	def NTOTH2(value=18, t_l=1.0, t_h=22.0, turn1=21.0, turn2=21.5, doc="B"):
+		'''
+		The total H2 column density is more likely to be
+		between 0-20 than between 20-21 and 21-22
+		'''
+		if t_l <= value <= turn1:
+			#print 1./(t_h-t_l)
+			return 1./(t_h-t_l)
+		if turn1 < value <= turn2: 
+			#print (1./(t_h-t_l))*0.5
+			return (1./(t_h-t_l))*0.2
+		if turn2 < value <= t_h: 
+			#print (1./(t_h-t_l))*0.5
+			return (1./(t_h-t_l))*0.1		
+		else:
+			#invalid values
+			return -np.inf
+
 
 	vars_dic = {}
 
 	for elmt in line_lst:
 		if not elmt in par_dic:
 			if elmt == "HI":
-				N_E = pymc.Uniform('N_'+elmt,lower=19.0,upper=23.0, \
-					doc='N_'+elmt)
-				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30, \
-					doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100,upper=+100, \
-					doc='A_Z_'+elmt)
+				N_E = pymc.Uniform('N_'+elmt,lower=19.0,upper=23.0,
+					value=21.8,doc='N_'+elmt)
+				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+					value=8.,doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+					value=0.,doc='A_Z_'+elmt)
 			else:
-				N_E = pymc.Uniform('N_'+elmt,lower=0.,upper=20.0, \
-					doc='N_'+elmt)
-				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30, \
-					doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100,upper=+100, \
-					doc='A_Z_'+elmt)
+				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
+					value=16.0,doc='N_'+elmt)
+				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+					value=8.,doc='B_'+elmt)
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
 
 		else:
 			if par_dic[elmt][0] == 0:
-				N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2], \
+				N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
 					upper=par_dic[elmt][3],doc='N_'+elmt)
-				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5], \
+				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
 					upper=par_dic[elmt][6],doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8], \
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
 					upper=par_dic[elmt][9],doc='A_Z_'+elmt)
 
-				CSV_LST.extend(('N_'+elmt, 'B_'+elmt, 'A_Z_'+elmt))
+				CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
 
 			if par_dic[elmt][0] == 1:
 				N_E = par_dic[elmt][1]
@@ -136,29 +188,30 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
-	@pymc.deterministic(plot=False)
-	def H2(wav_aa=wav_aa, A_REDSHIFT=A_Z, NTOTH2=NTOTH2, TEMP=TEMP, BROAD=B, \
-			redshift=redshift, vars_dic=vars_dic):
+	@pymc.deterministic(plot=False) 
+	def H2(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTH2=NTOTH2,TEMP=TEMP,BROAD=B,
+		redshift=redshift,vars_dic=vars_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) 	# think about if this makes sense
 											# add Background multiplier
-		synspec = SynSpec(wav_aa, redshift)
+		synspec = SynSpec(wav_aa,redshift)
 
 		# add H2
-		h2spec = synspec.add_H2(norm_spec, broad=BROAD, \
-			NTOTH2=NTOTH2, TEMP=TEMP, A_REDSHIFT=A_REDSHIFT, NROT=NROT)
+		h2spec = synspec.add_H2(norm_spec,broad=BROAD,NTOTH2=NTOTH2,
+			TEMP=TEMP,A_REDSHIFT=A_REDSHIFT,NROT=NROT)
 
 		# add other lines
 		for key in vars_dic:
 			A_Z_E = vars_dic[key][2]/100000.00
 			h2spec = synspec.add_ion(h2spec, key,
-				broad=vars_dic[key][1], Natom=vars_dic[key][0], \
+				broad=vars_dic[key][1], Natom=vars_dic[key][0],
 				A_REDSHIFT=A_Z_E)
 
 		return h2spec
 
-	y_val = pymc.Normal('y_val', mu=H2, tau=tau, value=n_flux, observed=True)
+	y_val = pymc.Normal('y_val',mu=H2,tau=tau,value=n_flux,observed=True)
+
 	return locals()
 
 
@@ -170,49 +223,48 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 	res, par_dic):
 
 	tau = 1 / np.array(n_flux_err)**2
-	MH2S = pymc.Uniform('MH2S',lower=0.,upper=0.4,doc='MH2S')
-	A_Z = pymc.Uniform('A_Z',lower=-100,upper=+100,doc='A_Z')
+	MH2S = pymc.Uniform('MH2S',value=0.15,lower=0.,upper=0.40,doc='MH2S')
+	A_Z = pymc.Uniform('A_Z',value=0.,lower=-100.,upper=+100.,doc='A_Z')
 
 	vars_dic = {}
 
 	for elmt in line_lst:
 
-		N_E = pymc.Uniform('N_'+elmt,lower=0.,upper=20.0, \
-			doc='N_' + elmt)
-		B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30, \
-			doc='B_' + elmt)
-		A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150,upper=+150, \
-			doc='A_Z_'+elmt)
+		N_E = pymc.Uniform('N_'+elmt,lower=0.,upper=20.,
+			value=16., doc='N_' + elmt)
+		B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+			value=8., doc='B_' + elmt)
+		A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150.,upper=+150.,
+			value=0., doc='A_Z_'+elmt)
 
-		CSV_LST.extend(('N_' + elmt, 'B_' + elmt, 'A_Z_' + elmt))
+		CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
 	@pymc.deterministic(plot=False)
-	def H2vib(wav_aa=wav_aa, redshift=redshift, A_REDSHIFT=A_Z, MH2S=MH2S, \
-				vars_dic=vars_dic):
+	def H2vib(wav_aa=wav_aa, redshift=redshift, A_REDSHIFT=A_Z, MH2S=MH2S, 
+		vars_dic=vars_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa))
-		synspec = SynSpec(wav_aa, redshift)
+		synspec = SynSpec(wav_aa,redshift)
 
 		# add H2*
-		h2vib_spec = synspec.add_vibH2(norm_spec, h2swl, modspec, \
-			tauspec, RES=res, MH2S=MH2S, A_REDSHIFT=A_REDSHIFT)
+		h2vib_spec = synspec.add_vibH2(norm_spec,h2swl,modspec,
+			tauspec,RES=res,MH2S=MH2S,A_REDSHIFT=A_REDSHIFT)
 
 		# add other lines
 		if len(vars_dic) >= 1:
 			for key in vars_dic:
 				A_Z_E = vars_dic[key][2]/100000.0
-				h2vib_spec = synspec.add_ion(h2vib_spec, key, \
-					broad=vars_dic[key][1], Natom=vars_dic[key][0], \
+				h2vib_spec = synspec.add_ion(h2vib_spec, key, 
+					broad=vars_dic[key][1], Natom=vars_dic[key][0],
 					A_REDSHIFT=A_Z_E)
 
 		return h2vib_spec
 
-	y_val = pymc.Normal('y_val', mu=H2vib, tau=tau, value=n_flux, \
-		observed=True)
-	return locals()
+	y_val = pymc.Normal('y_val',mu=H2vib,tau=tau,value=n_flux,observed=True)
 
+	return locals()
 
 #========================================================================
 #========================================================================
@@ -256,7 +308,6 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin, \
 		y_fit 	= MDL.stats()[model_used]['mean']
 
 		return y_min, y_max, y_min2, y_max2, y_fit
-
 
 #========================================================================
 #========================================================================
@@ -336,7 +387,8 @@ if __name__ == "__main__":
 
 	time.sleep(1.0)
 
-	print "\n Starting MCMC - This might take a while ... \n"
+	print "\n Starting MCMC " + '(pymc version:', pymc.__version__
+	print "\n This might take a while ... \n"
 
 	a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav = get_lines(redshift)
 
