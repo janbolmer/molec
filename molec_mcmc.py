@@ -90,9 +90,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
-	#NTOTH2 = pymc.Uniform('NTOTH2',lower=0.,upper=22.0,doc='NTOTH2')
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.,upper=22.0,doc='NTOTH2')
 	TEMP = pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-	#B = pymc.Uniform('B',lower=0., upper=40.0,doc='B')
+	B = pymc.Uniform('B',lower=0., upper=40.0,doc='B')
 	A_Z = pymc.Uniform('A_Z',lower=-100,upper=+100,doc='A_Z')
 
 
@@ -115,38 +115,38 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 	#		#invalid values
 	#		return -np.inf
 
-	@pymc.stochastic(dtype=float)
-	def B(value=8, alpha=2, x_m=1, doc="B"):
-		'''
-		Pareto function for alpha=2 and x_m = 1
-		'''
-		pp = 0.0
-		if value >= x_m:
-			pp = alpha/(value+alpha)
-		else:
-			#invalid values
-			pp = -np.inf
-		return pp
+	#@pymc.stochastic(dtype=float)
+	#def B(value=8, alpha=10, x_m=1, doc="B"):
+	#	'''
+	#	Pareto function for alpha=2 and x_m = 1
+	#	'''
+	#	pp = 0.0
+	#	if value >= x_m:
+	#		pp = alpha/(value+alpha)
+	#	else:
+	#		#invalid values
+	#		pp = -np.inf
+	#	print value, pp
+	#	return pp
 
-
-	@pymc.stochastic(dtype=float)
-	def NTOTH2(value=18, t_l=1.0, t_h=22.0, turn1=21.0, turn2=21.5, doc="B"):
-		'''
-		The total H2 column density is more likely to be
-		between 0-20 than between 20-21 and 21-22
-		'''
-		if t_l <= value <= turn1:
-			#print 1./(t_h-t_l)
-			return 1./(t_h-t_l)
-		if turn1 < value <= turn2: 
-			#print (1./(t_h-t_l))*0.5
-			return (1./(t_h-t_l))*0.2
-		if turn2 < value <= t_h: 
-			#print (1./(t_h-t_l))*0.5
-			return (1./(t_h-t_l))*0.1		
-		else:
-			#invalid values
-			return -np.inf
+	#@pymc.stochastic(dtype=float)
+	#def NTOTH2(value=18, t_l=1.0, t_h=22.0, turn1=21.0, turn2=21.5, doc="B"):
+	#	'''
+	#	The total H2 column density is more likely to be
+	#	between 0-20 than between 20-21 and 21-22
+	#	'''
+	#	if t_l <= value <= turn1:
+	#		#print 1./(t_h-t_l)
+	#		return 1./(t_h-t_l)
+	#	if turn1 < value <= turn2: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.2
+	#	if turn2 < value <= t_h: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.1		
+	#	else:
+	#		#invalid values
+	#		return -np.inf
 
 
 	vars_dic = {}
@@ -193,8 +193,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 		redshift=redshift,vars_dic=vars_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
-		norm_spec = np.ones(len(wav_aa)) 	# think about if this makes sense
-											# add Background multiplier
+		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
 		synspec = SynSpec(wav_aa,redshift)
 
 		# add H2
@@ -392,12 +391,12 @@ if __name__ == "__main__":
 
 	a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav = get_lines(redshift)
 
-	wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl = get_data(spec_file, \
+	wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl = get_data(spec_file,
 		redshift, wl_range=True, wl1=w1, wl2=w2)
 
 	wav_aa, n_flux, n_flux_err = get_data_ign(spec_file, redshift, ignore_lst, wl1=w1, wl2=w2)
 
-	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux, n_flux_err, iterations, \
+	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux, n_flux_err, iterations,
 		burn_in, 1, model_used=model, line_lst=elements, target=target, par_dic=par_dic, res=res)
 
 	print "\n MCMC finished \n"
@@ -410,8 +409,8 @@ if __name__ == "__main__":
 
 	if model == "H2":
 
-		plot_spec(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, \
-			redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, aex_name, \
+		plot_spec(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit,
+			redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, aex_name,
 			aex_wav, h2_name, h2_wav, target=target)
 
 		sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
@@ -424,10 +423,10 @@ if __name__ == "__main__":
 
 	if model == "H2vib":
 
-		plot_H2vib(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit, \
+		plot_H2vib(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit,
 			a_name, a_wav, aex_name, aex_wav, target=target)
 
-		sns_H2vib_plot(target, var_list=CSV_LST, file="H2vib_fit.pickle", \
+		sns_H2vib_plot(target, var_list=CSV_LST, file="H2vib_fit.pickle",
 						redshift=redshift)
 
 		#bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, \
