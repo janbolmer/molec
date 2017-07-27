@@ -389,10 +389,12 @@ if __name__ == "__main__":
 	print "\n Starting MCMC " + '(pymc version:', pymc.__version__
 	print "\n This might take a while ... \n"
 
-	a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav = get_lines(redshift)
+	a_name, a_wav, ai_name, ai_wav, aex_name, \
+	aex_wav, h2_name, h2_wav = get_lines(redshift)
 
-	wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl = get_data(spec_file,
-		redshift, wl_range=True, wl1=w1, wl2=w2)
+	wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl, \
+	grb_name, res, psf_fwhm = get_data(spec_file, redshift,
+		wl_range=True, wl1=w1, wl2=w2)
 
 	wav_aa, n_flux, n_flux_err = get_data_ign(spec_file, redshift, ignore_lst, wl1=w1, wl2=w2)
 
