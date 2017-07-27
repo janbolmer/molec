@@ -43,6 +43,9 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 	'''
 
 	wav_aa, n_flux, n_flux_err, flux, flux_err = [], [], [], [], []
+	grb_name = ""
+	res = 0
+	psf_fwhm = 0
 
 	data = open(file, "r")
 	if wl_range==False:
@@ -53,6 +56,12 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 				flux_err = np.append(flux_err,float(line.split()[2]))
 				n_flux = np.append(n_flux,float(line.split()[6]))
 				n_flux_err = np.append(n_flux_err,float(line.split()[7]))
+			if line.startswith('GRB'):
+				grb_name = str(line.split()[0]).split("_")[0]
+			if line.startswith('Res'):
+				res = float(line.split()[1])
+			if line.startswith('PSF'):
+				psf_fwhm = float(line.split()[1])
 	if wl_range==True: 
 		for line in data:
 			if not line.startswith(("GRB", "Resolution", "PSFFWHM")):
@@ -62,9 +71,15 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 					flux_err = np.append(flux_err,float(line.split()[2]))
 					n_flux = np.append(n_flux,float(line.split()[6]))
 					n_flux_err = np.append(n_flux_err,float(line.split()[7]))
+			if line.startswith('GRB'):
+				grb_name = str(line.split()[0]).split("_")[0]
+			if line.startswith('Res'):
+				res = float(line.split()[1])
+			if line.startswith('PSF'):
+				psf_fwhm = float(line.split()[1])
 	data.close()
 
-	return wav_aa, n_flux, n_flux_err, flux, flux_err
+	return wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, res, psf_fwhm
 
 def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 
@@ -169,6 +184,16 @@ def get_lines(redshift):
 	h2_file.close()
 
 	return a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav
+
+
+#========================================================================
+#========================================================================
+
+def nu_to_dz(n0, z0):
+	c = 299792.458
+	dz = n0/c * (1+z0)
+	nz = z0 + dz
+	return dz, nz
 
 #========================================================================
 #========================================================================
