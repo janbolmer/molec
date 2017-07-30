@@ -34,7 +34,10 @@ from sns_plots import * # sns_plots.py
 colors = ["#a6cee3", "#1f78b4",
 "#b2df8a", "#33a02c", "#fb9a99",
 "#e31a1c", "#fdbf6f", "#ff7f00",
-"#cab2d6", "#6a3d9a"]
+"#cab2d6", "#6a3d9a", "#a6cee3",
+"#1f78b4", "#b2df8a", "#33a02c",
+"#fb9a99", "#e31a1c", "#fdbf6f",
+"#ff7f00", "#cab2d6", "#6a3d9a"]
 
 def get_results(para_file):
 	'''
@@ -58,17 +61,17 @@ def mult_voigts(velocity, fluxv, fluxv_err, nvoigts):
 
 	n_voigts = pymc.DiscreteUniform('n_voigts', lower=nvoigts,
 	 upper=nvoigts, value=nvoigts, doc='n_voigts')
-	a = pymc.Uniform('a', lower=0.995, upper=1.005, doc='a')
+	a = pymc.Uniform('a', lower=0.98, upper=1.02, doc='a')
 	velo_pred = pymc.Normal('velo_pred', mu=velocity, tau=2.0)
 
 	vars_dic = {}
 
 	for i in range(1, nvoigts+1):
 
-		alphaD = pymc.Uniform('alphaD'+str(i),lower=0.,upper=40.,doc='AlphaD'+str(i))
-		alphaL = pymc.Uniform('alphaL'+str(i),lower=0.,upper=40.,doc='AlphaL'+str(i))
+		alphaD = pymc.Uniform('alphaD'+str(i),lower=0.,upper=60.,doc='AlphaD'+str(i))
+		alphaL = pymc.Uniform('alphaL'+str(i),lower=0.,upper=60.,doc='AlphaL'+str(i))
 		nu0 = pymc.Uniform('nu0'+str(i),lower=-550., upper=550.,doc='nu0'+str(i))
-		A = pymc.Uniform('A'+str(i),lower=-60.,upper=0.0,doc='A'+str(i))
+		A = pymc.Uniform('A'+str(i),lower=-80.,upper=0.0,doc='A'+str(i))
 
 		CSV_LST.extend(('alphaD'+str(i),'alphaL'+str(i),'nu0'+str(i),'A'+str(i)))
 
@@ -87,7 +90,8 @@ def mult_voigts(velocity, fluxv, fluxv_err, nvoigts):
 			f = np.sqrt(math.log(2))
 			x = (nu-vars_dic["nu0"+str(i)])/vars_dic["alphaD"+str(i)] * f
 			y = vars_dic["alphaL"+str(i)]/vars_dic["alphaD"+str(i)] * f
-			V = vars_dic["A"+str(i)]*f/(vars_dic["alphaD"+str(i)]*np.sqrt(np.pi)) * voigt(x, y)
+			V = vars_dic["A"+str(i)]*f/(vars_dic["alphaD"+str(i)]*np.sqrt(np.pi)) \
+				* voigt(x, y)
 			voigts += V
 
 		voigts += a
@@ -137,7 +141,8 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 			f = np.sqrt(math.log(2))
 			x = (vv-par_dic["nu0"+str(i)])/par_dic["alphaD"+str(i)] * f
 			y = par_dic["alphaL"+str(i)]/par_dic["alphaD"+str(i)] * f
-			V = par_dic["A"+str(i)]*f/(par_dic["alphaD"+str(i)]*np.sqrt(np.pi))*voigt(x, y)
+			V = par_dic["A"+str(i)]*f/(par_dic["alphaD"+str(i)]* 
+				np.sqrt(np.pi))*voigt(x, y)
 			ff.append(V + par_dic["a"])
 
 		ax.plot(velocity, ff, label='Voigt'+str(i), color=colors[i-1], linewidth=2)
@@ -212,14 +217,20 @@ if __name__ == "__main__":
 	print "\n Parsing Arguments \n"
 
 	parser = argparse.ArgumentParser(usage=__doc__)
-	parser.add_argument('-f','--file',dest="file",default="spectra/GRB120815Auvb.txt",
-		type=str)
+	parser.add_argument('-f','--file',dest="file",
+		default="spectra/GRB120815Auvb.txt",type=str)
 	parser.add_argument('-z','--z', dest="z",default=2.358,type=float)
-	parser.add_argument('-e','--element',dest="element",default="FeII",type=str)
-	parser.add_argument('-line','--line',dest="line",default=1608.4509,type=float)
-	parser.add_argument('-w','--wav_range',dest="wav_range",default=10.0,type=float)
-	parser.add_argument('-it','--it',dest="it", default=10000,type=int)
+	parser.add_argument('-e','--element',dest="element",
+		default="FeII",type=str)
+	parser.add_argument('-line','--line',dest="line",
+		default=1608.4509,type=float)
+	parser.add_argument('-w','--wav_range',dest="wav_range",
+		default=10.0,type=float)
+	parser.add_argument('-it','--it',dest="it",default=10000,type=int)
 	parser.add_argument('-bi','--bi',dest="bi",default=5000,type=int)
+	parser.add_argument('-min','--min',dest="min",default=1,type=int)
+	parser.add_argument('-max','--max',dest="max",default=6,type=int)
+
 	args = parser.parse_args()
 
 	spec_file = args.file
@@ -229,6 +240,8 @@ if __name__ == "__main__":
 	line = args.line
 	iterations = args.it
 	burn_in = args.bi
+	min_n = args.min
+	max_n = args.max
 
 	CSV_LST = ["n_voigts", "a"]
 	
@@ -250,7 +263,7 @@ if __name__ == "__main__":
 	
 	chi2_list = []
 
-	for nvoigts in range(1, 6):
+	for nvoigts in range(min_n, max_n+1):
 
 		print "\n Using", nvoigts, "Voigt Profiles \n"
 
@@ -275,17 +288,32 @@ if __name__ == "__main__":
 	print chi2_list
 
 	fig = figure(figsize=(12, 6))
-	ax = fig.add_axes([0.10, 0.13, 0.85, 0.85])
+	ax = fig.add_axes([0.10, 0.14, 0.86, 0.85])
 
-	ax.errorbar(range(1, 6), chi2_list, linewidth=2)
-	ax.set_xlabel(r"Number of Voigt Profiles", fontsize=25)
-	ax.set_ylabel(r"${\chi}^2_{red}$", fontsize=25)
+	ax.errorbar(range(min_n, max_n+1),chi2_list,linewidth=5)
+	ax.errorbar(range(min_n, max_n+1),chi2_list,fmt="o",color="black",
+		markersize=15)
+	ax.set_xlabel(r"Number of Voigt Profiles",fontsize=24)
+	ax.set_ylabel(r"${\chi}^2_{red}$",fontsize=24)
 	ax.set_yscale("log")
 	ax.set_ylim([0.1, 600])
+	ax.set_xlim([min_n-0.5, max_n+0.5])
+	ax.set_xticks(range(min_n, max_n+1))
 	ax.set_yticks([0.2, 0.5, 1.0, 2.0, 5.0, 10, 20, 50, 100, 200, 500])
 	ax.set_yticklabels(["0.2", "0.5", "1.0", "2.0", "5.0", "10",
 		"20", "50", "100", "200", "500"])
-	ax.axhline(1, linewidth=2, linestyle="dashed", color="black")
+	ax.axhline(1,linewidth=2,linestyle="dashed",color="black")
+
+	for axis in ['top','bottom','left','right']:
+	  ax.spines[axis].set_linewidth(2)
+	ax.tick_params(which='major',length=8,width=2)
+	ax.tick_params(which='minor',length=4,width=1.5)
+	
+	for tick in ax.xaxis.get_major_ticks():
+	    tick.label.set_fontsize(18)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(18)
+
 	show()
 	fig.savefig(grb_name + "_Chi2red.pdf")
 
