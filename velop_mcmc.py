@@ -27,7 +27,7 @@ from scipy.special import wofz
 
 sys.path.append('bin/')
 
-from spec_functions import get_data, aa_to_velo, voigt # spec_functions.py
+from spec_functions import * # spec_functions.py
 from syn_spec import * # syn_spec.py
 from sns_plots import * # sns_plots.py
 
@@ -39,9 +39,15 @@ colors = ["#a6cee3", "#1f78b4",
 "#fb9a99", "#e31a1c", "#fdbf6f",
 "#ff7f00", "#cab2d6", "#6a3d9a"]
 
+#def voigt(x, sigma, gamma):
+#	z = (x + 1j*gamma) / (sigma * math.sqrt(2))
+#	V = wofz(z).real / (sigma * math.sqrt(2*math.pi))
+#	return V
+
 def get_results(para_file):
 	'''
-	Reads the Results from the voigt_results.csv file
+	Reads the Results from the .csv file created
+	from PyMC
 	'''
 
 	par_dic = {}
@@ -68,30 +74,28 @@ def mult_voigts(velocity, fluxv, fluxv_err, nvoigts):
 
 	for i in range(1, nvoigts+1):
 
-		alphaD = pymc.Uniform('alphaD'+str(i),lower=0.,upper=60.,doc='AlphaD'+str(i))
-		alphaL = pymc.Uniform('alphaL'+str(i),lower=0.,upper=60.,doc='AlphaL'+str(i))
+		sigma = pymc.Uniform('sigma'+str(i),lower=0.,upper=100.,doc='sigma'+str(i))
+		gamma = pymc.Uniform('gamma'+str(i),lower=0.,upper=100.,doc='gamma'+str(i))
 		nu0 = pymc.Uniform('nu0'+str(i),lower=-550., upper=550.,doc='nu0'+str(i))
-		A = pymc.Uniform('A'+str(i),lower=-80.,upper=0.0,doc='A'+str(i))
+		A = pymc.Uniform('A'+str(i),lower=-150.,upper=0.0,doc='A'+str(i))
 
-		CSV_LST.extend(('alphaD'+str(i),'alphaL'+str(i),'nu0'+str(i),'A'+str(i)))
+		CSV_LST.extend(('sigma'+str(i),'gamma'+str(i),'nu0'+str(i),'A'+str(i)))
 
-		vars_dic['alphaD'+str(i)] = alphaD
-		vars_dic['alphaL'+str(i)] = alphaL
+		vars_dic['sigma'+str(i)] = sigma
+		vars_dic['gamma'+str(i)] = gamma
 		vars_dic['nu0'+str(i)] = nu0
 		vars_dic['A'+str(i)] = A
 
 	@pymc.deterministic(plot=False)
-	def multVoigt(nu=velo_pred, a=a, n_voigts=n_voigts, vars_dic=vars_dic):
+	def multVoigt(vv=velo_pred, a=a, n_voigts=n_voigts, vars_dic=vars_dic):
 
 		voigts = 0
 
 		for i in range(1, n_voigts + 1):
 			
-			f = np.sqrt(math.log(2))
-			x = (nu-vars_dic["nu0"+str(i)])/vars_dic["alphaD"+str(i)] * f
-			y = vars_dic["alphaL"+str(i)]/vars_dic["alphaD"+str(i)] * f
-			V = vars_dic["A"+str(i)]*f/(vars_dic["alphaD"+str(i)]*np.sqrt(np.pi)) \
-				* voigt(x, y)
+			x = vv-vars_dic["nu0"+str(i)]
+			V = vars_dic["A"+str(i)]*voigt(x, vars_dic["sigma"+str(i)], \
+				vars_dic["gamma"+str(i)])
 			voigts += V
 
 		voigts += a
@@ -118,7 +122,10 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	y_max2 = MDL.stats()['multVoigt']['quantiles'][75]
 	y_fit = MDL.stats()['multVoigt']['mean']
 	
-	MDL.write_csv(grb_name+str(nvoigts)+"voigt_results.csv", variables=CSV_LST)
+	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_voigt_res.csv",variables=CSV_LST)
+
+	csv_f = open(grb_name+"_"+str(nvoigts)+"_voigt_res.csv", "a")
+	csv_f.write("Osc, " + str(osc_line))
 
 	return y_min, y_max, y_min2, y_max2, y_fit, MDL.trace('n_voigts')
 	
@@ -138,11 +145,9 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 	for i in range(1, nvoigts+1):
 		ff = []
 		for vv in velocity:
-			f = np.sqrt(math.log(2))
-			x = (vv-par_dic["nu0"+str(i)])/par_dic["alphaD"+str(i)] * f
-			y = par_dic["alphaL"+str(i)]/par_dic["alphaD"+str(i)] * f
-			V = par_dic["A"+str(i)]*f/(par_dic["alphaD"+str(i)]* 
-				np.sqrt(np.pi))*voigt(x, y)
+			x = vv-par_dic["nu0"+str(i)]
+			V = par_dic["A"+str(i)]*voigt(x, par_dic["sigma"+str(i)], \
+				par_dic["gamma"+str(i)])
 			ff.append(V + par_dic["a"])
 
 		ax.plot(velocity, ff, label='Voigt'+str(i), color=colors[i-1], linewidth=2)
@@ -179,35 +184,37 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 	fig.savefig(grb + "_" + element + "_" + str(my_line) + ".pdf")
 	#show()
 
-def plot_trace(trace):
-	'''
-	Plotting the trace
-	'''
+def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
 
-	fig = figure(figsize=(10, 4))
-	ax = fig.add_axes([0.13, 0.13, 0.85, 0.85])
+	fig = figure(figsize=(12, 6))
+	ax = fig.add_axes([0.10, 0.14, 0.86, 0.85])
 
-	step = []
+	ax.errorbar(range(min_n, max_n+1),chi2_list,linewidth=5)
+	ax.errorbar(range(min_n, max_n+1),chi2_list,fmt="o",color="black",
+		markersize=15)
+	ax.set_xlabel(r"Number of Components",fontsize=24)
+	ax.set_ylabel(r"${\chi}^2_{red}$",fontsize=24)
+	ax.set_yscale("log")
+	ax.set_ylim([0.1, 600])
+	ax.set_xlim([min_n-0.5, max_n+0.5])
+	ax.set_xticks(range(min_n, max_n+1))
+	ax.set_yticks([0.2, 0.5, 1.0, 2.0, 5.0, 10, 20, 50, 100, 200, 500])
+	ax.set_yticklabels(["0.2", "0.5", "1.0", "2.0", "5.0", "10",
+		"20", "50", "100", "200", "500"])
+	ax.axhline(1,linewidth=2,linestyle="dashed",color="black")
 
-	for i in np.arange(0, len(trace), 1):
-		step.append(i)
+	for axis in ['top','bottom','left','right']:
+	  ax.spines[axis].set_linewidth(2)
+	ax.tick_params(which='major',length=8,width=2)
+	ax.tick_params(which='minor',length=4,width=1.5)
+	
+	for tick in ax.xaxis.get_major_ticks():
+	    tick.label.set_fontsize(18)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(18)
 
-	ax.errorbar(step, trace)
-	ax.set_ylim([-0.5, 11])
 	show()
-
-def plot_hist(trace):
-	'''
-	Plotting the histogram
-	'''
-
-	fig = figure(figsize=(6, 6))
-	ax = fig.add_axes([0.13, 0.13, 0.85, 0.85])
-
-	ax.hist(trace)
-	ax.set_xlim([0.5, 10.5])
-	#plt.title("Number of Absorption lines")
-	show()
+	fig.savefig(grb_name + "_Chi2red.pdf")
 
 if __name__ == "__main__":
 
@@ -245,6 +252,7 @@ if __name__ == "__main__":
 
 	CSV_LST = ["n_voigts", "a"]
 	
+	osc_line = get_osc(line)
 	# Read data, GRB-Name, Resolution and PSF_FWHM from file
 	wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, \
 	res, psf_fwhm = get_data(spec_file, redshift, wl_range=False)
@@ -269,7 +277,7 @@ if __name__ == "__main__":
 
 		y_min, y_max, y_min2, y_max2, y_fit, nv_trace = do_mcmc(grb_name,
 			redshift, line, velocity, fluxv, fluxv_err, grb_name, nvoigts,
-			iterations+(nvoigts*400), burn_in)
+			iterations+(nvoigts*400), burn_in+(nvoigts*400))
 		
 		chi2 = 0
 		for i in range(0, len(y_fit), 1):
@@ -277,45 +285,20 @@ if __name__ == "__main__":
 			chi2 += (chi2_tmp / (len(fluxv)+(4*nvoigts)))
 		chi2_list.append(chi2)
 
+		print "\n Chi^2_red:", chi2, "\n"
+
 		time.sleep(0.5)
 
-		para_file = grb_name+str(nvoigts)+"voigt_results.csv"
+		para_file = grb_name+"_"+str(nvoigts)+"_voigt_res.csv"
 	
 		plot_results(grb_name+str(nvoigts), redshift, line, velocity,
 			fluxv, fluxv_err, y_min, y_max, y_min2, y_max2, y_fit,
 			nv_trace, para_file, nvoigts, element)
 
-	print chi2_list
+	plt_nv_chi2(chi2_list, min_n, max_n, grb_name)
 
-	fig = figure(figsize=(12, 6))
-	ax = fig.add_axes([0.10, 0.14, 0.86, 0.85])
-
-	ax.errorbar(range(min_n, max_n+1),chi2_list,linewidth=5)
-	ax.errorbar(range(min_n, max_n+1),chi2_list,fmt="o",color="black",
-		markersize=15)
-	ax.set_xlabel(r"Number of Voigt Profiles",fontsize=24)
-	ax.set_ylabel(r"${\chi}^2_{red}$",fontsize=24)
-	ax.set_yscale("log")
-	ax.set_ylim([0.1, 600])
-	ax.set_xlim([min_n-0.5, max_n+0.5])
-	ax.set_xticks(range(min_n, max_n+1))
-	ax.set_yticks([0.2, 0.5, 1.0, 2.0, 5.0, 10, 20, 50, 100, 200, 500])
-	ax.set_yticklabels(["0.2", "0.5", "1.0", "2.0", "5.0", "10",
-		"20", "50", "100", "200", "500"])
-	ax.axhline(1,linewidth=2,linestyle="dashed",color="black")
-
-	for axis in ['top','bottom','left','right']:
-	  ax.spines[axis].set_linewidth(2)
-	ax.tick_params(which='major',length=8,width=2)
-	ax.tick_params(which='minor',length=4,width=1.5)
-	
-	for tick in ax.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-
-	show()
-	fig.savefig(grb_name + "_Chi2red.pdf")
+ 	dur = str(round((time.time() - start)/60, 1))
+	sys.exit("\n Script finished after " + dur + " minutes")
 
 #========================================================================
 #========================================================================

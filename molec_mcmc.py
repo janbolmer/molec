@@ -453,7 +453,7 @@ if __name__ == "__main__":
 	print "\n Result .csv files moved to results directory"
 
  	dur = str(round((time.time() - start)/60, 1))
-	sys.exit("\n Script Finished after " + dur + " minutes")
+	sys.exit("\n Script finished after " + dur + " minutes")
 
 
 #========================================================================

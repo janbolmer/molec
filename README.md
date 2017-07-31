@@ -7,6 +7,8 @@
 
 * read papers from Krumholz et al .
 
+* try using reasonable Discrete Uniform Distributions
+
 
 # MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and other lines
 
@@ -42,6 +44,8 @@ https://github.com/Kruehlio/H2sim
 * [Draine & Hao 2002 - GRBs in a Molecular Cloud: Destruction of Dust and H2 and the Emergent Spectrum](http://iopscience.iop.org/article/10.1086/339394/pdf)
 
 * [Hirashita & Ferrara 2005 - Molecular hydrogen in damped Lyα systems: clues to interstellar physics at high redshift](https://arxiv.org/pdf/astro-ph/0411259.pdf)
+
+* [Bialy & Sternberg 2015 - CO/H2, C/CO, OH/CO, and OH/O2 in dense interstellar gas: from high ionization to low metallicity](https://academic.oup.com/mnras/article-lookup/doi/10.1093/mnras/stv851)
 
 ## No detection of Molecules in GRBs:
 
@@ -102,6 +106,8 @@ https://github.com/Kruehlio/H2sim
 * [Balashev et al. 2014 - Molecular hydrogen absorption systems in Sloan Digital Sky Survey](https://academic.oup.com/mnras/article-lookup/doi/10.1093/mnras/stu275)
 
 * [Balashev et al. 2015 - Neutral chlorine and molecular hydrogen at high redshift](https://www.aanda.org/articles/aa/pdf/2015/03/aa25553-14.pdf)
+
+* [Noterdaeme et al. 2015 - The elusive H i→H2 transition in high-z damped Lyman-α systems](https://www.aanda.org/articles/aa/pdf/2015/06/aa26018-15.pdf)
 
 ## Other Related Papers:
 
