@@ -56,7 +56,7 @@ def bokeh_inspec(file, redshift):
 		str(redshift), x_axis_label='Observed Wavelength',tools="hover",
 		y_axis_label='Normalized Flux', y_range=[-0.8, 2.2],
 		x_range=[min(wav_aa),max(wav_aa)+60],
-		plot_height=400, plot_width=1700, toolbar_location="above")
+		plot_height=400, plot_width=1200, toolbar_location="above")
 
 	for i in np.arange(0, len(h2_name), 1):
 

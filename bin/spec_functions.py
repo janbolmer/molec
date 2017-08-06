@@ -30,9 +30,15 @@ from bokeh.models import *
 
 import seaborn as sns
 
-m_e = 9.1095e-28 
+ 
 e = 4.8032e-10
 c = 2.998e10
+c_kms = 2.99792458e5 # km/s
+m_e = 9.10938291e-28 # g
+hbar = 1.054571726e-27 # erg * s
+alpha = 1 / 137.035999139 # dimensionless
+K = np.pi * alpha * hbar / m_e
+
 
 #========================================================================
 #========================================================================
@@ -119,6 +125,11 @@ def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 #========================================================================
 
 def aa_to_velo(wav_aa, flux, flux_err, line, redshift, wrange=15):
+	'''
+	Angstrom to veocity (km/s) for given line (AA) at given redshift
+	around the wavelength range: line (AA) +/- wrange (AA)
+	'''
+
 	c = 299792.458
 	rline = line * (1 + redshift)
 	velocity, fluxv, fluxv_err = [], [], []
@@ -185,29 +196,69 @@ def get_lines(redshift):
 
 	return a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav
 
+#========================================================================
+#========================================================================
+
+def get_osc_gamma(abs_line):
+	'''
+	Returning Oscillator strength f and decay rate gamma of given line
+	Has to be identical to the wavlength value given in atom_excited.dat
+	(or rouded to 2 decimal places)
+	'''
+
+	f = 0
+	gamma = 0
+	data = open("atoms/atom_excited.dat", "r")
+	for line in data:
+		if not line.startswith("#"):
+			s = line.split()
+			if float(s[1]) == abs_line:
+				f += float(s[2])
+				gamma += float(s[3])
+			if round(float(s[1]), 2) == abs_line:
+				f += float(s[2])
+				gamma += float(s[3])
+	data.close()
+	if f == 0:
+		sys.exit("ERROR: Line not found; Could not \
+		return Oscillator strength") 
+
+	return f, gamma
 
 #========================================================================
 #========================================================================
 
-def nu_to_dz(n0, z0):
+def v_to_dz(v0, z0):
+	'''
+	Difference in velocity space into difference in redshift
+	'''
 	c = 299792.458
-	dz = n0/c * (1+z0)
+	dz = v0/c * (1+z0)
 	nz = z0 + dz
 	return dz, nz
 
 #========================================================================
 #========================================================================
 
-def voigt(x, y):
-	z = x + 1j*y
-	I = wofz(z).real
-	return I
+def voigt(x, sigma, gamma):
+	'''
+	1D voigt profile, e.g.:
+	https://scipython.com/book/chapter-8-scipy/examples/the-voigt-profile/
+	gamma: half-width at half-maximum (HWHM) of the Lorentzian profile
+	sigma: the standard deviation of the Gaussian profile
+	'''
+
+	z = (x + 1j*gamma) / (sigma * math.sqrt(2))
+	V = wofz(z).real / (sigma * math.sqrt(2*math.pi))
+	return V
 
 def H(a,x):
+
 	P = x**2 
 	H0 = np.exp(-x**2)
 	Q = 1.5/x**2
-	return H0 - a / np.sqrt(np.pi) / P * ( H0 ** 2 * (4. * P**2 + 7. * P + 4. + Q) - Q - 1.0)
+	return H0 - a / np.sqrt(np.pi) / P * ( H0 ** 2 * \
+		(4. * P**2 + 7. * P + 4. + Q) - Q - 1.0)
 
 #========================================================================
 #======================================================================== 
@@ -234,7 +285,8 @@ def fNHII(T, J):
 	gj = (2*J + 1) * (2*I + 1)
 	# Energy difference between the different states 
 	# from Dabrowski, I. 1984, Can. J. Phys., 62, 1639
-	dE0J = {0:0, 1:170.5, 2:509.9, 3:1015.2, 4:1681.7, 5:2503.9, 6:3474.4, 7:4586.4}
+	dE0J = {0:0, 1:170.5, 2:509.9, 3:1015.2, 4:1681.7, \
+	5:2503.9, 6:3474.4, 7:4586.4}
 	nj = gj * np.exp(-dE0J[J]/T)
 	return nj
 
@@ -508,7 +560,9 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 #========================================================================
 
 def plot_H2_hist(res_file="save_results.dat", z = 2.358):
-
+	'''
+	Plotting histograms for Redshift, N_H2, B and T
+	'''
 	redshift, nh2, temp, broad = [], [], [], []
 
 	file = open(res_file, "r")
@@ -545,6 +599,9 @@ def plot_H2_hist(res_file="save_results.dat", z = 2.358):
 #======================================================================== 
 
 def plot_H2_trace(res_file="save_results.dat", z = 2.358):
+	'''
+	Plotting traces for Redshift, N_H2, B and T
+	'''
 
 	redshift, nh2, temp, broad = [], [], [], []
 
@@ -771,7 +828,35 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, \
 	fig.savefig(target + "_H2vib_fit_spec.pdf")
 
 
+def plot_trace(trace):
+	'''
+	Plotting a trace
+	'''
 
+	fig = figure(figsize=(10, 4))
+	ax = fig.add_axes([0.13, 0.13, 0.85, 0.85])
+
+	step = []
+
+	for i in np.arange(0, len(trace), 1):
+		step.append(i)
+
+	ax.errorbar(step, trace)
+	ax.set_ylim([-0.5, 11])
+	show()
+
+def plot_hist(trace):
+	'''
+	Plotting a histogram
+	'''
+
+	fig = figure(figsize=(6, 6))
+	ax = fig.add_axes([0.13, 0.13, 0.85, 0.85])
+
+	ax.hist(trace)
+	ax.set_xlim([0.5, 10.5])
+	#plt.title("Number of Absorption lines")
+	show()
 
 
 
