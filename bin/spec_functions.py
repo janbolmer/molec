@@ -859,5 +859,14 @@ def plot_hist(trace):
 	show()
 
 
+def writecmd(filename):
+	now = datetime.datetime.now()
+
+	with open(filename, "a") as f: 
+		f.write(now.strftime("%Y-%m-%d %H:%M:%S"))
+		f.write('\t')
+		for arg in sys.argv:
+			f.write(arg+' ')
+		f.write('\n')
 
 
