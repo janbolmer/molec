@@ -1,14 +1,6 @@
 #! /usr/bin/python
 
-__author__ = "Jan Bolmer"
-__copyright__ = "Copyright 2017"
-__credits__ = "Thomas Kruehler" # https://github.com/Kruehlio/H2sim
-__version__ = "0.1"
-__maintainer__ = "Jan Bolmer"
-__email__ = "jbolmer@eso.org"
-__status__ = "Production"
-
-'''
+"""
 MCMC sampler for fitting X-shooter spectra (using PyMC) with HI, H2 and
 other lines
 =========================================================================
@@ -24,7 +16,7 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -w1 		Wavelength start - restframe
 -wl 		Wavelength end - restframe
 -ignore 	list of intervals (restframe) to be ignored when fitting the
-			data, e.g. [[1090., 1092.0], [1140, 1180]]
+			data, e.g. -ignore 1090.0,1092.0 1140,1180
 -res 		spectral resolution in AA for rebinning the H2vib model from
 			Draine
 -par 		Parameter file with Column Densities, b and redshift for each
@@ -38,7 +30,15 @@ Typical are: 	HI, FeII, MnII, NV, SiII, SII, CIV, OI, CII, NiII, SiIV,
 
 and:			FeIIa, FeIIb, OIa, SiIIa, NiIIa
 =========================================================================
-'''
+"""
+
+__author__ = "Jan Bolmer"
+__copyright__ = "Copyright 2017"
+__credits__ = "Thomas Kruehler" # https://github.com/Kruehlio/H2sim
+__version__ = "0.1"
+__maintainer__ = "Jan Bolmer"
+__email__ = "jbolmer@eso.org"
+__status__ = "Production"
 
 import pymc, math, argparse, os, sys, time
 
@@ -59,7 +59,16 @@ from sns_plots import * # sns_plots.py
 # physical constants
 m_e = 9.1095e-28
 e = 4.8032e-10
-c = 2.998e10
+c = 2.998e10 # speed of light
+
+#========================================================================
+#========================================================================
+
+def usage():
+	'''
+	Printing Documentation to terminal
+	'''
+	print __doc__
 
 #========================================================================
 #========================================================================
@@ -84,15 +93,16 @@ def model_csv_file(model):
 #========================================================================
 #========================================================================
 
-def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
+def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
+		CSV_LST, NROT):
 	'''
 	Defines the model for H2
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
-	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.,upper=22.0,doc='NTOTH2')
-	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=200,doc='TEMP')
-	B = 	 pymc.Uniform('B',lower=0., upper=20.0,doc='B')
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=18.0,upper=22.0,doc='NTOTH2')
+	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
+	B = 	 pymc.Uniform('B',lower=0., upper=15.0,doc='B')
 	A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
 
 	# Playing around with different distributions
@@ -154,7 +164,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 	for elmt in line_lst:
 		if not elmt in par_dic:
 			if elmt == "HI":
-				N_E = pymc.Uniform('N_'+elmt,lower=19.0,upper=23.0,
+				N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
 					value=21.8,doc='N_'+elmt)
 				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
@@ -219,7 +229,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic):
 
 
 def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
-	res, par_dic):
+	res, par_dic, CSV_LST):
 	'''
 	Defines the model for H2*
 	'''
@@ -274,12 +284,17 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
-	model_used, line_lst, target, par_dic, res=6000):
+	model_used, line_lst, target, par_dic, redshift, CSV_LST, NROT,
+	res=6000):
+	'''
+	Performing the MCMC
+	'''
 
-	if model == "H2":
+	if model_used == "H2":
 
 		MDL = pymc.MCMC(model_H2(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, par_dic), db='pickle', dbname='H2_fit.pickle')
+			line_lst, par_dic, CSV_LST, NROT), db='pickle',
+			dbname='H2_fit.pickle')
 		
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
@@ -295,10 +310,12 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 
 		return y_min, y_max, y_min2, y_max2, y_fit
 
-	if model == "H2vib":
+	if model_used == "H2vib":
 
 		MDL = pymc.MCMC(model_H2vib(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, res, par_dic),db='pickle',dbname='H2vib_fit.pickle')
+			line_lst, res, par_dic, CSV_LST),db='pickle',
+			dbname='H2vib_fit.pickle')
+
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
 		MDL.db.close()
@@ -316,7 +333,9 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 #========================================================================
 #========================================================================
 
-if __name__ == "__main__":
+def main():
+
+	writecmd("cmd_hist.dat")
 
 	start = time.time()
 	print "\n Parsing Arguments \n"
@@ -390,22 +409,26 @@ if __name__ == "__main__":
 
 	time.sleep(1.0)
 
-	print "\n Starting MCMC " + '(pymc version:',pymc.__version__
+	print "\n Starting MCMC " + '(pymc version:',pymc.__version__,")"
 	print "\n This might take a while ..."
 
 	a_name, a_wav, ai_name, ai_wav, aex_name, \
 	aex_wav, h2_name, h2_wav = get_lines(redshift)
 
-	wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl, \
-	grb_name, res, psf_fwhm = get_data(spec_file, redshift,
-		wl_range=True, wl1=w1, wl2=w2)
+	try:
+		wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl, \
+		grb_name, res, psf_fwhm = get_data(spec_file, redshift,
+			wl_range=True, wl1=w1, wl2=w2)
+	except:
+		sys.exit("ERROR: File not found (-f)")
 
 	wav_aa, n_flux, n_flux_err = get_data_ign(spec_file, redshift,
 		ignore_lst, wl1=w1, wl2=w2)
 
 	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux,
 		n_flux_err, iterations, burn_in, 1, model_used=model,
-		line_lst=elements, target=target, par_dic=par_dic, res=res)
+		line_lst=elements, target=target, par_dic=par_dic, 
+		redshift=redshift, CSV_LST=CSV_LST, NROT=NROT, res=res)
 
 	print "\n MCMC finished \n"
 	time.sleep(1.0)
@@ -457,3 +480,20 @@ if __name__ == "__main__":
 
 #========================================================================
 #========================================================================
+
+if __name__ == "__main__":
+
+	try:
+		main()
+	except:
+		usage()
+
+
+
+
+
+
+
+
+
+
