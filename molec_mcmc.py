@@ -335,7 +335,7 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 
 def main():
 
-	writecmd("cmd_hist.dat")
+	writecmd("H2_cmd_hist.dat")
 
 	start = time.time()
 	print "\n Parsing Arguments \n"
@@ -482,11 +482,9 @@ def main():
 #========================================================================
 
 if __name__ == "__main__":
+	
+	main()
 
-	try:
-		main()
-	except:
-		usage()
 
 
 

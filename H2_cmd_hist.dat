@@ -1,0 +1,20 @@
+2017-08-08 12:10:50	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1117 -nrot 3 -ign 1060,1062.1 -it 10 -bi 5 -e HI FeII SiII NiII 
+2017-08-08 12:13:50	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1117 -nrot 3 -par 090809para.csv -it 10 -bi 5 -e HI FeII SiII NiII 
+2017-08-08 12:14:33	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1117 -nrot 3 -par 090809para.csv -it 100 -bi 50 -e HI FeII SiII NiII 
+2017-08-08 12:15:04	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1117 -nrot 3 -par 090809para.csv -it 100 -bi 50 -e HI FeII SiII NiII 
+2017-08-08 12:15:27	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1117 -nrot 3 -par 090809para.csv -it 100 -bi 50 -e HI FeII SiII NiII 
+2017-08-08 12:18:44	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1280 -nrot 3 -par 090809para.csv -it 2000 -bi 50 -e HI FeII SiII NiII SIV ArI OI NII 
+2017-08-08 14:15:03	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809 -m H2 -w1 985 -w2 1280 -nrot 3 -par 090809para.csv -it 5000 -bi 500 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:30:41	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1380 -nrot 3 -par 090809para.csv -it 50 -bi 5 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:35:27	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1380 -nrot 3 -par 090809para.csv -it 10 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:38:04	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1360 -nrot 3 -par 090809para.csv -it 10 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:40:53	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1300 -nrot 3 -par 090809para.csv -it 10 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:42:49	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 10 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:44:44	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 200 -bi 20 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 16:58:41	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 20 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 17:01:13	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 20 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 17:03:10	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 10 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 17:19:08	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 10 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 17:23:10	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 20 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
+2017-08-08 17:24:55	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 100 -bi 10 -e HI 
+2017-08-08 17:26:32	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 1000 -bi 10 -e HI 

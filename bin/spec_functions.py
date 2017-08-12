@@ -157,9 +157,10 @@ def get_lines(redshift):
 	for line in atom_file:
 		if not line.startswith(("#", "HD", "H2", "CO")):
 			s = line.split()
+			if not s[0][-1] in 'cdefghijklmnopqrstuvw':
 			#if float(s[2]) > 0.008:
-			a_name.append(str(s[0]))
-			a_wav.append(float(s[1])*(1+redshift))
+				a_name.append(str(s[0]))
+				a_wav.append(float(s[1])*(1+redshift))
 	atom_file.close()
 	
 	# MGII lines for intervening system
@@ -178,9 +179,11 @@ def get_lines(redshift):
 	for line in atomex_file:
 		if not line.startswith(("#", "HD", "H2", "CO")):
 			s = line.split()
-			if float(s[2]) > 0.001:
-				aex_name.append(str(s[0]))
-				aex_wav.append(float(s[1])*(1+redshift))
+			if not s[0][-1] in 'cdefghijklmnopqrstuvw':
+
+				if float(s[2]) > 0.001:
+					aex_name.append(str(s[0]))
+					aex_wav.append(float(s[1])*(1+redshift))
 	atomex_file.close()
 	
 	h2_name, h2_wav = [], []
