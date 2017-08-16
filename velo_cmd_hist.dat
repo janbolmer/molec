@@ -102,3 +102,14 @@
 2017-08-11 16:31:10	velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 1808.0129 -vr 420 -w 8 -it 2500 -bi 1800 -min 1 -max 1 
 2017-08-11 16:32:01	velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 1808.0129 -vr 420 -w 8 -it 2500 -bi 1800 -min 1 -max 1 
 2017-08-11 16:32:43	velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 1808.0129 -vr 420 -w 8 -it 2500 -bi 1800 -min 1 -max 1 
+2017-08-12 01:00:56	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -e SiII -line 1808.0129 -vr 420 -w 8 -it 25000 -bi 18000 -min 1 -max 5 
+2017-08-12 01:24:38	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -e FeII -line 1608.45 -vr 420 -w 8 -it 25000 -bi 18000 -min 1 -max 5 
+2017-08-12 01:26:38	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -e ZnII -line 2062.6603 -vr 420 -w 8 -it 25000 -bi 18000 -min 1 -max 5 
+2017-08-12 01:28:22	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -e ZnII -line 2062.6603 -vr 420 -w 15 -it 22000 -bi 14000 -min 3 -max 6 
+2017-08-12 07:02:49	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -e ZnII -line 2062.6603 -vr 420 -w 15 -it 24000 -bi 16000 -min 7 -max 7 
+2017-08-12 22:43:03	velop_mcmc.py -f spectra/GRB140430A_OB1VIS.txt -e SiII -line 1808.0129 -w 12 -vr 420 -min 1 -max 3 -it 2000 -bi 1000 -z 1.601 
+2017-08-12 22:43:24	velop_mcmc.py -f spectra/GRB140430A_OB1UVB.txt -e SiII -line 1808.0129 -w 12 -vr 420 -min 1 -max 3 -it 2000 -bi 1000 -z 1.601 
+2017-08-12 22:44:48	velop_mcmc.py -f spectra/GRB140430A_OB1UVB.txt -e SiII -line 1526.7070 -w 12 -vr 420 -min 1 -max 1 -it 10000 -bi 7000 -z 1.601 
+2017-08-12 22:46:08	velop_mcmc.py -f spectra/GRB120119A_OB1UVB.txt -e SiII -line 1526.7070 -w 12 -vr 420 -min 1 -max 1 -it 10000 -bi 7000 -z 1.728 
+2017-08-12 22:46:55	velop_mcmc.py -f spectra/GRB120119A_OB1UVB.txt -e SiII -line 1808.0129 -w 16 -vr 520 -min 1 -max 4 -it 10000 -bi 7000 -z 1.728 
+2017-08-12 22:57:07	velop_mcmc.py -f spectra/GRB120119A_OB1UVB.txt -e FeII -line 1608.45 -w 16 -vr 520 -min 1 -max 4 -it 10000 -bi 7000 -z 1.728 

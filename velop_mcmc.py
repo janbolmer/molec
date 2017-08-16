@@ -46,6 +46,12 @@ colors = ["#a6cee3", "#1f78b4",
 "#fb9a99", "#e31a1c", "#fdbf6f",
 "#ff7f00", "#cab2d6", "#6a3d9a"]
 
+#https://www.pantone.com/color-of-the-year-2017
+pt_analogous = [(134, 175, 73), (129, 115, 151),
+(184, 139, 172), (213, 127, 112), (220, 185, 103),
+(172, 152, 151), (172,137, 141), (240, 225, 206)]
+
+
 def get_results(para_file):
 	'''
 	Reads the Results from the .csv file created
@@ -71,7 +77,8 @@ def print_results(res_file):
 				comp_str += str(s[1]) + " "
 	print comp_str
 
-def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES, CSV_LST):
+def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
+		CSV_LST, velo_range):
 	'''
 	Fitting a number of Voigt profiles to a normalized spectrum in
 	velocity space
@@ -90,8 +97,8 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES, CSV_LST):
 
 		sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
 			doc='sigma'+str(i))
-		v0 = pymc.Uniform('v0'+str(i),lower=-420., upper=420.,
-			doc='v0'+str(i))
+		v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
+			upper=velo_range, doc='v0'+str(i))
 		A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
 			doc='A'+str(i))
 
@@ -124,7 +131,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES, CSV_LST):
 	return locals()
 
 def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
-			gamma, nvoigts, iterations, burn_in, RES):
+			gamma, nvoigts, iterations, burn_in, RES, velo_range):
 	'''
 	MCMC sample 
 	Reading and writing Results
@@ -134,7 +141,8 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	pymc.np.random.seed(1)
 
 	MDL = pymc.MCMC(mult_voigts(velocity,fluxv,fluxv_err,
-		gamma,nvoigts,RES,CSV_LST),db='pickle',dbname='velo_fit.pickle')
+		gamma,nvoigts,RES,CSV_LST, velo_range),db='pickle',
+		dbname='velo_fit.pickle')
 
 	MDL.db
 	#MDL.use_step_method(pymc.AdaptiveMetropolis, MDL.velo_pred)
@@ -329,7 +337,8 @@ if __name__ == "__main__":
 
 		y_min, y_max, y_min2, y_max2, y_fit = do_mcmc(grb_name,
 			redshift,line,velocity,fluxv,fluxv_err,grb_name,gamma,
-			nvoigts,iterations+(nvoigts*400),burn_in+(nvoigts*400),RES)
+			nvoigts,iterations+(nvoigts*400),burn_in+(nvoigts*400),RES,
+			velo_range)
 		
 		chi2 = 0
 		for i in range(0, len(y_fit), 1):
@@ -351,7 +360,14 @@ if __name__ == "__main__":
 
 		sns_velo_pair_plot(grb_name,file='velo_fit.pickle',nvoigts=nvoigts)
 
+	print "\n Plotting Chi2"
 	plt_nv_chi2(chi2_list, min_n, max_n, grb_name)
+
+	os.system("mv *.pdf plots")
+	print "\n Plots Moved to plots directory"
+
+	os.system("mv *.csv results")
+	print "\n Result .csv files moved to results directory"
 
  	dur = str(round((time.time() - start)/60, 1))
 	sys.exit("\n Script finished after " + dur + " minutes")
