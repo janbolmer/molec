@@ -278,6 +278,8 @@ if __name__ == "__main__":
 		default=1608.4509,type=float)
 	parser.add_argument('-w','--wav_range',dest="wav_range",
 		default=10.0,type=float)
+	parser.add_argument('-res','--res',dest="resolution",
+		default=30,type=float)
 	parser.add_argument('-it','--it',dest="it",default=10000,type=int)
 	parser.add_argument('-bi','--bi',dest="bi",default=5000,type=int)
 	parser.add_argument('-min','--min',dest="min",default=1,type=int)
@@ -297,6 +299,7 @@ if __name__ == "__main__":
 	min_n = args.min
 	max_n = args.max
 	velo_range = args.velo_range
+	RES = args.resolution
 	
 	# Read Oscillator strength f and decay rate gamma
 	# for given line
@@ -324,10 +327,11 @@ if __name__ == "__main__":
 		n_flux_err, line, redshift, wav_range)
 
 
-	RES = 33.0
+	#RES = 33.0
 	transform = np.median(np.diff(velocity))
-	print "transform:", 	transform
-	print "Res (sigma):",	 RES/(2*np.sqrt(2*np.log(2)))
+	print "Resoluton in km/s:", RES
+	#print "transform:", transform
+	print "Res (sigma):", RES/(2*np.sqrt(2*np.log(2)))
 
 	chi2_list = []
 
