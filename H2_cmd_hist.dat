@@ -18,3 +18,5 @@
 2017-08-08 17:23:10	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 20 -bi 2 -e HI FeII SiII NiII SIV ArI OI NII MgII NV SiIIa CII CIV CIIa 
 2017-08-08 17:24:55	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 100 -bi 10 -e HI 
 2017-08-08 17:26:32	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 1000 -bi 10 -e HI 
+2017-09-11 16:08:16	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par 090809para.csv -it 1000 -bi 10 -e HI 
+2017-09-11 16:08:33	molec_mcmc.py -f spectra/GRB090809_OB1UVB.txt -red 2.737 -t GRB090809_test -m H2 -w1 985 -w2 1120 -nrot 3 -par para_files/090809para.csv -it 1000 -bi 10 -e HI 
