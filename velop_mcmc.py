@@ -1,5 +1,33 @@
 #! /usr/bin/python
 
+"""
+MCMC sampler for fitting X-shooter spectra with voigt profiles
+=========================================================================
+e.g.: velop_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -z 2.358
+    -line 1347.2396 -e Cl -vr 400 -w 12 -min 3 -max 4 -it 200
+    -bi 80 -res 28 -par velo_para.csv
+=========================================================================
+-f 			path to spectrum data file
+-line 		line in AA, eg. 1808.0129
+-e 			Name of the line/element / e.g.: FeII, SiII
+-z 			redshift
+-vr 		velocity range 
+-min 		minimum number of voigt profiles to fit
+-max 		maximum number of voigt profiles to fit
+-res 		spectral resolution km/s
+-par 		Parameter file with velocity components
+-it 		number of iterations
+-bi 		burn-in
+-w 			walength range (in AA) to be extracted from spectrum
+=========================================================================
+ClI     1347.2396  0.15300000
+SiII    1526.7070  0.13300000 
+SiII    1808.0129  0.00208000
+FeII    1608.4509  0.05399224
+FeII    2344.2129  0.12523167
+=========================================================================
+"""
+
 __author__ = "Jan Bolmer"
 __copyright__ = "Copyright 2017"
 __version__ = "0.1"
@@ -7,14 +35,6 @@ __maintainer__ = "Jan Bolmer"
 __email__ = "jbolmer@eso.org"
 __status__ = "Production"
 
-'''
-Suggestes lines to fit:
-ClI     1347.2396  0.15300000
-SiII    1526.7070  0.13300000 
-SiII    1808.0129  0.00208000
-FeII    1608.4509  0.05399224
-FeII    2344.2129  0.12523167
-'''
 
 import pymc, math, time, sys, os, argparse
 import numpy as np
@@ -78,7 +98,7 @@ def print_results(res_file):
 	print comp_str
 
 def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
-		CSV_LST, velo_range):
+		CSV_LST, velo_range, para_dic):
 	'''
 	Fitting a number of Voigt profiles to a normalized spectrum in
 	velocity space
@@ -95,18 +115,66 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 
 	for i in range(1, nvoigts+1):
 
-		sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
-			doc='sigma'+str(i))
-		v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
-			upper=velo_range, doc='v0'+str(i))
-		A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
-			doc='A'+str(i))
+		#sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
+		#	doc='sigma'+str(i))
+		#v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
+		#	upper=velo_range, doc='v0'+str(i))
+		#A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
+		#	doc='A'+str(i))
+		#
+		#CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+		#
+		#vars_dic['sigma'+str(i)] = sigma
+		#vars_dic['v0'+str(i)] = v0
+		#vars_dic['A'+str(i)] = A
 
-		CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+		if not "v0" + str(i) in para_dic:
+			sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
+				doc='sigma'+str(i))
+			v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
+				upper=velo_range, doc='v0'+str(i))
+			A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
+				doc='A'+str(i))
+	
+			CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+	
+			vars_dic['sigma'+str(i)] = sigma
+			vars_dic['v0'+str(i)] = v0
+			vars_dic['A'+str(i)] = A
+	
+		else:
+			if para_dic["v0"+str(i)][0] == 0:
+				sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
+					doc='sigma'+str(i))
+				v0 = pymc.Uniform('v0'+str(i),lower=para_dic["v0"+str(i)][2],
+					upper=para_dic["v0"+str(i)][3], doc='v0'+str(i))
+				print "v0"+str(i) + "between", para_dic["v0"+str(i)][2],\
+					para_dic["v0"+str(i)][3]
+				A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
+					doc='A'+str(i))
+		
+				CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+		
+				vars_dic['sigma'+str(i)] = sigma
+				vars_dic['v0'+str(i)] = v0
+				vars_dic['A'+str(i)] = A
+	
+			if para_dic["v0"+str(i)][0] == 1:
+				sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
+					doc='sigma'+str(i))
+				v0 = pymc.Uniform('v0'+str(i),lower=para_dic["v0"+str(i)][1]-0.5,
+					upper=para_dic["v0"+str(i)][1]+0.5, doc='v0'+str(i))
+				print "v0"+str(i) + "fixed to", para_dic["v0"+str(i)][1]
+				#v0 = para_dic["v0"+str(i)][1]
+				A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
+					doc='A'+str(i))
+		
+				CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+		
+				vars_dic['sigma'+str(i)] = sigma
+				vars_dic['v0'+str(i)] = v0
+				vars_dic['A'+str(i)] = A
 
-		vars_dic['sigma'+str(i)] = sigma
-		vars_dic['v0'+str(i)] = v0
-		vars_dic['A'+str(i)] = A
 
 	@pymc.deterministic(plot=False)
 	def multVoigt(vv=velocity, a=a, gamma=gamma,nvoigts=nvoigts,
@@ -131,7 +199,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 	return locals()
 
 def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
-			gamma, nvoigts, iterations, burn_in, RES, velo_range):
+			gamma, nvoigts, iterations, burn_in, RES, velo_range, para_dic):
 	'''
 	MCMC sample 
 	Reading and writing Results
@@ -141,8 +209,8 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	pymc.np.random.seed(1)
 
 	MDL = pymc.MCMC(mult_voigts(velocity,fluxv,fluxv_err,
-		gamma,nvoigts,RES,CSV_LST, velo_range),db='pickle',
-		dbname='velo_fit.pickle')
+		gamma,nvoigts,RES,CSV_LST, velo_range, para_dic),
+		db='pickle',dbname='velo_fit.pickle')
 
 	MDL.db
 	#MDL.use_step_method(pymc.AdaptiveMetropolis, MDL.velo_pred)
@@ -166,13 +234,13 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	
 
 def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err, 
-	y_min, y_max, y_min2, y_max2, y_fit, para_file, gamma, nvoigts,
+	y_min, y_max, y_min2, y_max2, y_fit, res_file, gamma, nvoigts,
 	velo_range, RES, element="SiII"): 
 	'''
 	Plotting the Spectrum including the individual Voigt Profiles
 	'''
 
-	par_dic = get_results(para_file)
+	par_dic = get_results(res_file)
 	
 	fig = figure(figsize=(10, 6))
 	ax = fig.add_axes([0.13, 0.13, 0.85, 0.80])
@@ -286,6 +354,7 @@ if __name__ == "__main__":
 	parser.add_argument('-max','--max',dest="max",default=6,type=int)
 	parser.add_argument('-vr','--velo_range',dest="velo_range",
 		default=410.0,type=float)
+	parser.add_argument('-par','--par',dest="par",default=None,type=str)
 
 	args = parser.parse_args()
 
@@ -299,6 +368,7 @@ if __name__ == "__main__":
 	min_n = args.min
 	max_n = args.max
 	velo_range = args.velo_range
+	para_file = args.par
 	RES = args.resolution
 	
 	# Read Oscillator strength f and decay rate gamma
@@ -323,6 +393,14 @@ if __name__ == "__main__":
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
 
+
+	para_dic = {}
+#
+	if para_file != None:
+		para_dic = get_paras_velo(para_file)
+		print "\n Using parameters given in:", para_file
+
+
 	velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, n_flux,
 		n_flux_err, line, redshift, wav_range)
 
@@ -342,7 +420,7 @@ if __name__ == "__main__":
 		y_min, y_max, y_min2, y_max2, y_fit = do_mcmc(grb_name,
 			redshift,line,velocity,fluxv,fluxv_err,grb_name,gamma,
 			nvoigts,iterations+(nvoigts*400),burn_in+(nvoigts*400),RES,
-			velo_range)
+			velo_range, para_dic)
 		
 		chi2 = 0
 		for i in range(0, len(y_fit), 1):
@@ -354,13 +432,13 @@ if __name__ == "__main__":
 
 		time.sleep(0.5)
 
-		para_file = grb_name+"_"+str(nvoigts)+"_voigt_res.csv"
+		res_file = grb_name+"_"+str(nvoigts)+"_voigt_res.csv"
 	
 		plot_results(grb_name+str(nvoigts), redshift, line, velocity,
 			fluxv, fluxv_err, y_min, y_max, y_min2, y_max2, y_fit,
-			para_file, gamma, nvoigts, velo_range, RES, element)
+			res_file, gamma, nvoigts, velo_range, RES, element)
 
-		print "Components:", print_results(para_file)
+		print "Components:", print_results(res_file)
 
 		sns_velo_pair_plot(grb_name,file='velo_fit.pickle',nvoigts=nvoigts)
 

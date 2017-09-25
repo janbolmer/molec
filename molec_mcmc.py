@@ -100,10 +100,10 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
-	NTOTH2 = pymc.Uniform('NTOTH2',lower=18.0,upper=22.0,doc='NTOTH2')
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=22.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
 	B = 	 pymc.Uniform('B',lower=0., upper=15.0,doc='B')
-	A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
+	A_Z = 	 pymc.Uniform('A_Z',lower=0,upper=50,doc='A_Z')
 
 	# Playing around with different distributions
 	#@pymc.stochastic(dtype=float)
@@ -222,6 +222,25 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 	y_val = pymc.Normal('y_val',mu=H2,tau=tau,value=n_flux,observed=True)
 
 	return locals()
+
+
+#========================================================================
+#========================================================================
+
+
+#def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst_lst,
+#	par_dic_lst, CSV_LST, NROT)
+#	'''
+#	Defines the model for fitting multiple components for H2
+#	'''
+#
+#	tau = 1 / np.array(n_flux_err)**2
+#
+#	for c in comps:
+#		NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=22.0,doc='NTOTH2')
+#		TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
+#		B = 	 pymc.Uniform('B',lower=0., upper=15.0,doc='B')
+#		A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
 
 
 #========================================================================

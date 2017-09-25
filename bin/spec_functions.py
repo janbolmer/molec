@@ -395,6 +395,27 @@ def get_paras(para_file):
 
 	return par_dic
 
+
+#========================================================================
+#========================================================================
+
+def get_paras_velo(para_file):
+	'''
+	Reads the Parameters from the given .csv file
+	Example:
+	var,fixed,val,low,up
+	vo1, 1, -20, -22, -18
+	'''
+
+	par_dic = {}
+	par = pd.read_csv(para_file, delimiter=',')
+	for i in np.arange(0, len(par), 1):
+		par_dic[par['var'][i]] = par['fixed'][i], par['val'][i], \
+		par['low'][i],par['up'][i]
+
+	return par_dic
+
+
 #========================================================================
 #========================================================================
 
