@@ -243,6 +243,46 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 #		A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
 
 
+		#vars_dic = {}
+	#
+		#for elmt in line_lst:
+		#	if not elmt in par_dic:
+		#		if elmt == "HI":
+		#			N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
+		#				value=21.8,doc='N_'+elmt)
+		#			B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+		#				value=8.,doc='B_'+elmt)
+		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+		#				value=0.,doc='A_Z_'+elmt)
+		#		else:
+		#			N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
+		#				value=16.0,doc='N_'+elmt)
+		#			B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+		#				value=8.,doc='B_'+elmt)
+		#			A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+		#				value=0.,doc='A_Z_'+elmt)
+	#
+		#		CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+	#
+		#	else:
+		#		if par_dic[elmt][0] == 0:
+		#			N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
+		#				upper=par_dic[elmt][3],doc='N_'+elmt)
+		#			B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
+		#				upper=par_dic[elmt][6],doc='B_'+elmt)
+		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
+		#				upper=par_dic[elmt][9],doc='A_Z_'+elmt)
+	#
+		#			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+	#
+		#		if par_dic[elmt][0] == 1:
+		#			N_E = par_dic[elmt][1]
+		#			B_E = par_dic[elmt][4]
+		#			A_Z_E = par_dic[elmt][7]
+	#
+		#	vars_dic[elmt] = N_E, B_E, A_Z_E
+
+
 #========================================================================
 #========================================================================
 
@@ -459,16 +499,16 @@ def main():
 
 	if model == "H2":
 
-		plot_spec(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, y_fit,
-			redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, aex_name,
-			aex_wav, h2_name, h2_wav, target=target)
+		plot_spec(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
+			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
+			aex_wav,h2_name,h2_wav,target=target)
 
 		sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
 			redshift=redshift)
 
-		#bokeh_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, \
-		#y_fit, redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, \
-		#aex_name, aex_wav, h2_name, h2_wav)
+		#bokeh_plt(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2, \
+		#y_fit,redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav, \
+		#aex_name,aex_wav,h2_name,h2_wav)
 
 	if model == "H2vib":
 
@@ -478,8 +518,8 @@ def main():
 		sns_H2vib_plot(target,var_list=CSV_LST,file="H2vib_fit.pickle",
 			redshift=redshift)
 
-		#bokeh_H2vib_plt(wav_aa_pl, n_flux_pl, y_min, y_max, y_min2, y_max2, \
-			#y_fit, redshift, ignore_lst, a_name, a_wav, w1, w2)
+		#bokeh_H2vib_plt(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,
+		# y_max2, y_fit,redshift,ignore_lst,a_name,a_wav,w1,w2)
 
 	if save_pickle != False:
 		os.system("rm -r *.pickle")

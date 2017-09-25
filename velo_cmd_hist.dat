@@ -142,3 +142,5 @@
 2017-09-25 11:43:04	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1808.0129 -e FeII -min 1 -max 8 -it 10000 -bi 5000 -vr 410 -res 24.5 -w 12 
 2017-09-25 11:44:37	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1808.0129 -e FeII -min 1 -max 8 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
 2017-09-25 13:08:13	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1808.0129 -e FeII -min 7 -max 10 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
+2017-09-25 14:46:48	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1608.4509 -e FeII -min 1 -max 10 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
+2017-09-25 16:28:16	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1608.4509 -e FeII -min 3 -max 3 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
