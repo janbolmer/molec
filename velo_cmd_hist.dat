@@ -144,3 +144,10 @@
 2017-09-25 13:08:13	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1808.0129 -e FeII -min 7 -max 10 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
 2017-09-25 14:46:48	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1608.4509 -e FeII -min 1 -max 10 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
 2017-09-25 16:28:16	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.52 -line 1608.4509 -e FeII -min 3 -max 3 -it 10000 -bi 5000 -vr 450 -res 24.5 -w 12 
+2017-10-12 16:02:30	velop_mcmc.py -f spectra/GRB100219A_OB1NIR.txt -z 4.6667 -line 2852.9628 -e MgI -min 1 -max 4 -it 100 -bi 10 -vr 200 -w 8 -res 50 
+2017-10-12 16:04:17	velop_mcmc.py -f spectra/GRB100219A_OB1NIR.txt -z 4.6667 -line 2852.9628 -e MgI -min 1 -max 4 -it 100 -bi 10 -vr 220 -w 20 -res 50 
+2017-10-12 16:09:22	velop_mcmc.py -f spectra/GRB100219A_OB1VIS.txt -z 4.6667 -line 2852.9628 -e MgI -min 1 -max 4 -it 100 -bi 10 -vr 220 -w 20 -res 50 
+2017-10-13 14:52:07	velop_mcmc.py -f spectra/GRB100219A_OB1VIS.txt -z 4.6667 -line 2852.9628 -e MgI -min 1 -max 4 -it 100 -bi 10 -vr 220 -w 20 -res 50 
+2017-10-13 14:52:22	velop_mcmc.py -f spectra/GRB100219A_OB1NIR.txt -z 4.6667 -line 2852.9628 -e MgI -min 1 -max 4 -it 100 -bi 10 -vr 220 -w 20 -res 50 
+2017-10-13 16:04:26	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1808.0129 -e SiII -w 12 -vr 420 -min 3 -max 3 -it 10000 -bi 7000 
+2017-10-13 16:10:37	velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1808.0129 -e SiII -w 12 -vr 420 -min 3 -max 3 -it 10000 -bi 7000 

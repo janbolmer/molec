@@ -85,17 +85,21 @@ def get_results(para_file):
 
 	return par_dic
 
-def print_results(res_file):
+def print_results(res_file, redshift):
 	'''
 	prints the velocity components
 	'''
 	comp_str = ""
+	red_str = ""
 	with open(res_file, "r") as f:
 		for line in f:
 			s = line.split(",")
 			if s[0].startswith("v"):
 				comp_str += str(s[1]) + " "
+				nz = v_to_dz(float(s[1]), redshift)
+				red_str += str(nz) + " "
 	print comp_str
+	print red_str
 
 def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 		CSV_LST, velo_range, para_dic):
@@ -438,7 +442,7 @@ if __name__ == "__main__":
 			fluxv, fluxv_err, y_min, y_max, y_min2, y_max2, y_fit,
 			res_file, gamma, nvoigts, velo_range, RES, element)
 
-		print "Components:", print_results(res_file)
+		print "Components:", print_results(res_file, redshift)
 
 		sns_velo_pair_plot(grb_name,file='velo_fit.pickle',nvoigts=nvoigts)
 

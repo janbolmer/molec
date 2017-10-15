@@ -496,7 +496,7 @@ def main():
 	print "using",iterations,"iterations","and a burn-in of",burn_in
 	print "Wavelenth range:",w1,"to",w2,"/ ignored are",ignore_lst
 	time.sleep(1.0)
-	print "\n Plotting (Lines are plotted for the input redshift!)"
+	print "\n Plotting (Markers are plotted for the input redshift!)"
 
 	if model == "H2":
 

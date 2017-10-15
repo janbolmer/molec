@@ -21,27 +21,12 @@ def sns_pair_plot(target, var_list, file, redshift):
 	data_f = {}
 
 	for var in var_list:
-		if var in ['NTOTH2', 'TEMP', 'B']:
+		if var in ['N_HI', 'NTOTH2', 'TEMP', 'B']:
 			data_f[var] = data[var][0]
 		if var == 'A_Z':
 			data_f[var] = data[var][0]/100000.0 + redshift
 
 	df = pd.DataFrame(data_f)
-
-	#g = sns.pairplot(df)
-
-	#g.axes[0,0].set_ylim(redshift-0.005,redshift+0.05)
-	#g.axes[1,0].set_ylim(0,20)
-	#g.axes[2,0].set_ylim(0,24)
-	#g.axes[3,0].set_ylim(0,1000)
-#
-#
-	#g.axes[0,0].set_xlim(redshift-0.005,redshift+0.05)
-	#g.axes[0,1].set_xlim(0,20)
-	#g.axes[0,2].set_xlim(0,24)
-	#g.axes[0,3].set_xlim(0,1000)
-#
-	#g.savefig(target + "H2_pairplot.pdf")
 
 	g = sns.PairGrid(df) #, diag_kws=dict(color="blue", shade=True))
 	g.map_upper(sns.kdeplot, cmap="bone_r",n_levels=10,shade=True,
@@ -49,7 +34,21 @@ def sns_pair_plot(target, var_list, file, redshift):
 	g.map_lower(sns.kdeplot, cmap="bone_r",n_levels=10,shade=True,
 		shade_lowest=False)
 	g.map_diag(plt.hist) #, lw=2);
-	#g[0,1].set(xlabel=r"$\sigma_1$")
+	
+	#g.axes[0,0].set_ylim(redshift-0.0002,redshift+0.00005)
+	g.axes[0,0].set_ylabel(r"$z$")
+	g.axes[1,0].set_ylabel(r"$b$")
+	g.axes[2,0].set_ylabel(r"$N(H_2)$")
+	g.axes[3,0].set_ylabel(r"$N(HI)$")
+	g.axes[4,0].set_ylabel(r"$T$")
+
+	#g.axes[3,0].set_xlim(redshift-0.0002,redshift+0.00005)
+	g.axes[4,0].set_xlabel(r"$z$")
+	g.axes[4,1].set_xlabel(r"$b$")
+	g.axes[4,2].set_xlabel(r"$N(H_2)$")
+	g.axes[4,3].set_xlabel(r"$N(HI)$")
+	g.axes[4,4].set_xlabel(r"$T$")
+
 	g.savefig(target + "H2_pairplot.pdf")
 
 def sns_velo_pair_plot(target, file, nvoigts):
