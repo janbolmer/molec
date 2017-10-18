@@ -103,6 +103,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=24.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
 	#B = 	 pymc.Uniform('B',lower=0., upper=3,doc='B')
+
+	# use b distribution from the values in Jorgenson 2010?
+
 	B = 	 pymc.Normal('B',mu=3,tau=2,value=3, doc='B')
 	A_Z = 	 pymc.Uniform('A_Z',lower=0,upper=10,doc='A_Z')
 
@@ -169,14 +172,14 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 					value=21.8,doc='N_'+elmt)
 				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-10.,upper=+10.,
 					value=0.,doc='A_Z_'+elmt)
 			else:
 				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
 					value=16.0,doc='N_'+elmt)
 				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-10.,upper=+10.,
 					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
@@ -228,8 +231,10 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 #========================================================================
 #========================================================================
 
+# Fitting H2 for multiple absorption systems
+# start with only H2 (add lines later)
 
-#def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst_lst,
+#def model_H2_mc(wav_aa, n_flux, n_flux_err, redshift, line_lst_lst,
 #	par_dic_lst, CSV_LST, NROT)
 #	'''
 #	Defines the model for fitting multiple components for H2
