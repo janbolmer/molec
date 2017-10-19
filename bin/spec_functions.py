@@ -87,6 +87,7 @@ def get_data(file, z, wl_range=False, wl1 = 3300, wl2 = 5000):
 
 	return wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, res, psf_fwhm
 
+
 def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 
 	wav_aa, n_flux, n_flux_err= [], [], []
@@ -249,6 +250,7 @@ def voigt(x, sigma, gamma):
 	https://scipython.com/book/chapter-8-scipy/examples/the-voigt-profile/
 	gamma: half-width at half-maximum (HWHM) of the Lorentzian profile
 	sigma: the standard deviation of the Gaussian profile
+	HWHM, alpha, of the Gaussian is: alpha = sigma * sqrt(2ln(2))
 	'''
 
 	z = (x + 1j*gamma) / (sigma * math.sqrt(2))
@@ -441,17 +443,28 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 		axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
 			drawstyle='steps-mid', label=r"$\sf Data$")
 
-		axis.plot(wav_aa, y_fit, label=r"$\sf Fit$", color="#2171b5", linewidth=2, alpha=0.9)
+		axis.plot(wav_aa, y_fit, label=r"$\sf Fit$", color="#2171b5", linewidth=1.8, alpha=0.9)
+
+		# fill space between quantiles
 		axis.fill_between(wav_aa, y_min, y_max, color='#2171b5', alpha=0.2)
 		axis.fill_between(wav_aa, y_min2, y_max2, color='#2171b5', alpha=0.4)
+
+		# plot 25% and 75% quantiles
+		axis.plot(wav_aa, y_max2, color="#2171b5", linewidth=1, alpha=0.9, linestyle="dashed")
+		axis.plot(wav_aa, y_min2, color="#2171b5", linewidth=1, alpha=0.9, linestyle="dashed")
+
+		# plot 2.5& and 97.5% quantiles
+		axis.plot(wav_aa, y_max, color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
+		axis.plot(wav_aa, y_min, color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
+
 		axis.set_ylim([-0.85, 2.25])
 
 		axis.axhline(0.0, linestyle="dashed", color="black", linewidth=2)
 
 		y_fill = [1 for wav in wav_aa]
 
-		if not axis == ax1:
-			axis.fill_between(wav_aa, y_fit, y_fill, color="#2171b5", alpha=0.3)
+		#if not axis == ax1:
+		#	axis.fill_between(wav_aa, y_fit, y_fill, color="#2171b5", alpha=0.3)
 
 
 		for wav_rng in ignore_lst:

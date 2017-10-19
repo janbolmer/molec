@@ -53,10 +53,10 @@ from spec_functions import * # spec_functions.py
 from syn_spec import * # syn_spec.py
 from sns_plots import * # sns_plots.py
 
-m_e = 9.10938291e-28 # g
+m_e = 9.10938291e-28 # electron mass g
 hbar = 1.054571726e-27 # erg * s
-alpha = 1 / 137.035999139 # dimensionless
-K = np.pi * alpha * hbar / m_e # cm^2 / s
+fsc = 1 / 137.035999139 # fine-structure constant dimensionless
+K = np.pi * fsc * hbar / m_e # cm^2 / s
 
 colors = ["#a6cee3", "#1f78b4",
 "#b2df8a", "#33a02c", "#fb9a99",

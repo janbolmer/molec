@@ -106,8 +106,8 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 
 	# use b distribution from the values in Jorgenson 2010?
 
-	B = 	 pymc.Normal('B',mu=3,tau=2,value=3, doc='B')
-	A_Z = 	 pymc.Uniform('A_Z',lower=0,upper=10,doc='A_Z')
+	B = 	 pymc.Normal('B',mu=3.4,tau=3.4,value=3.4, doc='B')
+	A_Z = 	 pymc.Uniform('A_Z',lower=0,upper=25,doc='A_Z')
 
 	# Playing around with different distributions
 	#@pymc.stochastic(dtype=float)
@@ -172,14 +172,14 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 					value=21.8,doc='N_'+elmt)
 				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-10.,upper=+10.,
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
 					value=0.,doc='A_Z_'+elmt)
 			else:
 				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
 					value=16.0,doc='N_'+elmt)
 				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-10.,upper=+10.,
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
 					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
