@@ -5,11 +5,6 @@
 
 * test on synthetic spectra
 
-* read papers from Krumholz et al .
-
-* try using reasonable Discrete Uniform Distributions
-
-
 # MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and other lines
 
 ```bash
