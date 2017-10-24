@@ -53,7 +53,7 @@ def main():
 	ax1.errorbar(wav_aa, flux, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
 	ax1.plot(wav_aa, model, color="#2171b5", linewidth=1.8, alpha=0.9)
 	
-	ylim([1e-20, 1e-14])
+	ylim([1e-19, 1e-15])
 	yscale("log")
 	
 	show()

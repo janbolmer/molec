@@ -93,20 +93,37 @@ def model_csv_file(model):
 #========================================================================
 #========================================================================
 
-def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
-		CSV_LST, NROT):
+def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
+	par_dic, CSV_LST, NROT):
 	'''
 	Defines the model for H2
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
-	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=24.0,doc='NTOTH2')
+
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=23.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
 	#B = 	 pymc.Uniform('B',lower=0., upper=3,doc='B')
 
 	# use b distribution from the values in Jorgenson 2010?
 	B = 	 pymc.Normal('B',mu=3.4,tau=3.4,value=3.4, doc='B')
-	A_Z = 	 pymc.Uniform('A_Z',lower=0,upper=25,doc='A_Z')
+	A_Z = 	 pymc.Uniform('A_Z',lower=-10,upper=10,doc='A_Z')
+
+	add_h2_dic = {}
+
+	if len(redshift_lst) == 0:
+		print "no addtional H2 component\n"
+
+	if not len(redshift_lst) == 0:
+		print "additonal H2 component at", redshift_lst, "\n" 
+		for add_comp in redshift_lst:
+			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=23.0,doc='H2')
+			T_c = pymc.Uniform('T'+add_comp,lower=0.,upper=800,doc='T')
+			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=3.4,value=3.4, doc='B')
+			Z_c = float(add_comp) 
+
+			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
+			add_h2_dic[add_comp] = H2_c, T_c, B_c, Z_c
 
 	# Playing around with different distributions
 	#@pymc.stochastic(dtype=float)
@@ -203,7 +220,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 
 	@pymc.deterministic(plot=False) 
 	def H2(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTH2=NTOTH2,TEMP=TEMP,BROAD=B,
-		redshift=redshift,vars_dic=vars_dic):
+		redshift=redshift,vars_dic=vars_dic, add_h2_dic=add_h2_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
@@ -213,12 +230,24 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, par_dic,
 		h2spec = synspec.add_H2(norm_spec,broad=BROAD,NTOTH2=NTOTH2,
 			TEMP=TEMP,A_REDSHIFT=A_REDSHIFT,NROT=NROT)
 
+		# add other H2 components
+
+		for key in add_h2_dic:
+
+			A_REDSHIFT = redshift - add_h2_dic[key][3]
+
+			h2spec = synspec.add_H2(h2spec,broad=add_h2_dic[key][2],
+				NTOTH2=add_h2_dic[key][0],TEMP=add_h2_dic[key][1],
+				A_REDSHIFT=A_REDSHIFT,NROT=NROT)
+
 		# add other lines
 		for key in vars_dic:
 			A_Z_E = vars_dic[key][2]/100000.00
 			h2spec = synspec.add_ion(h2spec, key,
 				broad=vars_dic[key][1], Natom=vars_dic[key][0],
 				A_REDSHIFT=A_Z_E)
+
+		# TODO add lines for other components
 
 		return h2spec
 
@@ -348,8 +377,8 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
-	model_used, line_lst, target, par_dic, redshift, CSV_LST, NROT,
-	res=6000):
+	model_used, line_lst, redshift_lst, target, par_dic, redshift,
+	CSV_LST, NROT, res=6000):
 	'''
 	Performing the MCMC
 	'''
@@ -357,7 +386,7 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "H2":
 
 		MDL = pymc.MCMC(model_H2(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, par_dic, CSV_LST, NROT), db='pickle',
+			line_lst, redshift_lst, par_dic, CSV_LST, NROT), db='pickle',
 			dbname='H2_fit.pickle')
 		
 		MDL.db
@@ -428,6 +457,8 @@ def main():
 	parser.add_argument('-sp','--save_pickle',dest="save_pickle",
 						default=True, type=bool)
 	parser.add_argument('-par','--par',dest="par",default=None,type=str)
+	parser.add_argument('-rl','--red_lst',dest="red_lst",nargs='+',default=[])
+
 	args = parser.parse_args()
 
 	target = args.target
@@ -444,6 +475,7 @@ def main():
 	burn_in = args.burn_in
 	save_pickle = args.save_pickle
 	para_file = args.par
+	red_lst = args.red_lst
 
 	ignore_lst = []
 	for itrvl in ignore:
@@ -451,6 +483,10 @@ def main():
 		s = itrvl.split(",")
 		tmp_lst.extend((float(s[0]), float(s[1])))
 		ignore_lst.append(tmp_lst)
+
+	redshift_lst = []
+	for rds in red_lst:
+		redshift_lst.append(rds)
 
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
@@ -491,8 +527,9 @@ def main():
 
 	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux,
 		n_flux_err, iterations, burn_in, 1, model_used=model,
-		line_lst=elements, target=target, par_dic=par_dic, 
-		redshift=redshift, CSV_LST=CSV_LST, NROT=NROT, res=res)
+		line_lst=elements, redshift_lst=redshift_lst, target=target,
+		par_dic=par_dic, redshift=redshift, CSV_LST=CSV_LST,
+		NROT=NROT, res=res)
 
 	print "\n MCMC finished \n"
 	time.sleep(1.0)
