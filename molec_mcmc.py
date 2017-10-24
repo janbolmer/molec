@@ -24,6 +24,7 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 			a Uniform Distribution for PyMC (see the para.csv example)
 			(first line: element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,
 			R_val,R_low,R_up)
+-rl 		redshifts for additional H2 components, e.g.: -rl 2.03 2.01
 =========================================================================
 Typical are: 	HI, FeII, MnII, NV, SiII, SII, CIV, OI, CII, NiII, SiIV,
 				AlII, AlIII, CI, ZnII, CrII, MgII, MgI
@@ -115,8 +116,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 		print "no addtional H2 component\n"
 
 	if not len(redshift_lst) == 0:
-		print "additonal H2 component at", redshift_lst, "\n" 
+		print "additonal H2 component(s) at", redshift_lst, "\n" 
 		for add_comp in redshift_lst:
+			print float(add_comp) - redshift, "\n"
 			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=23.0,doc='H2')
 			T_c = pymc.Uniform('T'+add_comp,lower=0.,upper=800,doc='T')
 			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=3.4,value=3.4, doc='B')
@@ -124,6 +126,8 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
 			add_h2_dic[add_comp] = H2_c, T_c, B_c, Z_c
+
+
 
 	# Playing around with different distributions
 	#@pymc.stochastic(dtype=float)
@@ -234,7 +238,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 		for key in add_h2_dic:
 
-			A_REDSHIFT = redshift - add_h2_dic[key][3]
+			A_REDSHIFT = add_h2_dic[key][3] - redshift
 
 			h2spec = synspec.add_H2(h2spec,broad=add_h2_dic[key][2],
 				NTOTH2=add_h2_dic[key][0],TEMP=add_h2_dic[key][1],

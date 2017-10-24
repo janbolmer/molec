@@ -133,7 +133,7 @@ class SynSpec(object):
 		return spec
 	
 	def add_vibH2(self, spectrum, h2swl, modspec, tauspec, RES=0.15, \
-					MH2S=0.03, A_REDSHIFT=0.0):
+				MH2S=0.03, A_REDSHIFT=0.0):
 		'''
 		Adding H*
 		RES:		Resolution of spectrum in AA

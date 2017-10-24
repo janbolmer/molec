@@ -1,8 +1,7 @@
 ## # !!! Under Construction - I am learning Git here !!!
 ### To Do:
 
-* include multiple components
-
+* include multiple components also for the ions
 * test on synthetic spectra
 
 # MCMC sampler for fitting X-shooter spectra (using PyMC2) with HI, H2 and other lines

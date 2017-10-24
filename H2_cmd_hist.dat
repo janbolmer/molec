@@ -228,3 +228,18 @@
 2017-10-24 12:19:39	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 3 -e HI FeII -w1 980 -w2 1120 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
 2017-10-24 12:19:59	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 3 -e HI FeII -w1 980 -w2 1120 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
 2017-10-24 12:39:21	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 7 -e HI FeII SiII OI OIa -w1 1000 -w2 1120 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
+2017-10-24 13:10:15	molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566 
+2017-10-24 13:10:29	molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 13:10:48	molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 13:50:34	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 7 -e HI FeII SiII OI OIa -w1 1016.42 -w2 1116.56 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
+2017-10-24 13:54:51	molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 13:55:05	molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 13:55:33	molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 13:55:51	molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 13:56:25	molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII 
+2017-10-24 14:01:55	molec_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -m H2vib -w1 1566 -w2 1611 -red 2.300 -it 40 -bi 10 -t GRB121024A_test -e SiII FeII 
+2017-10-24 14:03:05	molec_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -m H2vib -w1 1566 -w2 1611 -red 2.300 -it 40 -bi 10 -t GRB121024A_test -e SiII FeII 
+2017-10-24 14:03:44	molec_mcmc.py -f spectra/GRB121024A_OB1UVB.txt -m H2vib -w1 1566 -w2 1611 -red 2.300 -it 40 -bi 10 -t GRB121024A_test -e SiII FeII 
+2017-10-24 14:39:12	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 7 -e HI FeII SiII OI OIa -w1 1016.42 -w2 1116.56 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
+2017-10-24 14:39:45	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 7 -e HI FeII SiII OI OIa -w1 1016.42 -w2 1116.56 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
+2017-10-24 14:41:03	molec_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -t GRB141109A_test -rl 2.99074164768 2.99346893517 -red 2.99439675804 -m H2 -nrot 7 -e HI FeII SiII OI OIa -w1 1016.42 -w2 1116.56 -par para_files/141109Apara.csv -it 1000 -bi 200 -ign 1097.30,1099.6 1054.25,1056.0 1067.99,1069.5 1034.0,1034.95 
