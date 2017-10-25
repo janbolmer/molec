@@ -10,9 +10,9 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -target    	target name
 -file 		path to spectrum data file
 -model  	Model to use: H2, H2vib or CO
--elements 	list of additional elements to be included, e.g.: FeII, SiII
+-elements 	list of additional elements to be included, e.g.: -e HI FeII
 -redshift 	redshift
--nrot 		number of H2 rotational levels to be fitted, 1-7
+-nrot 		number of H2 rotational levels to be fitted, e.g.: -nrot 3
 -w1 		Wavelength start - restframe
 -wl 		Wavelength end - restframe
 -ignore 	list of intervals (restframe) to be ignored when fitting the
@@ -25,6 +25,7 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 			(first line: element,fixed,N_val,N_low,N_up,B_val,B_low,B_up,
 			R_val,R_low,R_up)
 -rl 		redshifts for additional H2 components, e.g.: -rl 2.03 2.01
+-fb 		to fix the broadening parameter for H2, e.g.: -fb 3.0
 =========================================================================
 Typical are: 	HI, FeII, MnII, NV, SiII, SII, CIV, OI, CII, NiII, SiIV,
 				AlII, AlIII, CI, ZnII, CrII, MgII, MgI
@@ -60,7 +61,7 @@ from sns_plots import * # sns_plots.py
 # physical constants
 m_e = 9.1095e-28
 e = 4.8032e-10
-c = 2.998e10 # speed of light
+c = 2.998e10 # speed of light in m/s
 
 #========================================================================
 #========================================================================
@@ -74,20 +75,22 @@ def usage():
 #========================================================================
 #========================================================================
 
-def model_csv_file(model):
+def model_csv_file(model, fixed_b):
 	'''
 	Creates a list of variable names for the given model
 	(and checks if the model is either H2, H2vib or CO)
 	The lists are used for plotting the results.
 	'''
 
-	if model == "H2":
+	if model == "H2" and fixed_b == None:
 		CSV_LST = ['NTOTH2', 'TEMP', 'B', 'A_Z']
+	elif model == "H2" and fixed_b != None:
+		CSV_LST = ['NTOTH2', 'TEMP', 'A_Z']
 	elif model == "H2vib":
 		CSV_LST = ['MH2S', 'A_Z']
 	else:
-		sys.exit("ERROR: Choose one of the following models: H2, H2vib \
-			and CO")
+		sys.exit("ERROR: Choose one of the following models: H2, H2vib, \
+			or CO")
 
 	return CSV_LST
 
@@ -95,19 +98,21 @@ def model_csv_file(model):
 #========================================================================
 
 def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
-	par_dic, CSV_LST, NROT):
+	par_dic, CSV_LST, NROT, fixed_b):
 	'''
 	Defines the model for H2
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
 
+	if fixed_b == None:
+		# use b distribution from the values in Jorgenson 2010?
+		B = pymc.Normal('B',mu=3.4,tau=3.4,value=3.4, doc='B')
+	if fixed_b != None:
+		B = fixed_b
+
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=23.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-	#B = 	 pymc.Uniform('B',lower=0., upper=3,doc='B')
-
-	# use b distribution from the values in Jorgenson 2010?
-	B = 	 pymc.Normal('B',mu=3.4,tau=3.4,value=3.4, doc='B')
 	A_Z = 	 pymc.Uniform('A_Z',lower=-10,upper=10,doc='A_Z')
 
 	add_h2_dic = {}
@@ -126,8 +131,6 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
 			add_h2_dic[add_comp] = H2_c, T_c, B_c, Z_c
-
-
 
 	# Playing around with different distributions
 	#@pymc.stochastic(dtype=float)
@@ -222,6 +225,22 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
+	vars_dic_add = {}
+
+	# add lines for other redshift components
+	#if not len(redshift_lst) == 0:
+	#	for elmt in line_lst:
+	#		for add_comp in redshift_lst:
+	#			if elmt != "HI":
+	#				N_E=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
+	#					value=16.0,doc='N_'+elmt+add_comp)
+	#				B_E=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
+	#					value=8.,doc='B_'+elmt+add_comp)
+	#				Z_E=float(add_comp)
+	#			CSV_LST.extend(('N_'+elmt+add_comp,'B_'+elmt+add_comp,))		
+	#			vars_dic_add[elmt] = N_E, B_E, A_Z_E
+
+
 	@pymc.deterministic(plot=False) 
 	def H2(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTH2=NTOTH2,TEMP=TEMP,BROAD=B,
 		redshift=redshift,vars_dic=vars_dic, add_h2_dic=add_h2_dic):
@@ -235,10 +254,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 			TEMP=TEMP,A_REDSHIFT=A_REDSHIFT,NROT=NROT)
 
 		# add other H2 components
-
 		for key in add_h2_dic:
 
-			A_REDSHIFT = add_h2_dic[key][3] - redshift
+			A_REDSHIFT = add_h2_dic[key][3]-redshift
 
 			h2spec = synspec.add_H2(h2spec,broad=add_h2_dic[key][2],
 				NTOTH2=add_h2_dic[key][0],TEMP=add_h2_dic[key][1],
@@ -251,7 +269,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 				broad=vars_dic[key][1], Natom=vars_dic[key][0],
 				A_REDSHIFT=A_Z_E)
 
-		# TODO add lines for other components
+		# TODO: add lines for other components
 
 		return h2spec
 
@@ -328,7 +346,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 	res, par_dic, CSV_LST):
 	'''
-	Defines the model for H2*
+	Defines the model for H2vib
 	'''
 
 	tau = 1 / np.array(n_flux_err)**2
@@ -381,8 +399,8 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
-	model_used, line_lst, redshift_lst, target, par_dic, redshift,
-	CSV_LST, NROT, res=6000):
+	fixed_b, model_used, line_lst, redshift_lst, target, par_dic,
+	redshift, CSV_LST, NROT, res=6000):
 	'''
 	Performing the MCMC
 	'''
@@ -390,8 +408,8 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "H2":
 
 		MDL = pymc.MCMC(model_H2(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, redshift_lst, par_dic, CSV_LST, NROT), db='pickle',
-			dbname='H2_fit.pickle')
+			line_lst, redshift_lst, par_dic, CSV_LST, NROT, fixed_b),
+			db='pickle', dbname='H2_fit.pickle')
 		
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
@@ -462,8 +480,10 @@ def main():
 						default=True, type=bool)
 	parser.add_argument('-par','--par',dest="par",default=None,type=str)
 	parser.add_argument('-rl','--red_lst',dest="red_lst",nargs='+',default=[])
+	parser.add_argument('-fb','--fixed_b',dest="fixed_b",default=None,type=float)
 
 	args = parser.parse_args()
+
 
 	target = args.target
 	spec_file = args.file
@@ -480,6 +500,7 @@ def main():
 	save_pickle = args.save_pickle
 	para_file = args.par
 	red_lst = args.red_lst
+	fixed_b = args.fixed_b
 
 	ignore_lst = []
 	for itrvl in ignore:
@@ -501,11 +522,14 @@ def main():
 	for i in np.arange(0, nrot+1, 1):
 		NROT.append(i)
 
-	CSV_LST = model_csv_file(model)
+	CSV_LST = model_csv_file(model, fixed_b)
 
 	time.sleep(1.0)
-	print "\n Fitting", target, "at redshift", redshift, "\n"
+	print "\n Fitting", target, "at redshift", redshift
 	time.sleep(1.0)
+
+	if fixed_b != None:
+		print "\n b fixed to", fixed_b
 
 	if para_file != None:
 		par_dic = get_paras(para_file)
@@ -530,7 +554,7 @@ def main():
 		ignore_lst, wl1=w1, wl2=w2)
 
 	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux,
-		n_flux_err, iterations, burn_in, 1, model_used=model,
+		n_flux_err, iterations, burn_in, 1, fixed_b, model_used=model,
 		line_lst=elements, redshift_lst=redshift_lst, target=target,
 		par_dic=par_dic, redshift=redshift, CSV_LST=CSV_LST,
 		NROT=NROT, res=res)
@@ -549,8 +573,12 @@ def main():
 			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
 			aex_wav,h2_name,h2_wav,target=target)
 
-		sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
-			redshift=redshift)
+		if fixed_b == None:
+			sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
+				redshift=redshift)
+		else:
+			sns_pair_plot_fb(target, var_list=CSV_LST, file="H2_fit.pickle",
+				redshift=redshift, fb=fixed_b)
 
 		#bokeh_plt(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2, \
 		#y_fit,redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav, \
