@@ -12,7 +12,8 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -model  	Model to use: H2, H2vib or CO
 -elements 	list of additional elements to be included, e.g.: -e HI FeII
 -redshift 	redshift
--nrot 		number of H2 rotational levels to be fitted, e.g.: -nrot 3
+-nrot 		number of H2 rotational levels to be fitted, e.g.: -nrot 0 7
+			for only J1: -nrot 1 1, J0-J3: -nrot 0 3
 -w1 		Wavelength start - restframe
 -wl 		Wavelength end - restframe
 -ignore 	list of intervals (restframe) to be ignored when fitting the
@@ -107,11 +108,12 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 	if fixed_b == None:
 		# use b distribution from the values in Jorgenson 2010?
-		B = pymc.Normal('B',mu=3.4,tau=3.4,value=3.4, doc='B')
+		# B = pymc.Uniform('B',lower=0.0, upper=20.0, doc='B')
+		B = pymc.Normal('B',mu=3.4,tau=7.4,value=3.4, doc='B')
 	if fixed_b != None:
 		B = fixed_b
 
-	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=23.0,doc='NTOTH2')
+	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=21.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
 	A_Z = 	 pymc.Uniform('A_Z',lower=-10,upper=10,doc='A_Z')
 
@@ -124,9 +126,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 		print "additonal H2 component(s) at", redshift_lst, "\n" 
 		for add_comp in redshift_lst:
 			print float(add_comp) - redshift, "\n"
-			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=23.0,doc='H2')
+			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=21.0,doc='H2')
 			T_c = pymc.Uniform('T'+add_comp,lower=0.,upper=800,doc='T')
-			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=3.4,value=3.4, doc='B')
+			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=7.4,value=3.4, doc='B')
 			Z_c = float(add_comp) 
 
 			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
@@ -463,7 +465,8 @@ def main():
 	parser.add_argument('-red','--redshift',dest="redshift",default=2.358,
 		type=float)
 	parser.add_argument('-m','--model',dest="model",default="H2",type=str)
-	parser.add_argument('-nrot','--nrot',dest="nrot",default=3,type=int)
+	parser.add_argument('-nrot','--nrot',dest="nrot",nargs=2,
+		default=[0, 1, 2, 3, 4, 5, 6, 7], type=int)
 	parser.add_argument('-e','--elements',dest="elements", nargs='+',
 						default=["FeII", "SiII"])
 	parser.add_argument('-w1','--w1',dest="w1",default=980.,type=float)
@@ -519,8 +522,12 @@ def main():
 	par_dic = {}
 
 	NROT = []
-	for i in np.arange(0, nrot+1, 1):
-		NROT.append(i)
+
+	if not len(nrot) >= 8:
+		for i in np.arange(nrot[0], nrot[1]+1, 1):
+			NROT.append(i)	
+	else:
+		NROT = nrot
 
 	CSV_LST = model_csv_file(model, fixed_b)
 

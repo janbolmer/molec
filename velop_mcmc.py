@@ -343,7 +343,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(usage=__doc__)
 	parser.add_argument('-f','--file',dest="file",
 		default="spectra/GRB120815Auvb.txt",type=str)
-	parser.add_argument('-z','--z', dest="z",default=2.358,type=float)
+	parser.add_argument('-z','--z', dest="z",default=None,type=float)
 	parser.add_argument('-e','--element',dest="element",
 		default="FeII",type=str)
 	parser.add_argument('-line','--line',dest="line",
@@ -375,6 +375,7 @@ if __name__ == "__main__":
 	para_file = args.par
 	RES = args.resolution
 	
+
 	# Read Oscillator strength f and decay rate gamma
 	# for given line
 	osc_line, gamma_line = get_osc_gamma(line)
@@ -396,6 +397,10 @@ if __name__ == "__main__":
 
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
+
+	if redshift == None:
+		sys.exit("ERROR: please specify input redshift: e.g. -z 2.358")
+
 
 
 	para_dic = {}
