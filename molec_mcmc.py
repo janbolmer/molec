@@ -172,7 +172,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 				if elmt == "HI":
 					N_E = pymc.Normal('N_'+elmt,mu=par_dic[elmt][1],
-						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**10),
+						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**8),
 						doc='N_'+elmt)
 
 				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
