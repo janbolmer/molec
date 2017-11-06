@@ -181,7 +181,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 
 
 	@pymc.deterministic(plot=False)
-	def multVoigt(vv=velocity, a=a, gamma=gamma,nvoigts=nvoigts,
+	def multVoigt(vv=velocity,a=a,gamma=gamma,nvoigts=nvoigts,
 		vars_dic=vars_dic):
 
 		voigts = 0
@@ -189,7 +189,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 		for i in range(1, nvoigts + 1):
 			
 			x = vv-vars_dic["v0"+str(i)]
-			V = vars_dic["A"+str(i)]*voigt(x, vars_dic["sigma"+str(i)], gamma)
+			V = vars_dic["A"+str(i)]*voigt(x, vars_dic["sigma"+str(i)],gamma)
 			gauss_k = Gaussian1DKernel(stddev=RES/((2*np.sqrt(2*np.log(2)))*transform),
 				x_size=1, mode="oversample")
 			V = convolve(V, gauss_k)

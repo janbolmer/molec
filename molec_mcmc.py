@@ -106,17 +106,22 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 	tau = 1 / np.array(n_flux_err)**2
 
+	# Checks if the b is fixed; if not the following prior is assumed:
 	if fixed_b == None:
 		# use b distribution from the values in Jorgenson 2010?
-		# B = pymc.Uniform('B',lower=0.0, upper=20.0, doc='B')
-		B = pymc.Normal('B',mu=3.4,tau=7.4,value=3.4, doc='B')
+		#B = pymc.Uniform('B',lower=0.0, upper=20.0, doc='B')
+		B = pymc.Normal('B',mu=3.0,tau=10.0,value=3.0, doc='B')
 	if fixed_b != None:
 		B = fixed_b
 
+	# Uniform priors for column density, temperature and redshift of main
+	# H2 component
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=21.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
 	A_Z = 	 pymc.Uniform('A_Z',lower=-10,upper=10,doc='A_Z')
 
+
+	# Adding additional H2 components:
 	add_h2_dic = {}
 
 	if len(redshift_lst) == 0:
@@ -124,70 +129,18 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 	if not len(redshift_lst) == 0:
 		print "additonal H2 component(s) at", redshift_lst, "\n" 
+
 		for add_comp in redshift_lst:
 			print float(add_comp) - redshift, "\n"
 			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=21.0,doc='H2')
 			T_c = pymc.Uniform('T'+add_comp,lower=0.,upper=800,doc='T')
-			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=7.4,value=3.4, doc='B')
+			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=10,value=3.0, doc='B')
 			Z_c = float(add_comp) 
 
 			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
 			add_h2_dic[add_comp] = H2_c, T_c, B_c, Z_c
 
-	# Playing around with different distributions
-	#@pymc.stochastic(dtype=float)
-	#def B(value=12, t_l=1.0, t_h=40.0, turn1=10.0, turn2=20.0, doc="B"):
-	#	'''
-	#	The broadening parameter is more likely to be
-	#	between 0-10 than between 10-20 and 20-40 km/s
-	#	'''
-	#	if t_l <= value <= turn1:
-	#		#print 1./(t_h-t_l)
-	#		return 1./(t_h-t_l)
-	#	if turn1 < value <= turn2: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.5
-	#	if turn2 < value <= t_h: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.25		
-	#	else:
-	#		#invalid values
-	#		return -np.inf
-
-	#@pymc.stochastic(dtype=float)
-	#def B(value=8, alpha=10, x_m=1, doc="B"):
-	#	'''
-	#	Pareto function for alpha=2 and x_m = 1
-	#	'''
-	#	pp = 0.0
-	#	if value >= x_m:
-	#		pp = alpha/(value+alpha)
-	#	else:
-	#		#invalid values
-	#		pp = -np.inf
-	#	print value, pp
-	#	return pp
-
-	#@pymc.stochastic(dtype=float)
-	#def NTOTH2(value=18, t_l=1.0, t_h=22.0, turn1=21.0, turn2=21.5, doc="B"):
-	#	'''
-	#	The total H2 column density is more likely to be
-	#	between 0-20 than between 20-21 and 21-22
-	#	'''
-	#	if t_l <= value <= turn1:
-	#		#print 1./(t_h-t_l)
-	#		return 1./(t_h-t_l)
-	#	if turn1 < value <= turn2: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.2
-	#	if turn2 < value <= t_h: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.1		
-	#	else:
-	#		#invalid values
-	#		return -np.inf
-
-
+	# Adding other absoprtion lines for major component:
 	vars_dic = {}
 
 	for elmt in line_lst:
@@ -197,22 +150,31 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 					value=21.8,doc='N_'+elmt)
 				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-50.,upper=+50.,
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-5.,upper=+5.,
 					value=0.,doc='A_Z_'+elmt)
 			else:
 				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
 					value=16.0,doc='N_'+elmt)
 				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-50.,upper=+50.,
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-5.,upper=+5.,
 					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
 
+		# Reading data from parameter file:
 		else:
+			# Parameters free
 			if par_dic[elmt][0] == 0:
-				N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
-					upper=par_dic[elmt][3],doc='N_'+elmt)
+				if elmt != "HI":
+					N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
+						upper=par_dic[elmt][3],doc='N_'+elmt)
+
+				if elmt == "HI":
+					N_E = pymc.Normal('N_'+elmt,mu=par_dic[elmt][1],
+						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**10),
+						doc='N_'+elmt)
+
 				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
 					upper=par_dic[elmt][6],doc='B_'+elmt)
 				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
@@ -220,6 +182,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 				CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
 
+			# Parameters fixed
 			if par_dic[elmt][0] == 1:
 				N_E = par_dic[elmt][1]
 				B_E = par_dic[elmt][4]
@@ -227,25 +190,29 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
+ 	# Adding other absoprtion lines for other components
 	vars_dic_add = {}
 
-	# add lines for other redshift components
-	#if not len(redshift_lst) == 0:
-	#	for elmt in line_lst:
-	#		for add_comp in redshift_lst:
-	#			if elmt != "HI":
-	#				N_E=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
-	#					value=16.0,doc='N_'+elmt+add_comp)
-	#				B_E=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
-	#					value=8.,doc='B_'+elmt+add_comp)
-	#				Z_E=float(add_comp)
-	#			CSV_LST.extend(('N_'+elmt+add_comp,'B_'+elmt+add_comp,))		
-	#			vars_dic_add[elmt] = N_E, B_E, A_Z_E
+	if not len(redshift_lst) == 0:
+		print "additonal line component(s) at", redshift_lst, "\n"
+		for elmt in line_lst:
+			for add_comp in redshift_lst:
+				if elmt != "HI":
+					N_E=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
+						value=16.0,doc='N_'+elmt+add_comp)
+					B_E=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
+						value=8.,doc='B_'+elmt+add_comp)
+					Z_E=float(add_comp)
+
+					CSV_LST.extend(('N_'+elmt+add_comp,'B_'+elmt+add_comp,))		
+					vars_dic_add[elmt+add_comp] = N_E, B_E, Z_E, elmt
 
 
+	# Defining the model:
 	@pymc.deterministic(plot=False) 
 	def H2(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTH2=NTOTH2,TEMP=TEMP,BROAD=B,
-		redshift=redshift,vars_dic=vars_dic, add_h2_dic=add_h2_dic):
+		redshift=redshift,vars_dic=vars_dic,vars_dic_add=vars_dic_add,
+		add_h2_dic=add_h2_dic):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
@@ -255,91 +222,33 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 		h2spec = synspec.add_H2(norm_spec,broad=BROAD,NTOTH2=NTOTH2,
 			TEMP=TEMP,A_REDSHIFT=A_REDSHIFT,NROT=NROT)
 
-		# add other H2 components
+		# add H2 for components
 		for key in add_h2_dic:
 
 			A_REDSHIFT = add_h2_dic[key][3]-redshift
-
 			h2spec = synspec.add_H2(h2spec,broad=add_h2_dic[key][2],
 				NTOTH2=add_h2_dic[key][0],TEMP=add_h2_dic[key][1],
 				A_REDSHIFT=A_REDSHIFT,NROT=NROT)
 
-		# add other lines
+		# add other absorption lines
 		for key in vars_dic:
 			A_Z_E = vars_dic[key][2]/100000.00
 			h2spec = synspec.add_ion(h2spec, key,
 				broad=vars_dic[key][1], Natom=vars_dic[key][0],
 				A_REDSHIFT=A_Z_E)
 
-		# TODO: add lines for other components
+		# add other absorption lines for other components
+		for key in vars_dic_add:
+			h2spec = synspec.add_ion(h2spec, vars_dic_add[key][3],
+				broad=vars_dic_add[key][1], Natom=vars_dic_add[key][0],
+				A_REDSHIFT=A_REDSHIFT)
 
 		return h2spec
 
+	# Data:
 	y_val = pymc.Normal('y_val',mu=H2,tau=tau,value=n_flux,observed=True)
 
 	return locals()
-
-
-#========================================================================
-#========================================================================
-
-# Fitting H2 for multiple absorption systems
-# start with only H2 (add lines later)
-
-#def model_H2_mc(wav_aa, n_flux, n_flux_err, redshift, line_lst_lst,
-#	par_dic_lst, CSV_LST, NROT)
-#	'''
-#	Defines the model for fitting multiple components for H2
-#	'''
-#
-#	tau = 1 / np.array(n_flux_err)**2
-#
-#	for c in comps:
-#		NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=22.0,doc='NTOTH2')
-#		TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-#		B = 	 pymc.Uniform('B',lower=0., upper=15.0,doc='B')
-#		A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
-
-
-		#vars_dic = {}
-	#
-		#for elmt in line_lst:
-		#	if not elmt in par_dic:
-		#		if elmt == "HI":
-		#			N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
-		#				value=21.8,doc='N_'+elmt)
-		#			B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
-		#				value=8.,doc='B_'+elmt)
-		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
-		#				value=0.,doc='A_Z_'+elmt)
-		#		else:
-		#			N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
-		#				value=16.0,doc='N_'+elmt)
-		#			B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
-		#				value=8.,doc='B_'+elmt)
-		#			A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
-		#				value=0.,doc='A_Z_'+elmt)
-	#
-		#		CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
-	#
-		#	else:
-		#		if par_dic[elmt][0] == 0:
-		#			N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
-		#				upper=par_dic[elmt][3],doc='N_'+elmt)
-		#			B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
-		#				upper=par_dic[elmt][6],doc='B_'+elmt)
-		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
-		#				upper=par_dic[elmt][9],doc='A_Z_'+elmt)
-	#
-		#			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
-	#
-		#		if par_dic[elmt][0] == 1:
-		#			N_E = par_dic[elmt][1]
-		#			B_E = par_dic[elmt][4]
-		#			A_Z_E = par_dic[elmt][7]
-	#
-		#	vars_dic[elmt] = N_E, B_E, A_Z_E
-
 
 #========================================================================
 #========================================================================
@@ -525,9 +434,11 @@ def main():
 
 	if not len(nrot) >= 8:
 		for i in np.arange(nrot[0], nrot[1]+1, 1):
-			NROT.append(i)	
+			NROT.append(i)
 	else:
 		NROT = nrot
+
+	print "nrot", nrot, "NROT", NROT
 
 	CSV_LST = model_csv_file(model, fixed_b)
 
@@ -617,7 +528,6 @@ def main():
  	dur = str(round((time.time() - start)/60, 1))
 	sys.exit("\n Script finished after " + dur + " minutes")
 
-
 #========================================================================
 #========================================================================
 
@@ -629,9 +539,118 @@ if __name__ == "__main__":
 
 
 
+	# Playing around with different distributions
+	#@pymc.stochastic(dtype=float)
+	#def B(value=12, t_l=1.0, t_h=40.0, turn1=10.0, turn2=20.0, doc="B"):
+	#	'''
+	#	The broadening parameter is more likely to be
+	#	between 0-10 than between 10-20 and 20-40 km/s
+	#	'''
+	#	if t_l <= value <= turn1:
+	#		#print 1./(t_h-t_l)
+	#		return 1./(t_h-t_l)
+	#	if turn1 < value <= turn2: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.5
+	#	if turn2 < value <= t_h: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.25		
+	#	else:
+	#		#invalid values
+	#		return -np.inf
+
+	#@pymc.stochastic(dtype=float)
+	#def B(value=8, alpha=10, x_m=1, doc="B"):
+	#	'''
+	#	Pareto function for alpha=2 and x_m = 1
+	#	'''
+	#	pp = 0.0
+	#	if value >= x_m:
+	#		pp = alpha/(value+alpha)
+	#	else:
+	#		#invalid values
+	#		pp = -np.inf
+	#	print value, pp
+	#	return pp
+
+	#@pymc.stochastic(dtype=float)
+	#def NTOTH2(value=18, t_l=1.0, t_h=22.0, turn1=21.0, turn2=21.5, doc="B"):
+	#	'''
+	#	The total H2 column density is more likely to be
+	#	between 0-20 than between 20-21 and 21-22
+	#	'''
+	#	if t_l <= value <= turn1:
+	#		#print 1./(t_h-t_l)
+	#		return 1./(t_h-t_l)
+	#	if turn1 < value <= turn2: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.2
+	#	if turn2 < value <= t_h: 
+	#		#print (1./(t_h-t_l))*0.5
+	#		return (1./(t_h-t_l))*0.1		
+	#	else:
+	#		#invalid values
+	#		return -np.inf
 
 
 
+#========================================================================
+#========================================================================
+
+# Fitting H2 for multiple absorption systems
+# start with only H2 (add lines later)
+
+#def model_H2_mc(wav_aa, n_flux, n_flux_err, redshift, line_lst_lst,
+#	par_dic_lst, CSV_LST, NROT)
+#	'''
+#	Defines the model for fitting multiple components for H2
+#	'''
+#
+#	tau = 1 / np.array(n_flux_err)**2
+#
+#	for c in comps:
+#		NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=22.0,doc='NTOTH2')
+#		TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
+#		B = 	 pymc.Uniform('B',lower=0., upper=15.0,doc='B')
+#		A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
 
 
+		#vars_dic = {}
+	#
+		#for elmt in line_lst:
+		#	if not elmt in par_dic:
+		#		if elmt == "HI":
+		#			N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
+		#				value=21.8,doc='N_'+elmt)
+		#			B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+		#				value=8.,doc='B_'+elmt)
+		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+		#				value=0.,doc='A_Z_'+elmt)
+		#		else:
+		#			N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
+		#				value=16.0,doc='N_'+elmt)
+		#			B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+		#				value=8.,doc='B_'+elmt)
+		#			A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+		#				value=0.,doc='A_Z_'+elmt)
+	#
+		#		CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+	#
+		#	else:
+		#		if par_dic[elmt][0] == 0:
+		#			N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
+		#				upper=par_dic[elmt][3],doc='N_'+elmt)
+		#			B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
+		#				upper=par_dic[elmt][6],doc='B_'+elmt)
+		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
+		#				upper=par_dic[elmt][9],doc='A_Z_'+elmt)
+	#
+		#			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+	#
+		#		if par_dic[elmt][0] == 1:
+		#			N_E = par_dic[elmt][1]
+		#			B_E = par_dic[elmt][4]
+		#			A_Z_E = par_dic[elmt][7]
+	#
+		#	vars_dic[elmt] = N_E, B_E, A_Z_E
 
