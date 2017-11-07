@@ -118,7 +118,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 	# H2 component
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=21.0,doc='NTOTH2')
 	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-	A_Z = 	 pymc.Uniform('A_Z',lower=-10,upper=10,doc='A_Z')
+	A_Z = 	 pymc.Uniform('A_Z',lower=-5,upper=5,doc='A_Z')
 
 
 	# Adding additional H2 components:

@@ -208,3 +208,4 @@
 2017-11-06 12:21:13	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 160 -w 4 -min 5 -max 7 -it 7000 -bi 5000 -res 24.6 
 2017-11-06 12:27:21	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 160 -w 4.2 -min 5 -max 7 -it 7000 -bi 5000 -res 24.6 
 2017-11-06 14:02:31	velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e FeII -line 1608.4509 -vr 160 -w 4.2 -min 3 -max 3 -it 7000 -bi 5000 -res 24.6 
+2017-11-07 16:45:40	velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -z 3.758 -vr 250 -w 12 -min 1 -max 3 -it 5000 -bi 4000 -res 22 -e SiII -line 1808.0129 

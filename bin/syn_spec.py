@@ -156,7 +156,7 @@ class SynSpec(object):
 
 		return spec
 
-	def addCO(self, spectrum, broad, NTOTCO, TEMP, A_REDSHIFT):
+	def addCO(self, spectrum, broad, NCO, TEMP, A_REDSHIFT):
 
 		# WORK IN PROGRESS - How to add CO band heads?
 		redshift = self.redshift
@@ -165,13 +165,11 @@ class SynSpec(object):
 		broad = broad * 1E5
 		redshift = redshift + A_REDSHIFT
 
-
 		nJ, NCO = [], {}
 		for J in NROT:
-			nJ.append(fNHII(TEMP, J)) # change this function 
+			nJ.append(fNCO(TEMP, J))
 		for nj in NROT:
-			NH2['H2J%i' %nj] = 10**NTOTH2/sum(nJ)*nJ[nj]
-
+			NCO['COJ%i' %nj] = 10**NCO/sum(nJ)*nJ[nj]
 
 		for co in co_lines:
 			co = co.split()
