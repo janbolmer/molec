@@ -8,9 +8,12 @@ from scipy.ndimage import gaussian_filter1d as gauss1d
 from scipy.interpolate import splrep, splev
 from scipy.special import wofz
 
+from astropy.convolution import Gaussian1DKernel, convolve
+
 from spec_functions import *
 
 # get H2, CO and other lines
+
 
 h2 = open ('atoms/h2.dat', 'r')
 h2_lines = h2.readlines()
@@ -97,6 +100,16 @@ class SynSpec(object):
 						redshift)
 		return spec
 
+
+#	def add_H2J(self, spectrum, broad, NH2J, A_REDSHIFT, J):
+#
+#		redshift = self.redshift
+#		wav_range = self.wav_range
+#		spec = spectrum
+#		broad = broad * 1E5
+#		redshift = redshift + A_REDSHIFT
+
+
 	def add_H2(self, spectrum, broad, NTOTH2, TEMP, A_REDSHIFT, NROT):
 		'''
 		Adding H2
@@ -114,8 +127,8 @@ class SynSpec(object):
 		nJ, NH2 = [], {}
 		for J in NROT:
 			nJ.append(fNHII(TEMP, J))
-		for nj in NROT:
-			NH2['H2J%i' %nj] = 10**NTOTH2/sum(nJ)*nJ[nj]
+		for nj in np.arange(0, len(NROT), 1):
+			NH2['H2J%i' %NROT[nj]] = 10**NTOTH2/sum(nJ)*nJ[nj]			
 
 		broad = broad * 1E5
 		redshift = redshift + A_REDSHIFT
@@ -131,6 +144,37 @@ class SynSpec(object):
 					redshift)
 
 		return spec
+
+	def add_CO(self, spectrum, broad, NTOTCO, TEMP, A_REDSHIFT, NROT):
+
+		# WORK IN PROGRESS - How to add CO band heads?
+		redshift = self.redshift
+		wav_range = self.wav_range
+		spec = spectrum
+
+		nJ, NCO = [], {}
+		for J in NROT:
+			nJ.append(fNCO(TEMP, J))
+		#for nj in NROT:
+		#	NCO['COJ%i' %nj] = 10**NCO/sum(nJ)*nJ[nj]
+		for nj in np.arange(0, len(NROT), 1):
+			#print nj, NROT[nj], nJ[nj]
+			NCO['COJ%i' %NROT[nj]] = 10**NTOTCO/sum(nJ)*nJ[nj]		
+
+		broad = broad * 1E5
+		redshift = redshift + A_REDSHIFT
+
+		for co in co_lines:
+			co = co.split()
+			lamb = float(co[1])
+			f = float(co[2])
+			gamma = float(co[3])
+			nion = NCO[co[0]]
+			spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+				redshift)
+
+		return spec
+
 	
 	def add_vibH2(self, spectrum, h2swl, modspec, tauspec, RES=0.15, \
 				MH2S=0.03, A_REDSHIFT=0.0):
@@ -156,35 +200,24 @@ class SynSpec(object):
 
 		return spec
 
-	def addCO(self, spectrum, broad, NCO, TEMP, A_REDSHIFT):
-
-		# WORK IN PROGRESS - How to add CO band heads?
-		redshift = self.redshift
-		wav_range = self.wav_range
-		spec = spectrum
-		broad = broad * 1E5
-		redshift = redshift + A_REDSHIFT
-
-		nJ, NCO = [], {}
-		for J in NROT:
-			nJ.append(fNCO(TEMP, J))
-		for nj in NROT:
-			NCO['COJ%i' %nj] = 10**NCO/sum(nJ)*nJ[nj]
-
-		for co in co_lines:
-			co = co.split()
-			lamb = float(co[1])
-			f = float(co[2])
-			gamma = float(co[3])
-			nion = NH2[h2[0]]
-			spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-				redshift)
-
-		return spec
-
 	def addHD(self, spectrum, broad, NTOTHD, TEMP, A_REDSHIFT):
 
 		print "hallo world"
+
+	def convolve_spec(self, spectrum):
+
+		wav_range = self.wav_range
+		#delta_aa = np.median(np.diff(wav_range))
+		spec_res = 30.8 # km/s 
+		cc = 299792.0 # speed of light in km/s
+		RR = cc/spec_res
+		spec_res2 = wav_range[len(wav_range)/2]/RR
+
+		spectrum = convolve(spectrum, Gaussian1DKernel(stddev=spec_res2, mode="oversample"))
+
+		return spectrum
+
+
 
 #========================================================================
 #========================================================================

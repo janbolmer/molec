@@ -53,10 +53,10 @@ from spec_functions import * # spec_functions.py
 from syn_spec import * # syn_spec.py
 from sns_plots import * # sns_plots.py
 
+# constants to calculate the cloumn density
+e = 4.8032E-10  # cm 3/2 g 1/2 s-1
+c = 2.998e10 # speed of light cm/s
 m_e = 9.10938291e-28 # electron mass g
-hbar = 1.054571726e-27 # erg * s
-fsc = 1 / 137.035999139 # fine-structure constant dimensionless
-K = np.pi * fsc * hbar / m_e # cm^2 / s
 
 colors = ["#a6cee3", "#1f78b4",
 "#b2df8a", "#33a02c", "#fb9a99",
@@ -67,10 +67,9 @@ colors = ["#a6cee3", "#1f78b4",
 "#ff7f00", "#cab2d6", "#6a3d9a"]
 
 #https://www.pantone.com/color-of-the-year-2017
-pt_analogous = [(134, 175, 73), (129, 115, 151),
-(184, 139, 172), (213, 127, 112), (220, 185, 103),
-(172, 152, 151), (172,137, 141), (240, 225, 206)]
-
+pt_analogous = ["#86af49", "#817397", "#b88bac",
+"#d57f70","#dcb967","#ac9897","#ac898d","#f0e1ce",
+"#86af49", "#817397","#b88bac", "#d57f70", "#dcb967"]
 
 def get_results(para_file):
 	'''
@@ -110,34 +109,18 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 
 	tau = 1 / np.array(fluxv_err)**2
 
-	#n_voigts = pymc.DiscreteUniform('n_voigts', lower=nvoigts,
-	 #upper=nvoigts, value=nvoigts, doc='n_voigts')
 	a = pymc.Uniform('a', lower=0.98, upper=1.02, doc='a')
-	#velo_pred = pymc.Normal('velo_pred', mu=velocity, tau=1.2)
 
 	vars_dic = {}
 
 	for i in range(1, nvoigts+1):
 
-		#sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
-		#	doc='sigma'+str(i))
-		#v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
-		#	upper=velo_range, doc='v0'+str(i))
-		#A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
-		#	doc='A'+str(i))
-		#
-		#CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
-		#
-		#vars_dic['sigma'+str(i)] = sigma
-		#vars_dic['v0'+str(i)] = v0
-		#vars_dic['A'+str(i)] = A
-
 		if not "v0" + str(i) in para_dic:
-			sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
+			sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=120.,
 				doc='sigma'+str(i))
 			v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
 				upper=velo_range, doc='v0'+str(i))
-			A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
+			A = pymc.Uniform('A'+str(i),lower=0.,upper=800.0,
 				doc='A'+str(i))
 	
 			CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
@@ -184,20 +167,20 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 	def multVoigt(vv=velocity,a=a,gamma=gamma,nvoigts=nvoigts,
 		vars_dic=vars_dic):
 
-		voigts = 0
+		flux = np.ones(len(vv)) #*a
 
 		for i in range(1, nvoigts + 1):
 			
 			x = vv-vars_dic["v0"+str(i)]
-			V = vars_dic["A"+str(i)]*voigt(x, vars_dic["sigma"+str(i)],gamma)
+			
+			V = vars_dic["A"+str(i)]*voigt(x,vars_dic["sigma"+str(i)],gamma)
 			gauss_k = Gaussian1DKernel(stddev=RES/((2*np.sqrt(2*np.log(2)))*transform),
 				x_size=1, mode="oversample")
 			V = convolve(V, gauss_k)
-			voigts += V
 
-		voigts += a
+			flux *= np.exp(-V)
 
-		return voigts
+		return flux
 
 	y_val = pymc.Normal('y_val',mu=multVoigt,tau=tau,value=fluxv,observed=True)
 	return locals()
@@ -217,7 +200,6 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 		db='pickle',dbname='velo_fit.pickle')
 
 	MDL.db
-	#MDL.use_step_method(pymc.AdaptiveMetropolis, MDL.velo_pred)
 	MDL.sample(iterations, burn_in)
 	MDL.db.close()
 
@@ -250,22 +232,27 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 	ax = fig.add_axes([0.13, 0.13, 0.85, 0.80])
 
 	for i in range(1, nvoigts+1):
-		ff = []
-		for vv in velocity:
-			x = vv-par_dic["v0"+str(i)]
-			V = par_dic["A"+str(i)]*voigt(x, par_dic["sigma"+str(i)], gamma) 
-			ff.append(V)
-		gauss_k = Gaussian1DKernel(stddev=RES/((2*np.sqrt(2*np.log(2)))*transform),
-				x_size=1, mode="oversample")
-		V = convolve(ff, gauss_k)
-		ff = V + par_dic["a"]
 
-		broad = round(par_dic["sigma"+str(i)],1)
+		ff = np.ones(len(velocity))*par_dic["a"]
+
+		x = velocity-par_dic["v0"+str(i)]
+		V = par_dic["A"+str(i)]*voigt(x,par_dic["sigma"+str(i)],gamma)
+
+		gauss_k = Gaussian1DKernel(stddev=RES/((2*np.sqrt(2*np.log(2)))*transform),
+			x_size=1, mode="oversample")
+		V = convolve(V, gauss_k)
+
+		ff *= np.exp(-V)
+
+		broad = round(par_dic["sigma"+str(i)],2)
+		N_C = round(np.log10(par_dic["A"+str(i)]/(((np.pi*e**2)/(m_e*c))*0.00208*my_line*1E-13)),2)
 
 		ax.axvline(par_dic["v0"+str(i)],linestyle="dashed",
 			color="black", linewidth=1.2)
-		ax.plot(velocity,ff,label='Voigt'+str(i),color=colors[i-1],linewidth=2)
-		ax.text(par_dic["v0"+str(i)],1.3,"b = "+str(broad),rotation=55)
+		ax.plot(velocity,ff,label='Voigt'+str(i),color=pt_analogous[i-1],linewidth=2)
+
+		ax.text(par_dic["v0"+str(i)],1.3,"b = "+str(broad),rotation=55, color=pt_analogous[i-1])
+		ax.text(par_dic["v0"+str(i)],1.45,"N = "+str(N_C),rotation=55, color=pt_analogous[i-1])
 
 	ax.errorbar(velocity,fluxv,yerr=fluxv_err,color='gray',marker='o',
 		ls='None',label='Observed')
@@ -401,18 +388,14 @@ if __name__ == "__main__":
 	if redshift == None:
 		sys.exit("ERROR: please specify input redshift: e.g. -z 2.358")
 
-
-
 	para_dic = {}
 #
 	if para_file != None:
 		para_dic = get_paras_velo(para_file)
 		print "\n Using parameters given in:", para_file
 
-
 	velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, n_flux,
 		n_flux_err, line, redshift, wav_range)
-
 
 	#RES = 33.0
 	transform = np.median(np.diff(velocity))

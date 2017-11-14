@@ -1,8 +1,8 @@
 #! /usr/bin/python
 
 """
-MCMC sampler for fitting X-shooter spectra (using PyMC) with HI, H2 and
-other lines
+MCMC sampler for fitting X-shooter spectra (using PyMC) with HI, H2, CO
+and other lines
 =========================================================================
 e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 		-w2 1611 -red 2.358 -it 40 -bi 10 -t GRB120815A -e SiII FeII
@@ -89,11 +89,25 @@ def model_csv_file(model, fixed_b):
 		CSV_LST = ['NTOTH2', 'TEMP', 'A_Z']
 	elif model == "H2vib":
 		CSV_LST = ['MH2S', 'A_Z']
+	elif model == "CO" and fixed_b == None:
+		CSV_LST = ['NTOTCO', 'TEMP', 'B', 'A_Z']
+	elif model == "CO" and fixed_b != None:
+		CSV_LST = ['NTOTCO', 'TEMP', 'A_Z']
 	else:
 		sys.exit("ERROR: Choose one of the following models: H2, H2vib, \
 			or CO")
 
+	print CSV_LST
 	return CSV_LST
+
+#========================================================================
+#========================================================================
+
+def gauss(x, mu, sig):
+	'''
+	Normal distribution used to create prior probability distributions
+	'''
+	return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
 
 #========================================================================
 #========================================================================
@@ -104,60 +118,106 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 	Defines the model for H2
 	'''
 
+	#TEMP = pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
+	#TEMP =  pymc.Normal('TEMP',mu=100,tau=1./(280**2),doc='TEMP')
+	#A_Z = 	pymc.Uniform('A_Z',lower=-50,upper=50,doc='A_Z')
+	#A_Z = 	 pymc.Normal('A_Z',mu=0,tau=1./(25**2),doc='A_Z')
+	#B =	 pymc.Normal('B',mu=5,tau=1./(12**2),value=3.0,doc='B')	
+	#B = pymc.Uniform('B',lower=0.0, upper=20.0, doc='B')
+	#B = pymc.Normal('B',mu=3.4,tau=1./(3.4**2),value=3.0, doc='B')
+
 	tau = 1 / np.array(n_flux_err)**2
 
+#======================broadening parameter B============================
 	# Checks if the b is fixed; if not the following prior is assumed:
 	if fixed_b == None:
-		# use b distribution from the values in Jorgenson 2010?
-		#B = pymc.Uniform('B',lower=0.0, upper=20.0, doc='B')
-		B = pymc.Normal('B',mu=3.0,tau=10.0,value=3.0, doc='B')
+
+		@pymc.stochastic(dtype=float)
+		def B(value=2.0, mu=2.0, sig=2.0, doc="B"):
+			'''
+			bla
+			'''
+			pp = 0.0
+			if 0 <= value < 30:
+				pp = gauss(value, mu, sig)
+			else:
+				#invalid values
+				pp = -np.inf
+			#print value, pp
+			return pp
+
 	if fixed_b != None:
 		B = fixed_b
 
-	# Uniform priors for column density, temperature and redshift of main
-	# H2 component
+#=======================Redshift freedom A_Z=============================
+	# Redshift is allowed to vary between:
+	@pymc.stochastic(dtype=float)
+	def A_Z(value=0.0, mu=0.0, sig=25.0, doc="A_Z"):
+		'''
+		bla
+		'''
+		pp = gauss(value, mu, sig)
+		return pp
+
+#===========================Temperature==================================
+	@pymc.stochastic(dtype=float)
+	def TEMP(value=100.0, mu=100.0, sig=280.0, doc="TEMP"):
+		'''
+		bla
+		'''
+		if 0 <= value < 1000:
+			pp = gauss(value, mu, sig)
+		else:
+			pp = -np.inf
+		return pp
+
+#=========================H2 Column Density==============================
+	# Uniform Prior for the total H2 column density
 	NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=21.0,doc='NTOTH2')
-	TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-	A_Z = 	 pymc.Uniform('A_Z',lower=-5,upper=5,doc='A_Z')
 
-
-	# Adding additional H2 components:
-	add_h2_dic = {}
-
+#======================Additional H2 Components==========================
+	add_h2_dic = {} # dictionary to collect variables
 	if len(redshift_lst) == 0:
-		print "no addtional H2 component\n"
+		print "\n no addtional H2 component\n"
 
 	if not len(redshift_lst) == 0:
-		print "additonal H2 component(s) at", redshift_lst, "\n" 
+		print "\n additonal H2 component(s) at", redshift_lst, "\n" 
 
 		for add_comp in redshift_lst:
-			print float(add_comp) - redshift, "\n"
-			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=21.0,doc='H2')
-			T_c = pymc.Uniform('T'+add_comp,lower=0.,upper=800,doc='T')
-			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=10,value=3.0, doc='B')
-			Z_c = float(add_comp) 
+
+			H2_c = pymc.Uniform('H2'+add_comp,lower=0.0,upper=21.0,
+				doc='H2'+add_comp)
+
+			T_c = pymc.Uniform('T'+add_comp,lower=0.,upper=800,
+				doc='T'+add_comp)
+
+			B_c = pymc.Normal('B'+add_comp,mu=3.4,tau=1/(3.4**2),value=3.0,
+				doc='B'+add_comp)# USE B AS ABOVE
+
+			Z_c = float(add_comp) # ALLOW SOME VARIATION
 
 			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
 			add_h2_dic[add_comp] = H2_c, T_c, B_c, Z_c
 
+#==========================Absoprtion Lines==============================
 	# Adding other absoprtion lines for major component:
-	vars_dic = {}
+	vars_dic = {} # dictionary to collect variables
 
 	for elmt in line_lst:
 		if not elmt in par_dic:
 			if elmt == "HI":
 				N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
 					value=21.8,doc='N_'+elmt)
-				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=150.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-5.,upper=+5.,
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150.,upper=+150.,
 					value=0.,doc='A_Z_'+elmt)
 			else:
 				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
 					value=16.0,doc='N_'+elmt)
 				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-5.,upper=+5.,
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-50.,upper=+50.,
 					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
@@ -172,7 +232,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 				if elmt == "HI":
 					N_E = pymc.Normal('N_'+elmt,mu=par_dic[elmt][1],
-						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**8),
+						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**6),
 						doc='N_'+elmt)
 
 				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
@@ -190,6 +250,8 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 		vars_dic[elmt] = N_E, B_E, A_Z_E
 
+
+#======================Addiotnal Absoprtion Lines==========================
  	# Adding other absoprtion lines for other components
 	vars_dic_add = {}
 
@@ -197,16 +259,26 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 		print "additonal line component(s) at", redshift_lst, "\n"
 		for elmt in line_lst:
 			for add_comp in redshift_lst:
-				if elmt != "HI":
-					N_E=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
-						value=16.0,doc='N_'+elmt+add_comp)
-					B_E=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
-						value=8.,doc='B_'+elmt+add_comp)
-					Z_E=float(add_comp)
+				print elmt+add_comp
+				if not elmt+add_comp in par_dic:
 
-					CSV_LST.extend(('N_'+elmt+add_comp,'B_'+elmt+add_comp,))		
-					vars_dic_add[elmt+add_comp] = N_E, B_E, Z_E, elmt
+					if elmt != "HI":
+						N_E=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
+							value=16.0,doc='N_'+elmt+add_comp)
+						B_E=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
+							value=8.,doc='B_'+elmt+add_comp)
+						Z_E=float(add_comp)
+	
+						CSV_LST.extend(('N_'+elmt+add_comp,'B_'+elmt+add_comp,))		
+						vars_dic_add[elmt+add_comp] = N_E, B_E, Z_E, elmt
 
+				if elmt+add_comp in par_dic:
+					if par_dic[elmt][0] == 1:
+						N_E = par_dic[elmt][1]
+						B_E = par_dic[elmt][4]
+						Z_E = float(add_comp)
+
+						vars_dic_add[elmt+add_comp] = N_E, B_E, Z_E, elmt		
 
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
@@ -239,6 +311,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 
 		# add other absorption lines for other components
 		for key in vars_dic_add:
+			A_REDSHIFT = vars_dic_add[key][2]-redshift
 			h2spec = synspec.add_ion(h2spec, vars_dic_add[key][3],
 				broad=vars_dic_add[key][1], Natom=vars_dic_add[key][0],
 				A_REDSHIFT=A_REDSHIFT)
@@ -308,6 +381,86 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 #========================================================================
 #========================================================================
 
+def model_CO(wav_aa, n_flux, n_flux_err, redshift, line_lst,
+	par_dic, CSV_LST, NROT, fixed_b):
+	'''
+	Defines the model for CO
+	'''
+
+	tau = 1 / np.array(n_flux_err)**2
+
+#======================broadening parameter B============================
+	# Checks if the b is fixed; if not the following prior is assumed:
+	if fixed_b == None:
+
+		@pymc.stochastic(dtype=float)
+		def B(value=2.0, mu=2.0, sig=2.0, doc="B"):
+			'''
+			bla
+			'''
+			pp = 0.0
+			if value >= 0:
+				pp = gauss(value, mu, sig)
+			else:
+				#invalid values
+				pp = -np.inf
+			#print value, pp
+			return pp
+
+	if fixed_b != None:
+		B = fixed_b
+
+#=======================Redshift freedom A_Z=============================
+	# Redshift is allowed to vary between:
+	@pymc.stochastic(dtype=float)
+	def A_Z(value=0.0, mu=0.0, sig=25.0, doc="A_Z"):
+		'''
+		bla
+		'''
+		pp = gauss(value, mu, sig)
+		return pp
+
+#===========================Temperature==================================
+	@pymc.stochastic(dtype=float)
+	def TEMP(value=20.0, mu=20.0, sig=180.0, doc="TEMP"):
+		'''
+		bla
+		'''
+		if value >=0:
+			pp = gauss(value, mu, sig)
+		else:
+			pp = -np.inf
+		return pp
+
+#=========================CO Column Density==============================
+	# Uniform Prior for the total H2 column density
+	NTOTCO = pymc.Uniform('NTOTCO',lower=0.0,upper=21.0,doc='NTOTCO')
+
+	# Defining the model:
+	@pymc.deterministic(plot=False) 
+	def CO(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTCO=NTOTCO,TEMP=TEMP,BROAD=B,
+		redshift=redshift):
+
+		A_REDSHIFT = float(A_REDSHIFT)/100000.0
+		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
+		synspec = SynSpec(wav_aa,redshift)
+
+		# add H2
+		co_spec = synspec.add_CO(norm_spec,broad=BROAD,NTOTCO=NTOTCO,
+			TEMP=TEMP,A_REDSHIFT=A_REDSHIFT,NROT=NROT)
+
+		cp_spec = synspec.convolve_spec(co_spec)
+
+		return co_spec
+
+	# Data:
+	y_val = pymc.Normal('y_val',mu=CO,tau=tau,value=n_flux,observed=True)
+
+	return locals()
+
+#========================================================================
+#========================================================================
+
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	fixed_b, model_used, line_lst, redshift_lst, target, par_dic,
@@ -347,6 +500,27 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 		MDL.db.close()
 
 		MDL.write_csv(target+"_H2vib_results.csv",variables=CSV_LST)
+
+		y_min 	= MDL.stats()[model_used]['quantiles'][2.5]
+		y_max 	= MDL.stats()[model_used]['quantiles'][97.5]
+		y_min2 	= MDL.stats()[model_used]['quantiles'][25]
+		y_max2 	= MDL.stats()[model_used]['quantiles'][75]
+		y_fit 	= MDL.stats()[model_used]['mean']
+
+		return y_min, y_max, y_min2, y_max2, y_fit
+
+
+	if model_used == "CO":
+
+		MDL = pymc.MCMC(model_CO(wav_aa, n_flux, n_flux_err, redshift,
+			line_lst, par_dic, CSV_LST, NROT, fixed_b),db='pickle',
+			dbname='CO_fit.pickle')
+
+		MDL.db
+		MDL.sample(trials, burn_in, n_thin)
+		MDL.db.close()
+
+		MDL.write_csv(target+"_CO_results.csv",variables=CSV_LST)
 
 		y_min 	= MDL.stats()[model_used]['quantiles'][2.5]
 		y_max 	= MDL.stats()[model_used]['quantiles'][97.5]
@@ -438,8 +612,6 @@ def main():
 	else:
 		NROT = nrot
 
-	print "nrot", nrot, "NROT", NROT
-
 	CSV_LST = model_csv_file(model, fixed_b)
 
 	time.sleep(1.0)
@@ -489,14 +661,14 @@ def main():
 
 		plot_spec(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
 			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
-			aex_wav,h2_name,h2_wav,target=target)
+			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b)
 
 		if fixed_b == None:
 			sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
 				redshift=redshift)
 		else:
-			sns_pair_plot_fb(target, var_list=CSV_LST, file="H2_fit.pickle",
-				redshift=redshift, fb=fixed_b)
+			sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
+				redshift=redshift,fb=fixed_b)
 
 		#bokeh_plt(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2, \
 		#y_fit,redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav, \
@@ -512,6 +684,14 @@ def main():
 
 		#bokeh_H2vib_plt(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,
 		# y_max2, y_fit,redshift,ignore_lst,a_name,a_wav,w1,w2)
+
+	if model == "CO":
+
+		plot_CO(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
+			redshift=redshift,target=target,fb=fixed_b)
+		if fixed_b == None:
+			sns_pair_plot_CO(target,var_list=CSV_LST,file="CO_fit.pickle",
+				redshift=redshift)
 
 	if save_pickle != False:
 		os.system("rm -r *.pickle")
@@ -534,9 +714,6 @@ def main():
 if __name__ == "__main__":
 	
 	main()
-
-
-
 
 
 	# Playing around with different distributions

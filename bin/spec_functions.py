@@ -253,8 +253,8 @@ def voigt(x, sigma, gamma):
 	HWHM, alpha, of the Gaussian is: alpha = sigma * sqrt(2ln(2))
 	'''
 
-	z = (x + 1j*gamma) / (sigma * math.sqrt(2))
-	V = wofz(z).real / (sigma * math.sqrt(2*math.pi))
+	z = (x + 1j*gamma) / (sigma * np.sqrt(2.0))
+	V = wofz(z).real / (sigma * np.sqrt(2.0*np.pi))
 	return V
 
 def H(a,x):
@@ -280,6 +280,12 @@ def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift):
 #========================================================================
 
 def fNHII(T, J):
+	'''
+	returns the column density for rotatinal level J, given the
+	given the Temperature T[K] the total H2 column density in the
+	"add_H2" function of the SynSpec model
+	'''
+
 	# Para molecular hydrogen
 	if J % 2 == 0:
 		I = 0
@@ -301,16 +307,17 @@ def fNCO(T, J):
 	dE0J = {0:0, 1:5.5, 2:16.6, 3:33.2,
 		4:55.3, 5:82.9, 6:116.2}
 
-	SUM = 0
-	for i in range(0, J+1, 1):
-		print 2*i +1
-		SUM += 2*i +1
+	#SUM = 0
+	#for i in range(0, J+1, 1):
+	#	print 2*i +1
+	#	SUM += 2*i +1
 
-	PJ_T = ((2*J +1) * np.exp(-dE0J[J]/T)) / SUM
+	PJ_T = ((2*J+1) * np.exp(-dE0J[J]/T))# / SUM
 
-	NJ_T = NCO * PJ_T
+	#NJ_T = NCO * PJ_T
 
-	return NJ_T
+	#return NJ_T
+	return PJ_T
 
 #========================================================================
 #========================================================================
@@ -440,7 +447,7 @@ def get_paras_velo(para_file):
 
 
 def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
-		a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav, target):
+		a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav, target, fb):
 
 	sns.set_style("white", {'legend.frameon': True})
 
@@ -607,7 +614,10 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 	ax3.set_xlim([max(wav_aa)-wav_range*2, max(wav_aa)-wav_range*1])
 	ax2.set_xlim([max(wav_aa)-wav_range*1, max(wav_aa)])
 	
-	fig.savefig(target + "_H2_fit_spec.pdf")
+	if fb == None:
+		fig.savefig(target+"_H2_fit_spec.pdf")
+	else:
+		fig.savefig(target+"_b_"+str(fb)+"_H2_fit_spec.pdf")
 	
 
 #========================================================================
@@ -882,6 +892,102 @@ def plot_H2vib(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, \
 	fig.savefig(target + "_H2vib_fit_spec.pdf")
 
 
+def get_co(redshift):
+
+	co_name, co_wav = [], []
+	co_file = open("atoms/co.dat", "r")
+	for line in co_file:
+		ss = line.split()			
+		co_name.append(str(ss[0]).strip("CO"))
+		co_wav.append(float(ss[1])*(1+redshift))
+	co_file.close()
+
+	return co_name, co_wav
+
+def get_a(redshift):
+
+	a_name, a_wav = [], []
+	a_file = open("atoms/atom.dat", "r")
+	for line in a_file:
+		if not line.startswith("#"):
+			ss = line.split()
+			a_name.append((ss[0]))	
+			a_wav.append(float(ss[1])*(1+redshift))
+	a_file.close()
+
+	return a_name, a_wav
+
+def plot_CO(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,redshift,target,fb):
+
+	sns.set_style("white", {'legend.frameon': True})
+
+	co_name, co_wav = get_co(redshift)
+	a_name, a_wav = get_a(redshift)
+
+	fig = figure(figsize=(7, 4))
+	ax = fig.add_axes([0.15, 0.22, 0.83, 0.66])
+
+	ax.errorbar(wav_aa_pl, n_flux_pl, linestyle='-', color="black", linewidth=0.5, \
+		drawstyle='steps-mid', label=r"$\sf Data$")
+
+	ax.plot(wav_aa_pl, y_fit, label=r"$\sf Fit$", color="#2171b5", linewidth=1.8, alpha=0.9)
+
+	for side in ['top','bottom','left','right']:
+	  	ax.spines[side].set_linewidth(2)
+	ax.tick_params(which='major', length=8, width=2)
+	ax.tick_params(which='minor', length=6, width=1)
+	for tick in ax.xaxis.get_major_ticks():
+		tick.label.set_fontsize(18)
+	for tick in ax.yaxis.get_major_ticks():
+		tick.label.set_fontsize(18)
+
+	for i in np.arange(0, len(a_name), 1):
+		#print a_wav[i], a_name[i]
+		if i%2 == 0 and not i%3 == 0:
+			ax.text(a_wav[i]+0.05, 0.0, a_name[i], fontsize=6, color="black")
+			ax.axvline(a_wav[i], ymin=0.0, ymax=0.1, linestyle="-", color="black", linewidth=1.0)
+		elif i%3 == 0 and not i%2 == 0:
+			ax.text(a_wav[i]+0.05, 0.1, a_name[i], fontsize=6, color="black")
+			ax.axvline(a_wav[i], ymin=0.0, ymax=0.1, linestyle="-", color="black", linewidth=1.0)
+		else:
+			ax.text(a_wav[i]+0.05, 0.2, a_name[i], fontsize=6, color="black")
+			ax.axvline(a_wav[i],  ymin=0.0, ymax=0.1, linestyle="-", color="black", linewidth=1.0)	
+
+	for i in np.arange(0, len(co_name), 1):
+		if i%2 == 0 and not i%3 == 0:
+			ax.text(co_wav[i]+0.05, 1.25, co_name[i], fontsize=8, color="#41ae76")
+			ax.axvline(co_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=1.0)
+		elif i%3 == 0 and not i%2 == 0:
+			ax.text(co_wav[i]+0.05, 1.35, co_name[i], fontsize=8, color="#41ae76")
+			ax.axvline(co_wav[i], ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=1.0)
+		else:
+			ax.text(co_wav[i]+0.05, 1.45, co_name[i], fontsize=8, color="#41ae76")
+			ax.axvline(co_wav[i],  ymin=0.8, ymax=1.0, linestyle="-", color="#41ae76", linewidth=1.0)
+
+	if min(wav_aa_pl) < 1544.31*(redshift+1) < max(wav_aa_pl):
+		plt.title(r"$\sf CO\, AX(0-0)$", fontsize=24)
+
+	if min(wav_aa_pl) < 1509.72*(redshift+1) < max(wav_aa_pl):
+		plt.title(r"$\sf CO\, AX(1-0)$", fontsize=24)
+
+	if min(wav_aa_pl) < 1477.54*(redshift+1) < max(wav_aa_pl):
+		plt.title(r"$\sf CO\, AX(2-0)$", fontsize=24)
+
+	if min(wav_aa_pl) < 1447.41*(redshift+1) < max(wav_aa_pl):
+		plt.title(r"$\sf CO\, AX(3-0)$", fontsize=24)
+
+	lg = ax.legend(numpoints=1, fontsize=10, loc=4)
+	ax.set_xlim([min(wav_aa_pl), max(wav_aa_pl)])
+	ax.set_ylim([-0.05, 1.55])
+	ax.set_xlabel(r"$\sf Observed\, Wavelength (\AA)$", fontsize=24)
+	ax.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
+	#ax.axhline(1,color="#2171b5",linewidth=2)
+	if fb == None:
+		fig.savefig(target+"_CO_fit_spec.pdf")
+	else:
+		fig.savefig(target+"_b_"+str(fb)+"_CO_fit_spec.pdf")
+
+
 def plot_trace(trace):
 	'''
 	Plotting a trace
@@ -918,7 +1024,7 @@ def writecmd(filename):
 
 	with open(filename, "a") as f: 
 		f.write(now.strftime("%Y-%m-%d %H:%M:%S"))
-		f.write('\t')
+		f.write('python ')
 		for arg in sys.argv:
 			f.write(arg+' ')
 		f.write('\n')
