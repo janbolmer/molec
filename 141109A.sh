@@ -1,0 +1,3 @@
+python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1762.8920 -e AlI -w 7.0 -vr 350 -min 1 -max 1 -it 10000 -bi 7500 -par para_files/141109A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1808.0129 -e SiII -w 7.0 -vr 350 -min 3 -max 3 -it 10000 -bi 7500 -par para_files/141109A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 2026.1369 -e ZnII -w 8.0 -vr 350 -min 3 -max 3 -it 10000 -bi 7500 -par para_files/141109A_velo_para.csv

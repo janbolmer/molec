@@ -21,7 +21,7 @@ def sns_pair_plot(target, var_list, file, redshift):
 	data_f = {}
 
 	for var in var_list:
-		if var in ['N_HI', 'NTOTH2', 'TEMP', 'B']:
+		if var in ['NTOTH2', 'TEMP', 'B']:
 			data_f[var] = data[var][0]
 		if var == 'A_Z':
 			data_f[var] = data[var][0]/100000.0 + redshift
@@ -39,19 +39,17 @@ def sns_pair_plot(target, var_list, file, redshift):
 	g.axes[0,0].set_ylabel(r"$z$")
 	g.axes[1,0].set_ylabel(r"$b$")
 	g.axes[2,0].set_ylabel(r"$N(H_2)$")
-	g.axes[3,0].set_ylabel(r"$N(HI)$")
-	g.axes[4,0].set_ylabel(r"$T$")
+	#g.axes[3,0].set_ylabel(r"$N(HI)$")
+	g.axes[3,0].set_ylabel(r"$T$")
 
 	#g.axes[3,0].set_xlim(redshift-0.0002,redshift+0.00005)
-	g.axes[4,0].set_xlabel(r"$z$")
-	g.axes[4,1].set_xlabel(r"$b$")
-	g.axes[4,2].set_xlabel(r"$N(H_2)$")
-	g.axes[4,3].set_xlabel(r"$N(HI)$")
-	g.axes[4,4].set_xlabel(r"$T$")
+	g.axes[3,0].set_xlabel(r"$z$")
+	g.axes[3,1].set_xlabel(r"$b$")
+	g.axes[3,2].set_xlabel(r"$N(H_2)$")
+	#g.axes[4,3].set_xlabel(r"$N(HI)$")
+	g.axes[3,3].set_xlabel(r"$T$")
 
 	g.savefig(target + "H2_pairplot.pdf")
-
-
 
 
 def sns_pair_plot_fb(target, var_list, file, redshift, fb):
@@ -70,7 +68,7 @@ def sns_pair_plot_fb(target, var_list, file, redshift, fb):
 	data_f = {}
 
 	for var in var_list:
-		if var in ['N_HI', 'NTOTH2', 'TEMP']:
+		if var in ['NTOTH2', 'TEMP']:
 			data_f[var] = data[var][0]
 		if var == 'A_Z':
 			data_f[var] = data[var][0]/100000.0 + redshift
@@ -87,14 +85,14 @@ def sns_pair_plot_fb(target, var_list, file, redshift, fb):
 	#g.axes[0,0].set_ylim(redshift-0.0002,redshift+0.00005)
 	g.axes[0,0].set_ylabel(r"$z$")
 	g.axes[1,0].set_ylabel(r"$N(H_2)$")
-	g.axes[2,0].set_ylabel(r"$N(HI)$")
-	g.axes[3,0].set_ylabel(r"$T$")
+	#g.axes[2,0].set_ylabel(r"$N(HI)$")
+	g.axes[2,0].set_ylabel(r"$T$")
 
 	#g.axes[3,0].set_xlim(redshift-0.0002,redshift+0.00005)
-	g.axes[3,0].set_xlabel(r"$z$")
-	g.axes[3,1].set_xlabel(r"$N(H_2)$")
-	g.axes[3,2].set_xlabel(r"$N(HI)$")
-	g.axes[3,3].set_xlabel(r"$T$")
+	g.axes[2,0].set_xlabel(r"$z$")
+	g.axes[2,1].set_xlabel(r"$N(H_2)$")
+	#g.axes[3,2].set_xlabel(r"$N(HI)$")
+	g.axes[2,2].set_xlabel(r"$T$")
 
 	g.savefig(target+"_b_"+str(fb)+"_H2_pairplot.pdf")
 
@@ -142,7 +140,7 @@ def sns_pair_plot_CO(target, var_list, file, redshift):
 
 
 
-def sns_velo_pair_plot(target, file, nvoigts):
+def sns_velo_pair_plot(target, line, file, nvoigts):
 
 	sns.set_style("white")
 	sns.set_style("ticks")
@@ -167,9 +165,9 @@ def sns_velo_pair_plot(target, file, nvoigts):
 			shade_lowest=False)
 		g.map_lower(sns.kdeplot, cmap="bone_r",n_levels=10,shade=True,
 			shade_lowest=False)
-		g.map_diag(sns.kdeplot, lw=2);
-		g.savefig(target + "_" + str(nvoigts) + "_" +
-			str(i) + "_" + "velo_pairplot.pdf")
+		#g.map_diag(sns.kdeplot, lw=2);
+		g.map_diag(plt.hist)
+		g.savefig(target+"_"+str(nvoigts)+"_"+str(i)+"_"+str(line)+"_"+"v.pdf")
 
 def sns_H2vib_plot(target, var_list, file, redshift):
 

@@ -1,0 +1,2 @@
+python velop_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -z 2.3005 -e CrII -line 2066.1639 -vr 450 -w 12.5 -min 5 -max 5 -it 22000 -bi 18000 -res 23.0 -par para_files/121024A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -z 2.3005 -e MnII -line 2576.8753 -vr 450 -w 12.5 -min 5 -max 5 -it 22000 -bi 18000 -res 23.0 -par para_files/121024A_velo_para.csv

@@ -39,6 +39,7 @@ __status__ = "Production"
 import pymc, math, time, sys, os, argparse
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 import matplotlib as plt
 import matplotlib.pyplot  as pyplot
@@ -100,6 +101,30 @@ def print_results(res_file, redshift):
 	print comp_str
 	print red_str
 
+def gauss(x, mu, sig):
+	'''
+	Normal distribution used to create prior probability distributions
+	'''
+	return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
+
+def AtoN(A, f, line, SD=None):
+	'''
+	Calculate the column density
+	'''
+	N_C = np.log10(A/(((np.pi*e**2)/(m_e*c))*f*line*1E-13))
+	if SD != None:
+		N_C_low = np.log10((A-SD)/(((np.pi*e**2)/(m_e*c))*f*line*1E-13))
+		N_C_up = np.log10((A+SD)/(((np.pi*e**2)/(m_e*c))*f*line*1E-13))
+		N_C_low_err = N_C - N_C_low
+		N_C_up_err = N_C_up - N_C
+
+		return N_C, N_C_low_err, N_C_up_err 
+
+	else:
+		return N_C
+
+
+
 def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 		CSV_LST, velo_range, para_dic):
 	'''
@@ -109,78 +134,73 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 
 	tau = 1 / np.array(fluxv_err)**2
 
-	a = pymc.Uniform('a', lower=0.98, upper=1.02, doc='a')
+	@pymc.stochastic(dtype=float)
+	def a(value=1.0, mu=1.0, sig=0.05, doc="B"):
+		pp = 0.0
+		if 0.90 <= value < 1.10:
+			pp = gauss(value, mu, sig)
+		else:
+			pp = -np.inf
+		return pp
 
 	vars_dic = {}
 
 	for i in range(1, nvoigts+1):
 
 		if not "v0" + str(i) in para_dic:
-			sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=120.,
-				doc='sigma'+str(i))
-			v0 = pymc.Uniform('v0'+str(i),lower=-velo_range,
-				upper=velo_range, doc='v0'+str(i))
-			A = pymc.Uniform('A'+str(i),lower=0.,upper=800.0,
-				doc='A'+str(i))
-	
-			CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
-	
-			vars_dic['sigma'+str(i)] = sigma
-			vars_dic['v0'+str(i)] = v0
-			vars_dic['A'+str(i)] = A
-	
+			v0 = pymc.Uniform('v0'+str(i),lower=-velo_range, upper=velo_range,
+				doc='v0'+str(i))
 		else:
 			if para_dic["v0"+str(i)][0] == 0:
-				sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
-					doc='sigma'+str(i))
 				v0 = pymc.Uniform('v0'+str(i),lower=para_dic["v0"+str(i)][2],
 					upper=para_dic["v0"+str(i)][3], doc='v0'+str(i))
-				print "v0"+str(i) + "between", para_dic["v0"+str(i)][2],\
-					para_dic["v0"+str(i)][3]
-				A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
-					doc='A'+str(i))
-		
-				CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
-		
-				vars_dic['sigma'+str(i)] = sigma
-				vars_dic['v0'+str(i)] = v0
-				vars_dic['A'+str(i)] = A
-	
+
 			if para_dic["v0"+str(i)][0] == 1:
-				sigma = pymc.Uniform('sigma'+str(i),lower=0., upper=80.,
-					doc='sigma'+str(i))
 				v0 = pymc.Uniform('v0'+str(i),lower=para_dic["v0"+str(i)][1]-0.5,
 					upper=para_dic["v0"+str(i)][1]+0.5, doc='v0'+str(i))
-				print "v0"+str(i) + "fixed to", para_dic["v0"+str(i)][1]
-				#v0 = para_dic["v0"+str(i)][1]
-				A = pymc.Uniform('A'+str(i),lower=-600.,upper=0.0,
-					doc='A'+str(i))
-		
-				CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
-		
-				vars_dic['sigma'+str(i)] = sigma
-				vars_dic['v0'+str(i)] = v0
-				vars_dic['A'+str(i)] = A
 
+		if not "b" + str(i) in para_dic:
+			sigma = pymc.Normal('sigma'+str(i), mu=20.0,tau=1.0/(15**2),doc='sigma'+str(i))
+
+		else:
+			if para_dic["b"+str(i)][0] == 0:
+
+				sigma = pymc.Normal('sigma'+str(i),mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
+					tau=1.0/((para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])/np.sqrt(2.0))**2,
+					doc='sigma'+str(i))
+
+			if para_dic["b"+str(i)][0] == 1:
+				print "fixed"
+				sigma = pymc.Normal('sigma'+str(i),mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
+					tau=1.0/((para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])/np.sqrt(2.0))**10,
+					doc='sigma'+str(i))
+
+
+		#A = pymc.Normal('A'+str(i),mu=100.0,tau=1.0/50.0,doc='A'+str(i))
+		A = pymc.Uniform('A'+str(i),lower=0,upper=100000,doc='A'+str(i))
+
+		CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+
+		vars_dic['sigma'+str(i)] = sigma
+		vars_dic['v0'+str(i)] = v0
+		vars_dic['A'+str(i)] = A
 
 	@pymc.deterministic(plot=False)
 	def multVoigt(vv=velocity,a=a,gamma=gamma,nvoigts=nvoigts,
 		vars_dic=vars_dic):
 
-		flux = np.ones(len(vv)) #*a
+		gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),mode="oversample")
+
+		flux = np.ones(len(vv))*a
 
 		for i in range(1, nvoigts + 1):
 			
 			x = vv-vars_dic["v0"+str(i)]
-			
-			V = vars_dic["A"+str(i)]*voigt(x,vars_dic["sigma"+str(i)],gamma)
-			gauss_k = Gaussian1DKernel(stddev=RES/((2*np.sqrt(2*np.log(2)))*transform),
-				x_size=1, mode="oversample")
-			V = convolve(V, gauss_k)
+			tau = vars_dic["A"+str(i)] * voigt(x,vars_dic["sigma"+str(i)],gamma)
 
-			flux *= np.exp(-V)
+			flux *= np.exp(-tau)
 
-		return flux
+		return np.convolve(flux, gauss_k, mode='same')
 
 	y_val = pymc.Normal('y_val',mu=multVoigt,tau=tau,value=fluxv,observed=True)
 	return locals()
@@ -209,85 +229,134 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	y_max2 = MDL.stats()['multVoigt']['quantiles'][75]
 	y_fit = MDL.stats()['multVoigt']['mean']
 	
-	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_voigt_res.csv",variables=CSV_LST)
+	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+"_voigt_res.csv",variables=CSV_LST)
 
-	csv_f = open(grb_name+"_"+str(nvoigts)+"_voigt_res.csv", "a")
+	csv_f = open(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+"_voigt_res.csv", "a")
 	csv_f.write("Osc, " + str(osc_line) + "\n")
 	csv_f.write("GAMMA, " + str(gamma_line))
 	csv_f.close()
-
+	
 	return y_min, y_max, y_min2, y_max2, y_fit
 	
 
 def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err, 
-	y_min, y_max, y_min2, y_max2, y_fit, res_file, gamma, nvoigts,
-	velo_range, RES, element="SiII"): 
+	y_min, y_max, y_min2, y_max2, y_fit, res_file, f, gamma, nvoigts,
+	velo_range, grb_name, RES, element="SiII"): 
 	'''
 	Plotting the Spectrum including the individual Voigt Profiles
 	'''
+	sns.set_style("white")
 
 	par_dic = get_results(res_file)
 	
 	fig = figure(figsize=(10, 6))
-	ax = fig.add_axes([0.13, 0.13, 0.85, 0.80])
+	ax = fig.add_axes([0.13, 0.15, 0.85, 0.78])
+
+	gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),mode="oversample")
 
 	for i in range(1, nvoigts+1):
 
 		ff = np.ones(len(velocity))*par_dic["a"]
 
 		x = velocity-par_dic["v0"+str(i)]
-		V = par_dic["A"+str(i)]*voigt(x,par_dic["sigma"+str(i)],gamma)
 
-		gauss_k = Gaussian1DKernel(stddev=RES/((2*np.sqrt(2*np.log(2)))*transform),
-			x_size=1, mode="oversample")
-		V = convolve(V, gauss_k)
+		tau = par_dic["A"+str(i)]*voigt(x,par_dic["sigma"+str(i)],gamma)
 
-		ff *= np.exp(-V)
+		ff *= np.convolve(np.exp(-tau),gauss_k,mode='same')
 
-		broad = round(par_dic["sigma"+str(i)],2)
-		N_C = round(np.log10(par_dic["A"+str(i)]/(((np.pi*e**2)/(m_e*c))*0.00208*my_line*1E-13)),2)
+		broad = round(par_dic["sigma"+str(i)]*np.sqrt(2.0),2)
+		N_C = round(AtoN(par_dic["A"+str(i)], f, my_line, SD=None), 2)
+
+	# Normalized to continuum
 
 		ax.axvline(par_dic["v0"+str(i)],linestyle="dashed",
 			color="black", linewidth=1.2)
-		ax.plot(velocity,ff,label='Voigt'+str(i),color=pt_analogous[i-1],linewidth=2)
+		ax.plot(velocity[8:-8],ff[8:-8]/par_dic["a"],label='Voigt'+str(i),color=pt_analogous[i-1],linewidth=2)
 
-		ax.text(par_dic["v0"+str(i)],1.3,"b = "+str(broad),rotation=55, color=pt_analogous[i-1])
-		ax.text(par_dic["v0"+str(i)],1.45,"N = "+str(N_C),rotation=55, color=pt_analogous[i-1])
-
-	ax.errorbar(velocity,fluxv,yerr=fluxv_err,color='gray',marker='o',
-		ls='None',label='Observed')
-	ax.plot(velocity,fluxv, drawstyle='steps-mid', color='gray', alpha=0.66)
-
-	ax.plot(velocity,y_fit,label='Fit',color="black",linewidth=1.5,
-		linestyle="dashed")
-	ax.fill_between(velocity,y_min, y_max,color='black',alpha=0.3)
-	ax.fill_between(velocity,y_min2, y_max2,color='black',alpha=0.5)
-	
-	plt.title(element + " " + str(my_line) + " at z = " + str(redshift),
-		fontsize=24)
+		ax.text(par_dic["v0"+str(i)],1.3,"b = "+str(broad),rotation=55,color=pt_analogous[i-1])
+		ax.text(par_dic["v0"+str(i)],1.45,"N = "+str(N_C),rotation=55,color=pt_analogous[i-1])
 	
 	ylim([-0.5, 1.55])
 	xlim([-velo_range, velo_range])
 	
-	lg = legend(numpoints=1, fontsize=12, loc=3, ncol=2)
-	lg.get_frame().set_edgecolor("white")
-	lg.get_frame().set_facecolor('#f0f0f0')
+	trans = False
+
+	if trans == False:
+
+		ax.axhline(0.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dotted",color="black")
+		ax.axhline(1.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="-",color="black")
+
+		ax.errorbar(velocity,fluxv/par_dic["a"],yerr=fluxv_err,color='gray',marker='o',
+			ls='None',label='Observed')
+		ax.plot(velocity,fluxv/par_dic["a"], drawstyle='steps-mid', color='gray', alpha=0.66)
+
+		ax.plot(velocity,y_fit/par_dic["a"],label='Fit',color="black",linewidth=1.5,
+			linestyle="dashed")
+		ax.fill_between(velocity,y_min/par_dic["a"], y_max/par_dic["a"],color='black',alpha=0.3)
+		ax.fill_between(velocity,y_min2/par_dic["a"], y_max2/par_dic["a"],color='black',alpha=0.5)
+
+		lg = legend(numpoints=1, fontsize=12, loc=3, ncol=2)
+		lg.get_frame().set_edgecolor("white")
+		lg.get_frame().set_facecolor('#f0f0f0')
+
+		plt.title(str(grb)+" "+element+" "+str(my_line)+" at z = "+str(redshift),
+			fontsize=24)
+		
+		ax.set_xlabel(r"$\sf Velocity\, (km/s)$", fontsize=24)
+		ax.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
+		
+		for axis in ['top','bottom','left','right']:
+		  ax.spines[axis].set_linewidth(2)
+		ax.tick_params(which='major', length=8, width=2)
+		ax.tick_params(which='minor', length=4, width=1.5)
+		
+		for tick in ax.xaxis.get_major_ticks():
+		    tick.label.set_fontsize(18)
+		for tick in ax.yaxis.get_major_ticks():
+			tick.label.set_fontsize(18)
+		
+		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"+str(nvoigts)+".pdf",
+			transparent=trans)
+
+	else:
+
+		ax.axhline(0.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dotted",color="white")
+		ax.axhline(1.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="-",color="white")
+
+		ax.errorbar(velocity,fluxv/par_dic["a"],yerr=fluxv_err,color="#C56A4D",marker='o',
+			ls='None',label='Observed')
+		ax.plot(velocity,fluxv/par_dic["a"], drawstyle='steps-mid', color="#C56A4D", alpha=0.66)
+
+		ax.plot(velocity,y_fit/par_dic["a"],label='Fit',color="white",linewidth=1.5,
+			linestyle="dashed")
+		ax.fill_between(velocity,y_min/par_dic["a"], y_max/par_dic["a"],color='white',alpha=0.5)
+		ax.fill_between(velocity,y_min2/par_dic["a"], y_max2/par_dic["a"],color='white',alpha=0.8)
 	
-	ax.set_xlabel(r"$\sf Velocity\, (km/s)$", fontsize=24)
-	ax.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
+		lg = legend(numpoints=1, fontsize=12, loc=3, ncol=2)
+		lg.get_frame().set_edgecolor('white')
+		lg.get_frame().set_facecolor('white')
+		for text in lg.get_texts():
+			text.set_color("#7187A6")
+
+		plt.title(str(grb)+" "+element+" "+str(my_line)+" at z = "+str(redshift),
+			fontsize=24, color="#7187A6")
 	
-	for axis in ['top','bottom','left','right']:
-	  ax.spines[axis].set_linewidth(2)
-	ax.tick_params(which='major', length=8, width=2)
-	ax.tick_params(which='minor', length=4, width=1.5)
-	
-	for tick in ax.xaxis.get_major_ticks():
-	    tick.label.set_fontsize(18)
-	for tick in ax.yaxis.get_major_ticks():
-		tick.label.set_fontsize(18)
-	
-	fig.savefig(grb + "_" + element + "_" + str(my_line) + ".pdf")
-	#show()
+		ax.set_xlabel(r"$\sf Velocity\, (km/s)$", fontsize=24, color="#7187A6")
+		ax.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24, color="#7187A6")
+		
+		for axis in ['top','bottom','left','right']:
+		  ax.spines[axis].set_linewidth(2)
+		  ax.spines[axis].set_color("#7187A6")
+		ax.tick_params(which='major',length=8, width=2, colors="#7187A6")
+		ax.tick_params(which='minor',length=4, width=1.5, colors="#7187A6")
+
+		for tick in ax.xaxis.get_major_ticks():
+		    tick.label.set_fontsize(18)
+		for tick in ax.yaxis.get_major_ticks():
+			tick.label.set_fontsize(18)
+		
+		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"+str(nvoigts)+".pdf",
+			transparent=trans)
 
 def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
 
@@ -303,11 +372,12 @@ def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
 	ax.set_ylim([0.1, 600])
 	ax.set_xlim([min_n-0.5, max_n+0.5])
 	ax.set_xticks(range(min_n, max_n+1))
-	ax.set_yticks([0.2, 0.5, 1.0, 2.0, 5.0, 10,20,50,100,200,500])
+	ax.set_yticks([0.2,0.5,1.0,2.0,5.0,10,20,50,100,200,500])
 	ax.set_yticklabels(["0.2", "0.5", "1.0", "2.0", "5.0", "10",
 		"20", "50", "100", "200", "500"])
-	ax.axhline(1,linewidth=2,linestyle="dashed",color="black")
+	ax.axhline(1,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dashed",color="black")
 
+	
 	for axis in ['top','bottom','left','right']:
 	  ax.spines[axis].set_linewidth(2)
 	ax.tick_params(which='major',length=8,width=2)
@@ -371,6 +441,7 @@ if __name__ == "__main__":
 	gamma = (gamma_line * line * 10e-13) / (2 * math.pi)
 
 	print "Gamma in km/s: ", gamma
+	print "f: ", osc_line
 
 	# Read data, GRB-Name, Resolution and PSF_FWHM from file
 	wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, \
@@ -389,7 +460,7 @@ if __name__ == "__main__":
 		sys.exit("ERROR: please specify input redshift: e.g. -z 2.358")
 
 	para_dic = {}
-#
+
 	if para_file != None:
 		para_dic = get_paras_velo(para_file)
 		print "\n Using parameters given in:", para_file
@@ -397,11 +468,14 @@ if __name__ == "__main__":
 	velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, n_flux,
 		n_flux_err, line, redshift, wav_range)
 
-	#RES = 33.0
+	#velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, flux,
+	#	flux_err, line, redshift, wav_range)
+
 	transform = np.median(np.diff(velocity))
+	print "transform", transform
 	print "Resoluton in km/s:", RES
-	#print "transform:", transform
 	print "Res (sigma):", RES/(2*np.sqrt(2*np.log(2)))
+	print "stddev gauss_k:", RES/(2*np.sqrt(2*np.log(2))*transform)
 
 	chi2_list = []
 
@@ -415,7 +489,7 @@ if __name__ == "__main__":
 			velo_range, para_dic)
 		
 		chi2 = 0
-		for i in range(0, len(y_fit), 1):
+		for i in range(8, len(y_fit)-8, 1):
 			chi2_tmp = (fluxv[i] - y_fit[i])**2 / (fluxv_err[i])**2
 			chi2 += (chi2_tmp / (len(fluxv)+(4*nvoigts)))
 		chi2_list.append(chi2)
@@ -424,15 +498,16 @@ if __name__ == "__main__":
 
 		time.sleep(0.5)
 
-		res_file = grb_name+"_"+str(nvoigts)+"_voigt_res.csv"
+		res_file = grb_name+"_"+str(nvoigts)+"_"+str(line)+"_voigt_res.csv"
 	
-		plot_results(grb_name+str(nvoigts), redshift, line, velocity,
-			fluxv, fluxv_err, y_min, y_max, y_min2, y_max2, y_fit,
-			res_file, gamma, nvoigts, velo_range, RES, element)
+		plot_results(grb_name+str(nvoigts), redshift, line, velocity[8:-8],
+			fluxv[8:-8], fluxv_err[8:-8], y_min[8:-8], y_max[8:-8],
+			y_min2[8:-8], y_max2[8:-8], y_fit[8:-8], res_file, osc_line,
+			gamma, nvoigts, velo_range, grb_name, RES, element)
 
 		print "Components:", print_results(res_file, redshift)
 
-		sns_velo_pair_plot(grb_name,file='velo_fit.pickle',nvoigts=nvoigts)
+		sns_velo_pair_plot(grb_name,line,file='velo_fit.pickle',nvoigts=nvoigts)
 
 	print "\n Plotting Chi2"
 	plt_nv_chi2(chi2_list, min_n, max_n, grb_name)

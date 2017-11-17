@@ -217,7 +217,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 					value=16.0,doc='N_'+elmt)
 				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
 					value=8.,doc='B_'+elmt)
-				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-50.,upper=+50.,
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
 					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
@@ -231,6 +231,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 						upper=par_dic[elmt][3],doc='N_'+elmt)
 
 				if elmt == "HI":
+
 					N_E = pymc.Normal('N_'+elmt,mu=par_dic[elmt][1],
 						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**6),
 						doc='N_'+elmt)
@@ -263,22 +264,22 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 				if not elmt+add_comp in par_dic:
 
 					if elmt != "HI":
-						N_E=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
+						N_EC=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
 							value=16.0,doc='N_'+elmt+add_comp)
-						B_E=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
+						B_EC=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
 							value=8.,doc='B_'+elmt+add_comp)
-						Z_E=float(add_comp)
+						Z_EC=float(add_comp)
 	
 						CSV_LST.extend(('N_'+elmt+add_comp,'B_'+elmt+add_comp,))		
-						vars_dic_add[elmt+add_comp] = N_E, B_E, Z_E, elmt
+						vars_dic_add[elmt+add_comp] = N_EC, B_EC, Z_EC, elmt
 
 				if elmt+add_comp in par_dic:
 					if par_dic[elmt][0] == 1:
-						N_E = par_dic[elmt][1]
-						B_E = par_dic[elmt][4]
-						Z_E = float(add_comp)
+						N_EC = par_dic[elmt][1]
+						B_EC = par_dic[elmt][4]
+						Z_EC = float(add_comp)
 
-						vars_dic_add[elmt+add_comp] = N_E, B_E, Z_E, elmt		
+						vars_dic_add[elmt+add_comp] = N_EC, B_EC, Z_EC, elmt		
 
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
