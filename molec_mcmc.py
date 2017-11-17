@@ -118,14 +118,6 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 	Defines the model for H2
 	'''
 
-	#TEMP = pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-	#TEMP =  pymc.Normal('TEMP',mu=100,tau=1./(280**2),doc='TEMP')
-	#A_Z = 	pymc.Uniform('A_Z',lower=-50,upper=50,doc='A_Z')
-	#A_Z = 	 pymc.Normal('A_Z',mu=0,tau=1./(25**2),doc='A_Z')
-	#B =	 pymc.Normal('B',mu=5,tau=1./(12**2),value=3.0,doc='B')	
-	#B = pymc.Uniform('B',lower=0.0, upper=20.0, doc='B')
-	#B = pymc.Normal('B',mu=3.4,tau=1./(3.4**2),value=3.0, doc='B')
-
 	tau = 1 / np.array(n_flux_err)**2
 
 #======================broadening parameter B============================

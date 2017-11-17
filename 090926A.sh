@@ -1,0 +1,3 @@
+python velop_mcmc.py -f spectra/GRB090926_OB1UVB.txt -e SiIV -line 1402.7729 -z 2.1068 -w 7 -vr 350 -min 1 -max 2 -it 40000 -bi 35000 -res 30.0
+python velop_mcmc.py -f spectra/GRB090926_OB1UVB.txt -e FeII -line 1608.4509 -z 2.1068 -w 7 -vr 350 -min 1 -max 1 -it 40000 -bi 35000 -res 30.0
+python velop_mcmc.py -f spectra/GRB090926_OB1VIS.txt -e SiII -line 1808.0129 -z 2.1068 -w 8 -vr 350 -min 1 -max 1 -it 40000 -bi 35000 -res 30.0

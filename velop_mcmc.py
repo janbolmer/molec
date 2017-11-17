@@ -10,11 +10,11 @@ e.g.: velop_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -z 2.358
 -f 			path to spectrum data file
 -line 		line in AA, eg. 1808.0129
 -e 			Name of the line/element / e.g.: FeII, SiII
--z 			redshift
--vr 		velocity range 
+-z 			redshift for centering
+-vr 		velocity range (-vr to +vr)
 -min 		minimum number of voigt profiles to fit
 -max 		maximum number of voigt profiles to fit
--res 		spectral resolution km/s
+-res 		spectral resolution km/s (fwhm)
 -par 		Parameter file with velocity components
 -it 		number of iterations
 -bi 		burn-in
@@ -72,6 +72,9 @@ pt_analogous = ["#86af49", "#817397", "#b88bac",
 "#d57f70","#dcb967","#ac9897","#ac898d","#f0e1ce",
 "#86af49", "#817397","#b88bac", "#d57f70", "#dcb967"]
 
+#========================================================================
+#========================================================================
+
 def get_results(para_file):
 	'''
 	Reads the Results from the .csv file created
@@ -81,8 +84,9 @@ def get_results(para_file):
 	par_dic = {}
 	par = pd.read_csv(para_file, delimiter=', ', engine='python')
 	for i in np.arange(0, len(par), 1):
-		par_dic[par['Parameter'][i]] = par['Mean'][i]
+		par_dic[par['Parameter'][i]] = [par['Mean'][i], par['SD'][i]]
 
+	#print par_dic
 	return par_dic
 
 def print_results(res_file, redshift):
@@ -100,6 +104,9 @@ def print_results(res_file, redshift):
 				red_str += str(nz) + " "
 	print comp_str
 	print red_str
+
+#========================================================================
+#========================================================================
 
 def gauss(x, mu, sig):
 	'''
@@ -123,7 +130,8 @@ def AtoN(A, f, line, SD=None):
 	else:
 		return N_C
 
-
+#========================================================================
+#========================================================================
 
 def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 		CSV_LST, velo_range, para_dic):
@@ -160,24 +168,26 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 					upper=para_dic["v0"+str(i)][1]+0.5, doc='v0'+str(i))
 
 		if not "b" + str(i) in para_dic:
-			sigma = pymc.Normal('sigma'+str(i), mu=20.0,tau=1.0/(15**2),doc='sigma'+str(i))
+			sigma = pymc.Normal('sigma'+str(i), mu=20.0,tau=1.0/(15**2),
+				doc='sigma'+str(i))
 
 		else:
 			if para_dic["b"+str(i)][0] == 0:
 
-				sigma = pymc.Normal('sigma'+str(i),mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
+				sigma = pymc.Normal('sigma'+str(i),
+					mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
 					tau=1.0/((para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])/np.sqrt(2.0))**2,
 					doc='sigma'+str(i))
 
 			if para_dic["b"+str(i)][0] == 1:
 				print "fixed"
-				sigma = pymc.Normal('sigma'+str(i),mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
+				sigma = pymc.Normal('sigma'+str(i),
+					mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
 					tau=1.0/((para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])/np.sqrt(2.0))**10,
 					doc='sigma'+str(i))
 
-
-		#A = pymc.Normal('A'+str(i),mu=100.0,tau=1.0/50.0,doc='A'+str(i))
-		A = pymc.Uniform('A'+str(i),lower=0,upper=100000,doc='A'+str(i))
+		A = pymc.Normal('A'+str(i),mu=100.0,tau=1.0/50.0,doc='A'+str(i))
+		#A = pymc.Uniform('A'+str(i),lower=0,upper=100000,doc='A'+str(i))
 
 		CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
 
@@ -189,20 +199,22 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 	def multVoigt(vv=velocity,a=a,gamma=gamma,nvoigts=nvoigts,
 		vars_dic=vars_dic):
 
-		gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),mode="oversample")
+		gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),
+			mode="oversample")
 
 		flux = np.ones(len(vv))*a
 
 		for i in range(1, nvoigts + 1):
 			
 			x = vv-vars_dic["v0"+str(i)]
-			tau = vars_dic["A"+str(i)] * voigt(x,vars_dic["sigma"+str(i)],gamma)
+			tau = vars_dic["A"+str(i)]*voigt(x,vars_dic["sigma"+str(i)],gamma)
 
 			flux *= np.exp(-tau)
 
 		return np.convolve(flux, gauss_k, mode='same')
 
-	y_val = pymc.Normal('y_val',mu=multVoigt,tau=tau,value=fluxv,observed=True)
+	y_val = pymc.Normal('y_val',mu=multVoigt,tau=tau,
+		value=fluxv,observed=True)
 	return locals()
 
 def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
@@ -229,16 +241,20 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	y_max2 = MDL.stats()['multVoigt']['quantiles'][75]
 	y_fit = MDL.stats()['multVoigt']['mean']
 	
-	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+"_voigt_res.csv",variables=CSV_LST)
+	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+
+		"_voigt_res.csv",variables=CSV_LST)
 
-	csv_f = open(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+"_voigt_res.csv", "a")
+	csv_f = open(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+
+		"_voigt_res.csv", "a")
 	csv_f.write("Osc, " + str(osc_line) + "\n")
 	csv_f.write("GAMMA, " + str(gamma_line))
 	csv_f.close()
 	
 	return y_min, y_max, y_min2, y_max2, y_fit
-	
 
+#========================================================================
+#========================================================================
+	
 def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err, 
 	y_min, y_max, y_min2, y_max2, y_fit, res_file, f, gamma, nvoigts,
 	velo_range, grb_name, RES, element="SiII"): 
@@ -256,25 +272,31 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 
 	for i in range(1, nvoigts+1):
 
-		ff = np.ones(len(velocity))*par_dic["a"]
+		ff = np.ones(len(velocity))*par_dic["a"][0]
 
-		x = velocity-par_dic["v0"+str(i)]
+		x = velocity-par_dic["v0"+str(i)][0]
 
-		tau = par_dic["A"+str(i)]*voigt(x,par_dic["sigma"+str(i)],gamma)
+		tau = par_dic["A"+str(i)][0]*voigt(x,par_dic["sigma"+str(i)][0],gamma)
 
 		ff *= np.convolve(np.exp(-tau),gauss_k,mode='same')
 
-		broad = round(par_dic["sigma"+str(i)]*np.sqrt(2.0),2)
-		N_C = round(AtoN(par_dic["A"+str(i)], f, my_line, SD=None), 2)
+		broad = round(par_dic["sigma"+str(i)][0]*np.sqrt(2.0),2)
+		#N_C = round(AtoN(par_dic["A"+str(i)][0], f, my_line, SD=None), 2)
+		N_C, N_C_low_err, N_C_up_err = AtoN(par_dic["A"+str(i)][0], f, 
+			my_line, SD=par_dic["A"+str(i)][1])
 
+		print N_C, N_C_low_err, N_C_up_err
 	# Normalized to continuum
 
-		ax.axvline(par_dic["v0"+str(i)],linestyle="dashed",
+		ax.axvline(par_dic["v0"+str(i)][0],linestyle="dashed",
 			color="black", linewidth=1.2)
-		ax.plot(velocity[8:-8],ff[8:-8]/par_dic["a"],label='Voigt'+str(i),color=pt_analogous[i-1],linewidth=2)
+		ax.plot(velocity[8:-8],ff[8:-8]/par_dic["a"][0],label='Voigt'+str(i),
+			color=pt_analogous[i-1],linewidth=2)
 
-		ax.text(par_dic["v0"+str(i)],1.3,"b = "+str(broad),rotation=55,color=pt_analogous[i-1])
-		ax.text(par_dic["v0"+str(i)],1.45,"N = "+str(N_C),rotation=55,color=pt_analogous[i-1])
+		ax.text(par_dic["v0"+str(i)][0],1.3,"b = "+str(broad),rotation=55,
+			color=pt_analogous[i-1])
+		ax.text(par_dic["v0"+str(i)][0],1.45,"N = "+str(round(N_C, 2)),rotation=55,
+			color=pt_analogous[i-1])
 	
 	ylim([-0.5, 1.55])
 	xlim([-velo_range, velo_range])
@@ -283,24 +305,31 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 
 	if trans == False:
 
-		ax.axhline(0.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dotted",color="black")
-		ax.axhline(1.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="-",color="black")
+		ax.axhline(0.0,xmin=0.0, xmax=1.0, linewidth=2,
+			linestyle="dotted",color="black")
+		ax.axhline(1.0,xmin=0.0, xmax=1.0, linewidth=2,
+			linestyle="-",color="black")
 
-		ax.errorbar(velocity,fluxv/par_dic["a"],yerr=fluxv_err,color='gray',marker='o',
+		ax.errorbar(velocity,fluxv/par_dic["a"][0],yerr=fluxv_err,
+			color='gray',marker='o',
 			ls='None',label='Observed')
-		ax.plot(velocity,fluxv/par_dic["a"], drawstyle='steps-mid', color='gray', alpha=0.66)
+		ax.plot(velocity,fluxv/par_dic["a"][0], drawstyle='steps-mid',
+			color='gray', alpha=0.66)
 
-		ax.plot(velocity,y_fit/par_dic["a"],label='Fit',color="black",linewidth=1.5,
+		ax.plot(velocity,y_fit/par_dic["a"][0],label='Fit',color="black",
+			linewidth=1.5,
 			linestyle="dashed")
-		ax.fill_between(velocity,y_min/par_dic["a"], y_max/par_dic["a"],color='black',alpha=0.3)
-		ax.fill_between(velocity,y_min2/par_dic["a"], y_max2/par_dic["a"],color='black',alpha=0.5)
+		ax.fill_between(velocity,y_min/par_dic["a"][0],y_max/par_dic["a"][0],
+			color='black',alpha=0.3)
+		ax.fill_between(velocity,y_min2/par_dic["a"][0],y_max2/par_dic["a"][0],
+			color='black',alpha=0.5)
 
 		lg = legend(numpoints=1, fontsize=12, loc=3, ncol=2)
 		lg.get_frame().set_edgecolor("white")
 		lg.get_frame().set_facecolor('#f0f0f0')
 
-		plt.title(str(grb)+" "+element+" "+str(my_line)+" at z = "+str(redshift),
-			fontsize=24)
+		plt.title(str(grb)+" "+element+" "+str(my_line)+
+			" at z = "+str(redshift),fontsize=24)
 		
 		ax.set_xlabel(r"$\sf Velocity\, (km/s)$", fontsize=24)
 		ax.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)
@@ -315,22 +344,29 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 		for tick in ax.yaxis.get_major_ticks():
 			tick.label.set_fontsize(18)
 		
-		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"+str(nvoigts)+".pdf",
-			transparent=trans)
+		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"
+			+str(nvoigts)+".pdf",transparent=trans)
 
 	else:
 
-		ax.axhline(0.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dotted",color="white")
-		ax.axhline(1.0,xmin=0.0, xmax=1.0, linewidth=2,linestyle="-",color="white")
+		ax.axhline(0.0,xmin=0.0, xmax=1.0, linewidth=2,
+			linestyle="dotted",color="white")
+		ax.axhline(1.0,xmin=0.0, xmax=1.0, linewidth=2,
+			linestyle="-",color="white")
 
-		ax.errorbar(velocity,fluxv/par_dic["a"],yerr=fluxv_err,color="#C56A4D",marker='o',
+		ax.errorbar(velocity,fluxv/par_dic["a"][0],yerr=fluxv_err,
+			color="#C56A4D",marker='o',
 			ls='None',label='Observed')
-		ax.plot(velocity,fluxv/par_dic["a"], drawstyle='steps-mid', color="#C56A4D", alpha=0.66)
+		ax.plot(velocity,fluxv/par_dic["a"][0],drawstyle='steps-mid',
+			color="#C56A4D", alpha=0.66)
 
-		ax.plot(velocity,y_fit/par_dic["a"],label='Fit',color="white",linewidth=1.5,
+		ax.plot(velocity,y_fit/par_dic["a"][0],label='Fit',color="white",
+			linewidth=1.5,
 			linestyle="dashed")
-		ax.fill_between(velocity,y_min/par_dic["a"], y_max/par_dic["a"],color='white',alpha=0.5)
-		ax.fill_between(velocity,y_min2/par_dic["a"], y_max2/par_dic["a"],color='white',alpha=0.8)
+		ax.fill_between(velocity,y_min/par_dic["a"][0], y_max/par_dic["a"][0],
+			color='white',alpha=0.5)
+		ax.fill_between(velocity,y_min2/par_dic["a"][0], y_max2/par_dic["a"][0],
+			color='white',alpha=0.8)
 	
 		lg = legend(numpoints=1, fontsize=12, loc=3, ncol=2)
 		lg.get_frame().set_edgecolor('white')
@@ -338,25 +374,25 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 		for text in lg.get_texts():
 			text.set_color("#7187A6")
 
-		plt.title(str(grb)+" "+element+" "+str(my_line)+" at z = "+str(redshift),
-			fontsize=24, color="#7187A6")
+		plt.title(str(grb)+" "+element+" "+str(my_line)+" at z = "
+			+str(redshift),fontsize=24, color="#7187A6")
 	
-		ax.set_xlabel(r"$\sf Velocity\, (km/s)$", fontsize=24, color="#7187A6")
-		ax.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24, color="#7187A6")
+		ax.set_xlabel(r"$\sf Velocity\, (km/s)$",fontsize=24,color="#7187A6")
+		ax.set_ylabel(r"$\sf Normalized\, Flux$",fontsize=24,color="#7187A6")
 		
 		for axis in ['top','bottom','left','right']:
 		  ax.spines[axis].set_linewidth(2)
 		  ax.spines[axis].set_color("#7187A6")
-		ax.tick_params(which='major',length=8, width=2, colors="#7187A6")
-		ax.tick_params(which='minor',length=4, width=1.5, colors="#7187A6")
+		ax.tick_params(which='major',length=8,width=2,colors="#7187A6")
+		ax.tick_params(which='minor',length=4,width=1.5,colors="#7187A6")
 
 		for tick in ax.xaxis.get_major_ticks():
 		    tick.label.set_fontsize(18)
 		for tick in ax.yaxis.get_major_ticks():
 			tick.label.set_fontsize(18)
 		
-		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"+str(nvoigts)+".pdf",
-			transparent=trans)
+		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"
+			+str(nvoigts)+".pdf",transparent=trans)
 
 def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
 
@@ -375,7 +411,8 @@ def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
 	ax.set_yticks([0.2,0.5,1.0,2.0,5.0,10,20,50,100,200,500])
 	ax.set_yticklabels(["0.2", "0.5", "1.0", "2.0", "5.0", "10",
 		"20", "50", "100", "200", "500"])
-	ax.axhline(1,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dashed",color="black")
+	ax.axhline(1,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dashed",
+		color="black")
 
 	
 	for axis in ['top','bottom','left','right']:
@@ -523,14 +560,3 @@ if __name__ == "__main__":
 
 #========================================================================
 #========================================================================
-
-
-
-
-
-
-
-
-
-
-
