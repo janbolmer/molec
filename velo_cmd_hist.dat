@@ -335,3 +335,93 @@
 2017-11-17 14:50:16python velop_mcmc.py -f spectra/GRB090926_OB1UVB.txt -e SiIV -line 1402.7729 -z 2.1068 -w 7 -vr 350 -min 2 -max 2 -it 40000 -bi 35000 -res 30.0 -par para_files/090926A_velo_para.csv 
 2017-11-17 14:53:05python velop_mcmc.py -f spectra/GRB090926_OB1UVB.txt -e FeII -line 1608.4509 -z 2.1068 -w 7 -vr 350 -min 2 -max 2 -it 40000 -bi 35000 -res 30.0 -par para_files/090926A_velo_para.csv 
 2017-11-17 14:55:58python velop_mcmc.py -f spectra/GRB090926_OB1VIS.txt -e SiII -line 1808.0129 -z 2.1068 -w 8 -vr 350 -min 2 -max 2 -it 40000 -bi 35000 -res 30.0 -par para_files/090926A_velo_para.csv 
+2017-11-17 18:12:38python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e FeII -line 1608.4509 -vr 160 -w 4.2 -min 3 -max 3 -it 7000 -bi 5000 -res 24.6 
+2017-11-17 18:14:58python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e FeII -line 1808.0129 -vr 420 -w 8.0 -min 3 -max 3 -it 7000 -bi 5000 -res 24.6 
+2017-11-17 18:17:54python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 420 -w 10.0 -min 3 -max 3 -it 7000 -bi 5000 -res 24.6 
+2017-11-17 18:20:05python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 380 -w 11.0 -min 3 -max 5 -it 7000 -bi 5000 -res 24.6 
+2017-11-17 18:22:04python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e NiII -line 1709.60 -vr 380 -w 11.0 -min 1 -max 1 -it 12000 -bi 8000 -res 24.6 
+2017-11-17 18:27:16python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e NiII -line 1709.60 -vr 280 -w 9.0 -min 1 -max 1 -it 12000 -bi 8000 -res 24.6 
+2017-11-17 18:28:04python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e NiII -line 1751.91 -vr 280 -w 9.0 -min 1 -max 1 -it 12000 -bi 8000 -res 24.6 
+2017-11-17 18:28:16python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 380 -w 11.0 -min 7 -max 5 -it 22000 -bi 18000 -res 24.6 
+2017-11-17 18:31:49python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e NiII -line 1709.60 -vr 150 -w 4.0 -min 1 -max 1 -it 12000 -bi 8000 -res 24.6 
+2017-11-17 18:32:32python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 380 -w 11.0 -min 5 -max 5 -it 22000 -bi 18000 -res 24.6 
+2017-11-17 18:32:37python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e NiII -line 1751.91 -vr 150 -w 4.0 -min 1 -max 1 -it 12000 -bi 8000 -res 24.6 
+2017-11-17 18:39:57python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 380 -w 11.0 -min 5 -max 5 -it 68000 -bi 58000 -res 24.6 
+2017-11-17 19:06:09python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 380 -w 11.0 -min 5 -max 5 -it 12000 -bi 8000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 19:12:18python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 310 -w 10.0 -min 5 -max 5 -it 20000 -bi 15000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 19:18:58python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 9.0 -min 5 -max 5 -it 30000 -bi 25000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 19:29:24python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 9.2 -min 5 -max 5 -it 60000 -bi 45000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 19:46:32python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 20.0 -min 5 -max 5 -it 30000 -bi 25000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 20:01:46python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 20.0 -min 5 -max 5 -it 30000 -bi 25000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 20:01:59python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 20.0 -min 5 -max 5 -it 30000 -bi 25000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 20:14:08python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 15.0 -min 5 -max 5 -it 30000 -bi 25000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 20:23:10python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 15.0 -min 5 -max 5 -it 30000 -bi 25000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-17 20:35:16python velop_mcmc.py -f spectra/GRB160203A_comVIS.txt -z 3.5188 -e SiII -line 1808.0129 -vr 302 -w 15.0 -min 5 -max 5 -it 70000 -bi 55000 -res 24.6 -par para_files/160203A_velo_para.csv 
+2017-11-18 09:55:26python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 1304.3702 -vr 350 -w 7.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 09:56:41python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 1526.7070 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 09:57:46python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 1808.0129 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:00:34python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 2329.2310 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:00:39python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 2335.1230 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:02:44python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 1190.4158 -vr 350 -w 7.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:03:51python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 1193.2897 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:04:52python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 1193.2897 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:05:59python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 2329.2310 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:06:04python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 2335.1230 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:08:14python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e GeII -line 1602.4863 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:08:35python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e GeII -line 1602.4863 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:13:46python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e NiII -line 1709.60 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 2 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:18:10python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeIIa -line 2396.3551 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 2 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:22:57python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeIIb -line 2405.6173 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:26:16python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeIIb -line 2405.6173 -vr 310 -w 7.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:32:29python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e NiIIb -line 2217.1676 -vr 310 -w 7.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-18 10:34:14python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e NiIIb -line 2316.7481 -vr 310 -w 7.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-19 15:36:13python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -e SiII -line 1808.0129 -vr 420 -w 10 -it 25000 -bi 18000 -min 3 -max 3 -res 30.0 
+2017-11-19 16:45:02python velop_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -z 2.993 -line 1355.60 -e OI -w 5.0 -vr 350 -min 1 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:46:13python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1631.13 -e FeIIb -w 7.0 -vr 350 -min 1 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:46:40python velop_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -z 2.993 -line 1355.60 -e OI -w 7.0 -vr 350 -min 1 -max 1 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:47:18python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1629.16 -e FeIIb -w 8.0 -vr 350 -min 1 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:47:36python velop_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -z 2.993 -line 1355.60 -e OI -w 7.0 -vr 350 -min 2 -max 2 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:48:36python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1629.16 -e FeIIb -w 8.0 -vr 350 -min 1 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:51:44python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1631.13 -e FeIIb -w 8.0 -vr 350 -min 1 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:54:42python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1762.8920 -e AlI -w 8.0 -vr 350 -min 1 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:57:40python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1808.0129 -e SiII -w 8.0 -vr 350 -min 3 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 16:59:13python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 2026.1369 -e ZnII -w 9.0 -vr 350 -min 3 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:00:51python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 2056.26 -e CrII -w 9.0 -vr 350 -min 3 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:02:36python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 2217.17 -e NiIIb -w 10.0 -vr 350 -min 3 -max 3 -it 10000 -bi 7500 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:12:35python velop_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -z 2.993 -line 1355.60 -e OI -w 20.0 -vr 350 -min 1 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:15:29python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.993 -line 1629.16 -e FeIIb -w 20.0 -vr 350 -min 1 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:19:03python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.99439800039 -line 1808.0129 -e SiII -w 9.0 -vr 350 -min 3 -max 3 -it 20000 -bi 15000 -res 30 
+2017-11-19 17:22:50python velop_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -z 2.9944 -line 1355.60 -e OI -w 5.0 -vr 310 -min 1 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:25:54python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 1629.16 -e FeIIb -w 7.0 -vr 350 -min 1 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:30:06python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 1629.16 -e FeIIb -w 8.0 -vr 350 -min 2 -max 2 -it 30000 -bi 27000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 17:35:10python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 1631.13 -e FeIIb -w 8.0 -vr 350 -min 2 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:10:46python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 1762.8920 -e AlI -w 9.0 -vr 350 -min 2 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:15:43python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 1762.8920 -e AlI -w 10.0 -vr 350 -min 3 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:19:48python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 2026.1369 -e ZnII -w 11.0 -vr 350 -min 3 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:22:56python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 2026.1369 -e ZnII -w 11.0 -vr 380 -min 3 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:27:40python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 2026.1369 -e ZnII -w 12.0 -vr 380 -min 3 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:35:46python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 2056.26 -e CrII -w 12.0 -vr 380 -min 2 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:40:14python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 2217.17 -e NiIIb -w 12.0 -vr 380 -min 3 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-19 18:46:14python velop_mcmc.py -f spectra/GRB141109A_OB1VIS.txt -z 2.9944 -line 2217.17 -e NiIIb -w 13.0 -vr 380 -min 3 -max 3 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-20 09:34:56python velop_mcmc.py -f spectra/GRB141109A_OB1UVB.txt -z 2.9944 -line 1355.60 -e OI -w 6.0 -vr 380 -min 1 -max 2 -it 20000 -bi 15000 -res 30 -par para_files/141109A_velo_para.csv 
+2017-11-21 10:58:25python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 11:01:21python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 11:56:36python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 11:59:26python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:02:19python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:03:34python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:04:41python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:07:05python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:10:23python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:12:46python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 22000 -bi 18000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:15:01python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 7.5 -it 30000 -bi 25000 -min 1 -max 2 -res 29.1 
+2017-11-21 12:18:27python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 8.5 -it 30000 -bi 25000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:20:07python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 10.0 -it 30000 -bi 25000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:22:18python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 10.5 -it 40000 -bi 45000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:22:41python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e FeII -line 2249.88 -vr 350 -w 10.5 -it 50000 -bi 45000 -min 1 -max 1 -res 29.1 
+2017-11-21 12:30:18python velop_mcmc.py -f spectra/GRB151021A_comUVB.txt -z 2.330 -e SiII -line 1020.6989 -vr 350 -w 7.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-21 12:31:07python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 2329.2310 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-21 12:31:19python velop_mcmc.py -f spectra/GRB151021A_comVIS.txt -z 2.330 -e SiII -line 2335.1230 -vr 350 -w 8.0 -it 20000 -bi 16000 -min 1 -max 1 -res 29.1 -par para_files/151021A_velo_para.csv 
+2017-11-21 12:31:45python velop_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -z 2.3005 -e MnII -line 2576.8753 -vr 450 -w 12.5 -min 5 -max 5 -it 22000 -bi 18000 -res 23.0 -par para_files/121024A_velo_para.csv 
+2017-11-21 12:40:44python velop_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -z 2.3005 -e MnII -line 2576.8753 -vr 450 -w 12.5 -min 5 -max 5 -it 22000 -bi 18000 -res 23.0 -par para_files/121024A_velo_para.csv 
+2017-11-21 12:47:03python velop_mcmc.py -f spectra/GRB121024A_OB1VIS.txt -z 2.3005 -e MnII -line 2576.8753 -vr 450 -w 12.5 -min 5 -max 5 -it 22000 -bi 18000 -res 23.0 -par para_files/121024A_velo_para.csv 

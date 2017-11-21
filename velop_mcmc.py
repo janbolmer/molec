@@ -91,7 +91,7 @@ def get_results(para_file):
 
 def print_results(res_file, redshift):
 	'''
-	prints the velocity components
+	Prints the velocity components and corresponding redshift
 	'''
 	comp_str = ""
 	red_str = ""
@@ -112,29 +112,26 @@ def gauss(x, mu, sig):
 	'''
 	Normal distribution used to create prior probability distributions
 	'''
-	return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
-
-def AtoN(A, f, line, SD=None):
-	'''
-	Calculate the column density
-	'''
-	N_C = np.log10(A/(((np.pi*e**2)/(m_e*c))*f*line*1E-13))
-	if SD != None:
-		N_C_low = np.log10((A-SD)/(((np.pi*e**2)/(m_e*c))*f*line*1E-13))
-		N_C_up = np.log10((A+SD)/(((np.pi*e**2)/(m_e*c))*f*line*1E-13))
-		N_C_low_err = N_C - N_C_low
-		N_C_up_err = N_C_up - N_C
-
-		return N_C, N_C_low_err, N_C_up_err 
-
-	else:
-		return N_C
+	return np.exp(-np.power(x-mu,2.0)/(2.0*np.power(sig,2.0)))
 
 #========================================================================
 #========================================================================
 
-def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
-		CSV_LST, velo_range, para_dic):
+def add_abs_velo(v, N, b, gamma, f, l0):
+	'''
+	Add absorption line l0 in velocity space v, given the oscillator strength,
+	the damping constant gamma, column density N, and broadening b
+	'''
+	A = (((np.pi*e**2)/(m_e*c))*f*l0*1E-13) * (10**N)
+	tau = A * voigt(v,b/np.sqrt(2.0),gamma)
+
+	return np.exp(-tau)
+
+#========================================================================
+#========================================================================
+
+def mult_voigts(velocity, fluxv, fluxv_err, f, gamma, l0, nvoigts, RES,
+				CSV_LST, velo_range, para_dic):
 	'''
 	Fitting a number of Voigt profiles to a normalized spectrum in
 	velocity space
@@ -145,7 +142,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 	@pymc.stochastic(dtype=float)
 	def a(value=1.0, mu=1.0, sig=0.05, doc="B"):
 		pp = 0.0
-		if 0.90 <= value < 1.10:
+		if 0.85 <= value < 1.15:
 			pp = gauss(value, mu, sig)
 		else:
 			pp = -np.inf
@@ -168,36 +165,32 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 					upper=para_dic["v0"+str(i)][1]+0.5, doc='v0'+str(i))
 
 		if not "b" + str(i) in para_dic:
-			sigma = pymc.Normal('sigma'+str(i), mu=20.0,tau=1.0/(15**2),
-				doc='sigma'+str(i))
+			b = pymc.Uniform('b'+str(i),lower=5,upper=100,value=15,doc='b'+str(i))
 
 		else:
 			if para_dic["b"+str(i)][0] == 0:
 
-				sigma = pymc.Normal('sigma'+str(i),
-					mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
-					tau=1.0/((para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])/np.sqrt(2.0))**2,
-					doc='sigma'+str(i))
+				b = pymc.Normal('b'+str(i),mu=para_dic["b"+str(i)][1],
+					tau=1.0/(para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])**2,
+					doc='b'+str(i))
 
 			if para_dic["b"+str(i)][0] == 1:
-				print "fixed"
-				sigma = pymc.Normal('sigma'+str(i),
-					mu=para_dic["b"+str(i)][1]/np.sqrt(2.0),
-					tau=1.0/((para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])/np.sqrt(2.0))**10,
-					doc='sigma'+str(i))
+				print "b fixed to:", para_dic["b"+str(i)][1] 
+				b = pymc.Normal('b'+str(i),mu=para_dic["b"+str(i)][1],
+					tau=1.0/(para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])**6,
+					doc='b'+str(i))
 
-		A = pymc.Normal('A'+str(i),mu=100.0,tau=1.0/50.0,doc='A'+str(i))
-		#A = pymc.Uniform('A'+str(i),lower=0,upper=100000,doc='A'+str(i))
+		N = pymc.Uniform('N'+str(i),lower=0,upper=24.,value=15,doc='N'+str(i))
 
-		CSV_LST.extend(('sigma'+str(i),'v0'+str(i),'A'+str(i)))
+		CSV_LST.extend(('v0'+str(i),'b'+str(i),'N'+str(i)))
 
-		vars_dic['sigma'+str(i)] = sigma
 		vars_dic['v0'+str(i)] = v0
-		vars_dic['A'+str(i)] = A
+		vars_dic['b'+str(i)] = b
+		vars_dic['N'+str(i)] = N
 
 	@pymc.deterministic(plot=False)
-	def multVoigt(vv=velocity,a=a,gamma=gamma,nvoigts=nvoigts,
-		vars_dic=vars_dic):
+	def multVoigt(vv=velocity,a=a,f=f,gamma=gamma,l0=l0,
+				  nvoigts=nvoigts,vars_dic=vars_dic):
 
 		gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),
 			mode="oversample")
@@ -206,29 +199,28 @@ def mult_voigts(velocity, fluxv, fluxv_err, gamma, nvoigts, RES,
 
 		for i in range(1, nvoigts + 1):
 			
-			x = vv-vars_dic["v0"+str(i)]
-			tau = vars_dic["A"+str(i)]*voigt(x,vars_dic["sigma"+str(i)],gamma)
-
-			flux *= np.exp(-tau)
+			v = vv-vars_dic["v0"+str(i)]
+			flux *= add_abs_velo(v, vars_dic["N"+str(i)],
+				vars_dic["b"+str(i)], gamma, f, l0)
 
 		return np.convolve(flux, gauss_k, mode='same')
 
-	y_val = pymc.Normal('y_val',mu=multVoigt,tau=tau,
-		value=fluxv,observed=True)
+	y_val = pymc.Normal('y_val',mu=multVoigt,tau=tau,value=fluxv,observed=True)
 	return locals()
 
-def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
-			gamma, nvoigts, iterations, burn_in, RES, velo_range, para_dic):
+def do_mcmc(grb,redshift,velocity,fluxv,fluxv_err,grb_name,f,gamma,
+			l0,nvoigts,iterations,burn_in,RES,velo_range,para_dic):
 	'''
 	MCMC sample 
 	Reading and writing Results
 	'''
+
 	CSV_LST = ["a"]
 
 	pymc.np.random.seed(1)
 
 	MDL = pymc.MCMC(mult_voigts(velocity,fluxv,fluxv_err,
-		gamma,nvoigts,RES,CSV_LST, velo_range, para_dic),
+		f,gamma,l0,nvoigts,RES,CSV_LST,velo_range,para_dic),
 		db='pickle',dbname='velo_fit.pickle')
 
 	MDL.db
@@ -241,12 +233,12 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 	y_max2 = MDL.stats()['multVoigt']['quantiles'][75]
 	y_fit = MDL.stats()['multVoigt']['mean']
 	
-	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+
+	MDL.write_csv(grb_name+"_"+str(nvoigts)+"_"+str(l0)+
 		"_voigt_res.csv",variables=CSV_LST)
 
-	csv_f = open(grb_name+"_"+str(nvoigts)+"_"+str(my_line)+
+	csv_f = open(grb_name+"_"+str(nvoigts)+"_"+str(l0)+
 		"_voigt_res.csv", "a")
-	csv_f.write("Osc, " + str(osc_line) + "\n")
+	csv_f.write("Osc, " + str(f) + "\n")
 	csv_f.write("GAMMA, " + str(gamma_line))
 	csv_f.close()
 	
@@ -255,9 +247,9 @@ def do_mcmc(grb, redshift, my_line, velocity, fluxv, fluxv_err, grb_name,
 #========================================================================
 #========================================================================
 	
-def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err, 
-	y_min, y_max, y_min2, y_max2, y_fit, res_file, f, gamma, nvoigts,
-	velo_range, grb_name, RES, element="SiII"): 
+def plot_results(grb, redshift, velocity, fluxv, fluxv_err, y_min,
+	y_max, y_min2, y_max2, y_fit, res_file, f, gamma, l0, nvoigts,
+	velo_range, grb_name, RES, element="SiII"):
 	'''
 	Plotting the Spectrum including the individual Voigt Profiles
 	'''
@@ -268,39 +260,39 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 	fig = figure(figsize=(10, 6))
 	ax = fig.add_axes([0.13, 0.15, 0.85, 0.78])
 
-	gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),mode="oversample")
+	gauss_k = Gaussian1DKernel(stddev=RES/(2*np.sqrt(2*np.log(2))*transform),
+		mode="oversample")
 
 	for i in range(1, nvoigts+1):
 
 		ff = np.ones(len(velocity))*par_dic["a"][0]
 
-		x = velocity-par_dic["v0"+str(i)][0]
+		v = velocity-par_dic["v0"+str(i)][0]
 
-		tau = par_dic["A"+str(i)][0]*voigt(x,par_dic["sigma"+str(i)][0],gamma)
+		ff *= np.convolve(add_abs_velo(v, par_dic["N"+str(i)][0],
+				par_dic["b"+str(i)][0], gamma, f, l0), gauss_k, mode='same')
 
-		ff *= np.convolve(np.exp(-tau),gauss_k,mode='same')
+		b_C = round(par_dic["b"+str(i)][0],2)
+		N_C = round(par_dic["N"+str(i)][0],2)
 
-		broad = round(par_dic["sigma"+str(i)][0]*np.sqrt(2.0),2)
-		#N_C = round(AtoN(par_dic["A"+str(i)][0], f, my_line, SD=None), 2)
-		N_C, N_C_low_err, N_C_up_err = AtoN(par_dic["A"+str(i)][0], f, 
-			my_line, SD=par_dic["A"+str(i)][1])
-
-		print N_C, N_C_low_err, N_C_up_err
+		print "Component",i,":","b:",b_C,"+/-",round(par_dic["b"+str(i)][1],2), \
+				"N:",N_C,"+/-",round(par_dic["N"+str(i)][1],2)
 	# Normalized to continuum
 
 		ax.axvline(par_dic["v0"+str(i)][0],linestyle="dashed",
 			color="black", linewidth=1.2)
-		ax.plot(velocity[8:-8],ff[8:-8]/par_dic["a"][0],label='Voigt'+str(i),
+		ax.plot(velocity[8:-8],ff[8:-8]/par_dic["a"][0],label='Comp. '+str(i),
 			color=pt_analogous[i-1],linewidth=2)
 
-		ax.text(par_dic["v0"+str(i)][0],1.3,"b = "+str(broad),rotation=55,
+		ax.text(par_dic["v0"+str(i)][0],1.3,"b = "+str(b_C),rotation=55,
 			color=pt_analogous[i-1])
-		ax.text(par_dic["v0"+str(i)][0],1.45,"N = "+str(round(N_C, 2)),rotation=55,
+		ax.text(par_dic["v0"+str(i)][0],1.45,"N = "+str(N_C),rotation=55,
 			color=pt_analogous[i-1])
 	
 	ylim([-0.5, 1.55])
 	xlim([-velo_range, velo_range])
 	
+	# Transparent for Presentations
 	trans = False
 
 	if trans == False:
@@ -328,7 +320,7 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 		lg.get_frame().set_edgecolor("white")
 		lg.get_frame().set_facecolor('#f0f0f0')
 
-		plt.title(str(grb)+" "+element+" "+str(my_line)+
+		plt.title(str(grb)+" "+element+" "+str(l0)+
 			" at z = "+str(redshift),fontsize=24)
 		
 		ax.set_xlabel(r"$\sf Velocity\, (km/s)$", fontsize=24)
@@ -344,7 +336,7 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 		for tick in ax.yaxis.get_major_ticks():
 			tick.label.set_fontsize(18)
 		
-		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"
+		fig.savefig(grb_name+"_"+element+"_"+str(l0)+"_"
 			+str(nvoigts)+".pdf",transparent=trans)
 
 	else:
@@ -374,7 +366,7 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 		for text in lg.get_texts():
 			text.set_color("#7187A6")
 
-		plt.title(str(grb)+" "+element+" "+str(my_line)+" at z = "
+		plt.title(str(grb)+" "+element+" "+str(l0)+" at z = "
 			+str(redshift),fontsize=24, color="#7187A6")
 	
 		ax.set_xlabel(r"$\sf Velocity\, (km/s)$",fontsize=24,color="#7187A6")
@@ -391,10 +383,13 @@ def plot_results(grb, redshift, my_line, velocity, fluxv, fluxv_err,
 		for tick in ax.yaxis.get_major_ticks():
 			tick.label.set_fontsize(18)
 		
-		fig.savefig(grb_name+"_"+element+"_"+str(my_line)+"_"
+		fig.savefig(grb_name+"_"+element+"_"+str(l0)+"_"
 			+str(nvoigts)+".pdf",transparent=trans)
 
 def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
+	'''
+	Plot reduced Chi^2 vs. number of components 
+	'''
 
 	fig = figure(figsize=(12, 6))
 	ax = fig.add_axes([0.10, 0.14, 0.86, 0.85])
@@ -460,7 +455,7 @@ if __name__ == "__main__":
 	element = args.element
 	redshift = args.z
 	wav_range = args.wav_range
-	line = args.line
+	l0 = args.line
 	iterations = args.it
 	burn_in = args.bi
 	min_n = args.min
@@ -469,23 +464,22 @@ if __name__ == "__main__":
 	para_file = args.par
 	RES = args.resolution
 	
-
 	# Read Oscillator strength f and decay rate gamma
 	# for given line
-	osc_line, gamma_line = get_osc_gamma(line)
+	f, gamma_line = get_osc_gamma(l0)
 
 	# converting gamma to km/s
-	gamma = (gamma_line * line * 10e-13) / (2 * math.pi)
+	gamma = (gamma_line * l0 * 10e-13) / (2 * math.pi)
 
 	print "Gamma in km/s: ", gamma
-	print "f: ", osc_line
+	print "f: ", f
 
 	# Read data, GRB-Name, Resolution and PSF_FWHM from file
 	wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, \
 	res, psf_fwhm = get_data(spec_file, redshift, wl_range=False)
 
-	if not min(wav_aa) < line*(1+redshift) < max(wav_aa):
-		print "Line is at:", line*(1+redshift), "Spectrum covers: ", \
+	if not min(wav_aa) < l0*(1+redshift) < max(wav_aa):
+		print "Line is at:", l0*(1+redshift), "Spectrum covers: ", \
 			min(wav_aa), "to", max(wav_aa)
 		sys.exit("ERROR: Chosen line must fall within the wavelength \
 			range of the given file")
@@ -503,10 +497,7 @@ if __name__ == "__main__":
 		print "\n Using parameters given in:", para_file
 
 	velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, n_flux,
-		n_flux_err, line, redshift, wav_range)
-
-	#velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, flux,
-	#	flux_err, line, redshift, wav_range)
+		n_flux_err, l0, redshift, wav_range)
 
 	transform = np.median(np.diff(velocity))
 	print "transform", transform
@@ -521,9 +512,9 @@ if __name__ == "__main__":
 		print "\n Using", nvoigts, "Voigt Profiles \n"
 
 		y_min, y_max, y_min2, y_max2, y_fit = do_mcmc(grb_name,
-			redshift,line,velocity,fluxv,fluxv_err,grb_name,gamma,
-			nvoigts,iterations+(nvoigts*400),burn_in+(nvoigts*400),RES,
-			velo_range, para_dic)
+			redshift,velocity,fluxv,fluxv_err,grb_name,f,gamma,
+			l0,nvoigts,iterations+(nvoigts*400),burn_in+(nvoigts*400),RES,
+			velo_range,para_dic)
 		
 		chi2 = 0
 		for i in range(8, len(y_fit)-8, 1):
@@ -535,16 +526,16 @@ if __name__ == "__main__":
 
 		time.sleep(0.5)
 
-		res_file = grb_name+"_"+str(nvoigts)+"_"+str(line)+"_voigt_res.csv"
+		res_file = grb_name+"_"+str(nvoigts)+"_"+str(l0)+"_voigt_res.csv"
 	
-		plot_results(grb_name+str(nvoigts), redshift, line, velocity[8:-8],
+		plot_results(grb_name+str(nvoigts),redshift,velocity[8:-8],
 			fluxv[8:-8], fluxv_err[8:-8], y_min[8:-8], y_max[8:-8],
-			y_min2[8:-8], y_max2[8:-8], y_fit[8:-8], res_file, osc_line,
-			gamma, nvoigts, velo_range, grb_name, RES, element)
+			y_min2[8:-8], y_max2[8:-8], y_fit[8:-8], res_file,
+			f,gamma,l0,nvoigts,velo_range,grb_name,RES,element)
 
 		print "Components:", print_results(res_file, redshift)
 
-		sns_velo_pair_plot(grb_name,line,file='velo_fit.pickle',nvoigts=nvoigts)
+		sns_velo_pair_plot(grb_name,l0,file='velo_fit.pickle',nvoigts=nvoigts)
 
 	print "\n Plotting Chi2"
 	plt_nv_chi2(chi2_list, min_n, max_n, grb_name)
