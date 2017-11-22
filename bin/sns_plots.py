@@ -139,7 +139,6 @@ def sns_pair_plot_CO(target, var_list, file, redshift):
 	g.savefig(target + "CO_pairplot.pdf")
 
 
-
 def sns_velo_pair_plot(target, line, file, nvoigts):
 
 	sns.set_style("white")
@@ -155,6 +154,8 @@ def sns_velo_pair_plot(target, line, file, nvoigts):
 
 		for key in data:
 			if key.endswith(str(i)):
+				data_f[key] = data[key][0]
+			if key == "a":
 				data_f[key] = data[key][0]
 		
 		df = pd.DataFrame(data_f)

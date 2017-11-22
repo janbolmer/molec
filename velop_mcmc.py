@@ -30,10 +30,10 @@ FeII    2344.2129  0.12523167
 
 __author__ = "Jan Bolmer"
 __copyright__ = "Copyright 2017"
-__version__ = "0.1"
+__version__ = "1.0"
 __maintainer__ = "Jan Bolmer"
 __email__ = "jbolmer@eso.org"
-__status__ = "Production"
+__status__ = "stable"
 
 
 import pymc, math, time, sys, os, argparse
@@ -142,10 +142,10 @@ def mult_voigts(velocity, fluxv, fluxv_err, f, gamma, l0, nvoigts, RES,
 	@pymc.stochastic(dtype=float)
 	def a(value=1.0, mu=1.0, sig=0.05, doc="B"):
 		pp = 0.0
-		if 0.85 <= value < 1.15:
-			pp = gauss(value, mu, sig)
-		else:
-			pp = -np.inf
+		#if 0.85 <= value < 1.15:
+		pp = gauss(value, mu, sig)
+		#else:
+		#	pp = -np.inf
 		return pp
 
 	vars_dic = {}
@@ -270,26 +270,27 @@ def plot_results(grb, redshift, velocity, fluxv, fluxv_err, y_min,
 		v = velocity-par_dic["v0"+str(i)][0]
 
 		ff *= np.convolve(add_abs_velo(v, par_dic["N"+str(i)][0],
-				par_dic["b"+str(i)][0], gamma, f, l0), gauss_k, mode='same')
+				par_dic["b"+str(i)][0],gamma,f,l0),gauss_k,mode='same')
 
 		b_C = round(par_dic["b"+str(i)][0],2)
+		b_Cerr = round(par_dic["b"+str(i)][1],2)
 		N_C = round(par_dic["N"+str(i)][0],2)
+		N_Cerr = round(par_dic["N"+str(i)][1],2)
 
-		print "Component",i,":","b:",b_C,"+/-",round(par_dic["b"+str(i)][1],2), \
-				"N:",N_C,"+/-",round(par_dic["N"+str(i)][1],2)
-	# Normalized to continuum
+		print "Component",i,":","b:",b_C,"+/-",b_Cerr,"N:",N_C,"+/-",N_Cerr
 
-		ax.axvline(par_dic["v0"+str(i)][0],linestyle="dashed",
-			color="black", linewidth=1.2)
+		ax.axvline(par_dic["v0"+str(i)][0],linestyle="dashed",color="black",
+			linewidth=1.2)
+
 		ax.plot(velocity[8:-8],ff[8:-8]/par_dic["a"][0],label='Comp. '+str(i),
 			color=pt_analogous[i-1],linewidth=2)
 
-		ax.text(par_dic["v0"+str(i)][0],1.3,"b = "+str(b_C),rotation=55,
-			color=pt_analogous[i-1])
-		ax.text(par_dic["v0"+str(i)][0],1.45,"N = "+str(N_C),rotation=55,
-			color=pt_analogous[i-1])
+		ax.text(par_dic["v0"+str(i)][0],1.45,"b = "+str(b_C)+"+/-"+str(b_Cerr),
+			rotation=55,color=pt_analogous[i-1])
+		ax.text(par_dic["v0"+str(i)][0],1.65,"N = "+str(N_C)+"+/-"+str(N_Cerr),
+			rotation=55,color=pt_analogous[i-1])
 	
-	ylim([-0.5, 1.55])
+	ylim([-0.5, 1.75])
 	xlim([-velo_range, velo_range])
 	
 	# Transparent for Presentations

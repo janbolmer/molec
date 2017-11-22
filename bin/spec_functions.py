@@ -18,6 +18,8 @@ from scipy.ndimage import gaussian_filter1d as gauss1d
 from scipy.interpolate import splrep, splev
 from scipy.special import wofz
 
+from astropy.convolution import Gaussian1DKernel
+
 import importlib
 
 import bokeh
@@ -268,13 +270,60 @@ def H(a,x):
 #========================================================================
 #======================================================================== 
 
-def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift):
+def addAbs_unconv(wls, N_ion, lamb, f, gamma, broad, redshift):
+	'''
+	Adds an absorption line, which is not(!) convolved with the
+	instrumental resolution
+
+	wls: wavelenth in AA
+	N_ion: Column denisty
+	lamb:restframe wavelength of the transition in AA
+	f: oscillator strength of transition
+	gamma: Damping Constant
+	broad: broadening parameter b
+	redshift: redshift
+	'''
+
+
 	C_a = np.sqrt(np.pi) * e**2 * f * lamb * 1E-8 / m_e / c / broad
 	a = lamb * 1E-8 * gamma / (4.*np.pi * broad)
 	dl_D = broad/c * lamb
 	x = (wls/(redshift+1.0) - lamb)/dl_D+0.01
 	tau = C_a * N_ion * H(a, x)
+
 	return np.exp(-tau)
+
+def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift, res=11800):
+	'''
+	Adds an absorption line convolved with the instrumental 
+	resolution R
+
+	wls: wavelenth in AA
+	N_ion: Column denisty
+	lamb:restframe wavelength of the transition in AA
+	f: oscillator strength of transition
+	gamma: Damping Constant
+	broad: broadening parameter b
+	redshift: redshift
+	res: spectral resolution R
+	'''
+
+	rres = lamb/res  # delta_lambda = lambda/R (FWHM)
+	fwhmsig = 2*np.sqrt(2*np.log(2)) # FWHM -> sigma_gauss
+	tf = np.median(np.diff(wls)) # transform to pixels 
+
+	#print rres, tf, rres/(2*np.sqrt(2*np.log(2))*tf)
+
+	gauss_k = Gaussian1DKernel(stddev=rres/(fwhmsig*tf),
+		mode="oversample") # gaussian kernel for convolution
+
+	C_a = np.sqrt(np.pi) * e**2 * f * lamb * 1E-8 / m_e / c / broad
+	a = lamb * 1E-8 * gamma / (4.*np.pi * broad)
+	dl_D = broad/c * lamb
+	x = (wls/(redshift+1.0) - lamb)/dl_D+0.01
+	tau = C_a * N_ion * H(a, x)
+
+	return np.convolve(np.exp(-tau), gauss_k, mode='same')
 
 #========================================================================
 #========================================================================

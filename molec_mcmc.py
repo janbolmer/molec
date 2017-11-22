@@ -112,8 +112,8 @@ def gauss(x, mu, sig):
 #========================================================================
 #========================================================================
 
-def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
-	par_dic, CSV_LST, NROT, fixed_b):
+def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
+	redshift_lst, par_dic, CSV_LST, NROT, fixed_b):
 	'''
 	Defines the model for H2
 	'''
@@ -125,12 +125,12 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 	if fixed_b == None:
 
 		@pymc.stochastic(dtype=float)
-		def B(value=2.0, mu=2.0, sig=2.0, doc="B"):
+		def B(value=2.0, mu=2.0, sig=1.0, doc="B"):
 			'''
 			bla
 			'''
 			pp = 0.0
-			if 0 <= value < 30:
+			if 0 <= value < 20:
 				pp = gauss(value, mu, sig)
 			else:
 				#invalid values
@@ -277,11 +277,11 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 	@pymc.deterministic(plot=False) 
 	def H2(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTH2=NTOTH2,TEMP=TEMP,BROAD=B,
 		redshift=redshift,vars_dic=vars_dic,vars_dic_add=vars_dic_add,
-		add_h2_dic=add_h2_dic):
+		add_h2_dic=add_h2_dic, res=res):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
-		synspec = SynSpec(wav_aa,redshift)
+		synspec = SynSpec(wav_aa,redshift,res)
 
 		# add H2
 		h2spec = synspec.add_H2(norm_spec,broad=BROAD,NTOTH2=NTOTH2,
@@ -309,6 +309,9 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 				broad=vars_dic_add[key][1], Natom=vars_dic_add[key][0],
 				A_REDSHIFT=A_REDSHIFT)
 
+		# convolve with spectral resolution
+		#h2spec = synspec.convolve_spec(h2spec)
+
 		return h2spec
 
 	# Data:
@@ -320,8 +323,8 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, line_lst, redshift_lst,
 #========================================================================
 
 
-def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
-	res, par_dic, CSV_LST):
+def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, res, line_lst, \
+	par_dic, CSV_LST):
 	'''
 	Defines the model for H2vib
 	'''
@@ -346,15 +349,17 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 
 	@pymc.deterministic(plot=False)
 	def H2vib(wav_aa=wav_aa, redshift=redshift, A_REDSHIFT=A_Z,
-		MH2S=MH2S, vars_dic=vars_dic):
+		MH2S=MH2S, vars_dic=vars_dic, res=res):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa))
-		synspec = SynSpec(wav_aa,redshift)
+		synspec = SynSpec(wav_aa,redshift,res)
+
+		res_aa = np.median(np.diff(wav_aa))
 
 		# add H2*
 		h2vib_spec = synspec.add_vibH2(norm_spec,h2swl,modspec,
-			tauspec,RES=res,MH2S=MH2S,A_REDSHIFT=A_REDSHIFT)
+			tauspec,RES=res_aa,MH2S=MH2S,A_REDSHIFT=A_REDSHIFT)
 
 		# add other lines
 		if len(vars_dic) >= 1:
@@ -374,7 +379,7 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, line_lst, \
 #========================================================================
 #========================================================================
 
-def model_CO(wav_aa, n_flux, n_flux_err, redshift, line_lst,
+def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	par_dic, CSV_LST, NROT, fixed_b):
 	'''
 	Defines the model for CO
@@ -432,11 +437,11 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, line_lst,
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
 	def CO(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTCO=NTOTCO,TEMP=TEMP,BROAD=B,
-		redshift=redshift):
+		redshift=redshift,res=res):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
-		synspec = SynSpec(wav_aa,redshift)
+		synspec = SynSpec(wav_aa,redshift,res)
 
 		# add H2
 		co_spec = synspec.add_CO(norm_spec,broad=BROAD,NTOTCO=NTOTCO,
@@ -457,7 +462,7 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, line_lst,
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	fixed_b, model_used, line_lst, redshift_lst, target, par_dic,
-	redshift, CSV_LST, NROT, res=6000):
+	redshift, CSV_LST, NROT, res):
 	'''
 	Performing the MCMC
 	'''
@@ -465,7 +470,7 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "H2":
 
 		MDL = pymc.MCMC(model_H2(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, redshift_lst, par_dic, CSV_LST, NROT, fixed_b),
+			res, line_lst, redshift_lst, par_dic, CSV_LST, NROT, fixed_b),
 			db='pickle', dbname='H2_fit.pickle')
 		
 		MDL.db
@@ -485,7 +490,7 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "H2vib":
 
 		MDL = pymc.MCMC(model_H2vib(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, res, par_dic, CSV_LST),db='pickle',
+			res, line_lst, par_dic, CSV_LST),db='pickle',
 			dbname='H2vib_fit.pickle')
 
 		MDL.db
@@ -506,7 +511,7 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "CO":
 
 		MDL = pymc.MCMC(model_CO(wav_aa, n_flux, n_flux_err, redshift,
-			line_lst, par_dic, CSV_LST, NROT, fixed_b),db='pickle',
+			res,line_lst, par_dic, CSV_LST, NROT, fixed_b),db='pickle',
 			dbname='CO_fit.pickle')
 
 		MDL.db
@@ -550,7 +555,7 @@ def main():
 	parser.add_argument('-ign','--ignore',dest="ignore", nargs='+',
 						default=[])
 	parser.add_argument('-res','--resolution',dest="resolution",
-						default=0.15,type=float)
+						default=10000,type=float)
 	parser.add_argument('-it','--iterations',dest="iterations",
 						default=1000, type=int)
 	parser.add_argument('-bi','--burn_in',dest="burn_in",

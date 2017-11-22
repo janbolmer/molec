@@ -57,21 +57,27 @@ class SynSpec(object):
 	Arguments:
 		wav_range:	(rest-frame) wavelength range to be covered
 		redshift: 	redshift
+		resolution:	spectral resolution R
 
 	Methods:
 		add_ion: 	adds absorption lines for given ion/element
 		add_H2:		adds Lyman and Werner bands of H2
 		add_vibH2:	adds vibrational excited levels of H2*
 		add CO:		adds CO bandheads
-		add HD:		adds HD lines
+		add HD:		adds HD lines - Work in progress
 	"""
 
-	def __init__(self, wav_range, redshift):
+	def __init__(self, wav_range, redshift, resolution):
 
 		self.wav_range = wav_range
 		self.redshift = redshift
+		self.resolution = resolution # spectral resolution R
 
 	def __len__(self):
+		'''
+		returns the number of data points
+		'''
+
 		return len(wav_range)
 
 	def add_ion(self, spectrum, atom_name, broad, Natom, A_REDSHIFT):
@@ -97,7 +103,7 @@ class SynSpec(object):
 					f = float(a[2])
 					gamma = float(a[3])
 					spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-						redshift)
+						redshift,res=self.resolution)
 		return spec
 
 
@@ -117,7 +123,8 @@ class SynSpec(object):
 		NTOTH2:		Total column density of H2
 		TEMP:		Temperature of H2 (Kelvin)
 		A_REDSHIFT:	Offset in redshift in #/100000.0
-		NROT:		Rotational levels to consider, maximum 7
+		NROT:		List of Rotational levels to consider, maximum 7
+					e.g.: NROT= [0, 1, 2, 3]
 		'''
 
 		redshift = self.redshift
@@ -141,13 +148,21 @@ class SynSpec(object):
 				gamma = float(h2[3])
 				nion = NH2[h2[0]]
 				spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-					redshift)
+					redshift,res=self.resolution)
 
 		return spec
 
 	def add_CO(self, spectrum, broad, NTOTCO, TEMP, A_REDSHIFT, NROT):
+		'''
+		Adding CO lines
+		broad:		Broadening parameter in km/s
+		NTOTCO:		Total column density of H2
+		TEMP:		Temperature of CO (Kelvin)
+		A_REDSHIFT:	Offset in redshift in #/100000.0
+		NROT:		List of Rotational levels to consider, maximum 6
+					e.g.: NROT= [0, 1, 2, 3]
+		'''
 
-		# WORK IN PROGRESS - How to add CO band heads?
 		redshift = self.redshift
 		wav_range = self.wav_range
 		spec = spectrum
@@ -171,7 +186,7 @@ class SynSpec(object):
 			gamma = float(co[3])
 			nion = NCO[co[0]]
 			spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-				redshift)
+				redshift,res=self.resolution)
 
 		return spec
 
@@ -204,18 +219,19 @@ class SynSpec(object):
 
 		print "hallo world"
 
-	def convolve_spec(self, spectrum):
-
-		wav_range = self.wav_range
-		#delta_aa = np.median(np.diff(wav_range))
-		spec_res = 30.8 # km/s 
-		cc = 299792.0 # speed of light in km/s
-		RR = cc/spec_res
-		spec_res2 = wav_range[len(wav_range)/2]/RR
-
-		spectrum = convolve(spectrum, Gaussian1DKernel(stddev=spec_res2, mode="oversample"))
-
-		return spectrum
+#	def smooth_spec(self, spectrum):
+#
+#		wav_range = self.wav_range
+#		spec = spectrum
+#		RES = np.median(np.diff(wav_range))
+#
+#		smooth = gauss1d(spectrum, 0.07/RES)
+#		tckp = splrep(wav_range, smooth, s=3, k=2)
+#		spec_int = splev(wav_range, tckp)
+#
+#		spec *= spec_int
+#
+#		return spec
 
 
 
