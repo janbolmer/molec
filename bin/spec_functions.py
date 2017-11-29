@@ -254,7 +254,7 @@ def voigt(x, sigma, gamma):
 	sigma: the standard deviation of the Gaussian profile
 	HWHM, alpha, of the Gaussian is: alpha = sigma * sqrt(2ln(2))
 	'''
-
+	
 	z = (x + 1j*gamma) / (sigma * np.sqrt(2.0))
 	V = wofz(z).real / (sigma * np.sqrt(2.0*np.pi))
 	return V
@@ -308,13 +308,13 @@ def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift, res=11800):
 	res: spectral resolution R
 	'''
 
-	rres = lamb/res  # delta_lambda = lambda/R (FWHM)
-	fwhmsig = 2*np.sqrt(2*np.log(2)) # FWHM -> sigma_gauss
+	d_lamda = lamb/res  # delta_lambda = lambda/R (FWHM)
+	sig_res = 2*np.sqrt(2*np.log(2)) # FWHM -> sigma_gauss
 	tf = np.median(np.diff(wls)) # transform to pixels 
 
 	#print rres, tf, rres/(2*np.sqrt(2*np.log(2))*tf)
 
-	gauss_k = Gaussian1DKernel(stddev=rres/(fwhmsig*tf),
+	gauss_k = Gaussian1DKernel(stddev=d_lamda/(sig_res*tf),
 		mode="oversample") # gaussian kernel for convolution
 
 	C_a = np.sqrt(np.pi) * e**2 * f * lamb * 1E-8 / m_e / c / broad

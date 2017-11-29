@@ -42,7 +42,7 @@ import pandas as pd
 import seaborn as sns
 
 import matplotlib as plt
-import matplotlib.pyplot  as pyplot
+import matplotlib.pyplot as pyplot
 from pylab import *
 from scipy.special import wofz
 
@@ -410,7 +410,6 @@ def plt_nv_chi2(chi2_list, min_n, max_n, grb_name):
 	ax.axhline(1,xmin=0.0, xmax=1.0, linewidth=2,linestyle="dashed",
 		color="black")
 
-	
 	for axis in ['top','bottom','left','right']:
 	  ax.spines[axis].set_linewidth(2)
 	ax.tick_params(which='major',length=8,width=2)
@@ -479,6 +478,7 @@ if __name__ == "__main__":
 	wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, \
 	res, psf_fwhm = get_data(spec_file, redshift, wl_range=False)
 
+
 	if not min(wav_aa) < l0*(1+redshift) < max(wav_aa):
 		print "Line is at:", l0*(1+redshift), "Spectrum covers: ", \
 			min(wav_aa), "to", max(wav_aa)
@@ -499,6 +499,7 @@ if __name__ == "__main__":
 
 	velocity, fluxv, fluxv_err = aa_to_velo(wav_aa, n_flux,
 		n_flux_err, l0, redshift, wav_range)
+
 
 	transform = np.median(np.diff(velocity))
 	print "transform", transform

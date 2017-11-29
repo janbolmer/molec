@@ -33,6 +33,12 @@ Typical are: 	HI, FeII, MnII, NV, SiII, SII, CIV, OI, CII, NiII, SiIV,
 
 and:			FeIIa, FeIIb, OIa, SiIIa, NiIIa
 =========================================================================
+CO lines:
+1544.0 - 1545.5 v' = 0
+1509.4 - 1510.3 v' = 1 	-w1 1509.6 -w2 1510.1
+1477.0 - 1478.1 v' = 2 and v' = 3
+1418.6 - 1419.4 v' = 4
+=========================================================================
 """
 
 __author__ = "Jan Bolmer"
@@ -125,12 +131,12 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	if fixed_b == None:
 
 		@pymc.stochastic(dtype=float)
-		def B(value=2.0, mu=2.0, sig=1.0, doc="B"):
+		def B(value=2.0, mu=2.0, sig=0.5, doc="B"):
 			'''
 			bla
 			'''
 			pp = 0.0
-			if 0 <= value < 20:
+			if 0 <= value < 25:
 				pp = gauss(value, mu, sig)
 			else:
 				#invalid values
@@ -443,11 +449,9 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
 		synspec = SynSpec(wav_aa,redshift,res)
 
-		# add H2
+		# add CO
 		co_spec = synspec.add_CO(norm_spec,broad=BROAD,NTOTCO=NTOTCO,
 			TEMP=TEMP,A_REDSHIFT=A_REDSHIFT,NROT=NROT)
-
-		cp_spec = synspec.convolve_spec(co_spec)
 
 		return co_spec
 
@@ -713,119 +717,4 @@ if __name__ == "__main__":
 	
 	main()
 
-
-	# Playing around with different distributions
-	#@pymc.stochastic(dtype=float)
-	#def B(value=12, t_l=1.0, t_h=40.0, turn1=10.0, turn2=20.0, doc="B"):
-	#	'''
-	#	The broadening parameter is more likely to be
-	#	between 0-10 than between 10-20 and 20-40 km/s
-	#	'''
-	#	if t_l <= value <= turn1:
-	#		#print 1./(t_h-t_l)
-	#		return 1./(t_h-t_l)
-	#	if turn1 < value <= turn2: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.5
-	#	if turn2 < value <= t_h: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.25		
-	#	else:
-	#		#invalid values
-	#		return -np.inf
-
-	#@pymc.stochastic(dtype=float)
-	#def B(value=8, alpha=10, x_m=1, doc="B"):
-	#	'''
-	#	Pareto function for alpha=2 and x_m = 1
-	#	'''
-	#	pp = 0.0
-	#	if value >= x_m:
-	#		pp = alpha/(value+alpha)
-	#	else:
-	#		#invalid values
-	#		pp = -np.inf
-	#	print value, pp
-	#	return pp
-
-	#@pymc.stochastic(dtype=float)
-	#def NTOTH2(value=18, t_l=1.0, t_h=22.0, turn1=21.0, turn2=21.5, doc="B"):
-	#	'''
-	#	The total H2 column density is more likely to be
-	#	between 0-20 than between 20-21 and 21-22
-	#	'''
-	#	if t_l <= value <= turn1:
-	#		#print 1./(t_h-t_l)
-	#		return 1./(t_h-t_l)
-	#	if turn1 < value <= turn2: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.2
-	#	if turn2 < value <= t_h: 
-	#		#print (1./(t_h-t_l))*0.5
-	#		return (1./(t_h-t_l))*0.1		
-	#	else:
-	#		#invalid values
-	#		return -np.inf
-
-
-
-#========================================================================
-#========================================================================
-
-# Fitting H2 for multiple absorption systems
-# start with only H2 (add lines later)
-
-#def model_H2_mc(wav_aa, n_flux, n_flux_err, redshift, line_lst_lst,
-#	par_dic_lst, CSV_LST, NROT)
-#	'''
-#	Defines the model for fitting multiple components for H2
-#	'''
-#
-#	tau = 1 / np.array(n_flux_err)**2
-#
-#	for c in comps:
-#		NTOTH2 = pymc.Uniform('NTOTH2',lower=0.0,upper=22.0,doc='NTOTH2')
-#		TEMP = 	 pymc.Uniform('TEMP',lower=0.,upper=800,doc='TEMP')
-#		B = 	 pymc.Uniform('B',lower=0., upper=15.0,doc='B')
-#		A_Z = 	 pymc.Uniform('A_Z',lower=-150,upper=+150,doc='A_Z')
-
-
-		#vars_dic = {}
-	#
-		#for elmt in line_lst:
-		#	if not elmt in par_dic:
-		#		if elmt == "HI":
-		#			N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
-		#				value=21.8,doc='N_'+elmt)
-		#			B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
-		#				value=8.,doc='B_'+elmt)
-		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
-		#				value=0.,doc='A_Z_'+elmt)
-		#		else:
-		#			N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
-		#				value=16.0,doc='N_'+elmt)
-		#			B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
-		#				value=8.,doc='B_'+elmt)
-		#			A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
-		#				value=0.,doc='A_Z_'+elmt)
-	#
-		#		CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
-	#
-		#	else:
-		#		if par_dic[elmt][0] == 0:
-		#			N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
-		#				upper=par_dic[elmt][3],doc='N_'+elmt)
-		#			B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
-		#				upper=par_dic[elmt][6],doc='B_'+elmt)
-		#			A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
-		#				upper=par_dic[elmt][9],doc='A_Z_'+elmt)
-	#
-		#			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
-	#
-		#		if par_dic[elmt][0] == 1:
-		#			N_E = par_dic[elmt][1]
-		#			B_E = par_dic[elmt][4]
-		#			A_Z_E = par_dic[elmt][7]
-	#
-		#	vars_dic[elmt] = N_E, B_E, A_Z_E
 
