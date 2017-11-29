@@ -59,3 +59,17 @@
 2017-11-28 12:41:33python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -red 2.710681 -t GRB161023A_v0 -m CO -w1 1542.0 -w2 1547.5 -nrot 0 6 -it 5000 -bi 3000 
 2017-11-28 13:58:38python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -red 2.710681 -t GRB161023A_v0 -m CO -w1 1542.5 -w2 1547.0 -nrot 0 6 -it 8000 -bi 6000 
 2017-11-28 15:00:09python molec_mcmc.py --help 
+2017-11-29 15:13:34python molec_mcmc.py -h 
+2017-11-29 15:16:17python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1509.6 -w2 1510.1 -it 100 -bi 10 -res 9733 -nrot 0 6 
+2017-11-29 15:16:59python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1509.6 -w2 1510.1 -it 100 -bi 10 -res 9733 -nrot 0 6 -red 2.710681 
+2017-11-29 15:18:49python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1508.6 -w2 1511.1 -it 100 -bi 10 -res 9733 -nrot 0 6 -red 2.710681 
+2017-11-29 15:21:39python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1508.6 -w2 1511.1 -it 100 -bi 10 -res 9733 -nrot 0 6 -red 2.710681 
+2017-11-29 15:23:16python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1508.6 -w2 1511.1 -it 100 -bi 10 -res 9733 -nrot 0 6 -red 2.710681 
+2017-11-29 15:25:05python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1508.6 -w2 1511.1 -it 6000 -bi 5000 -res 9733 -nrot 0 6 -red 2.710681 
+2017-11-29 15:25:34python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b2 -m CO -w1 1508.6 -w2 1511.1 -it 6000 -bi 5000 -res 9733 -nrot 0 6 -red 2.710681 -fb 2.0 
+2017-11-29 15:26:06python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b10 -m CO -w1 1508.6 -w2 1511.1 -it 6000 -bi 5000 -res 9733 -nrot 0 6 -red 2.710681 -fb 10.0 
+2017-11-29 16:27:31python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b10 -m CO -w1 1508.6 -w2 1511.1 -it 60 -bi 50 -res 9733 -nrot 0 6 -red 2.710681 -fb 10.0 
+2017-11-29 16:28:15python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b10 -m CO -w1 1508.6 -w2 1511.1 -it 60 -bi 50 -res 9733 -nrot 0 6 -red 2.710681 -fb 10.0 
+2017-11-29 16:29:58python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1508.6 -w2 1511.1 -it 12000 -bi 10000 -res 9733 -nrot 0 6 -red 2.710681 
+2017-11-29 16:30:09python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b2 -m CO -w1 1508.6 -w2 1511.1 -it 10000 -bi 8000 -res 9733 -nrot 0 6 -red 2.710681 -fb 2.0 
+2017-11-29 16:30:23python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b10 -m CO -w1 1508.6 -w2 1511.1 -it 10000 -bi 8000 -res 9733 -nrot 0 6 -red 2.710681 -fb 10.0 

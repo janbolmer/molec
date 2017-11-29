@@ -96,7 +96,7 @@ def model_csv_file(model, fixed_b):
 	elif model == "H2vib":
 		CSV_LST = ['MH2S', 'A_Z']
 	elif model == "CO" and fixed_b == None:
-		CSV_LST = ['NTOTCO', 'TEMP', 'B', 'A_Z']
+		CSV_LST = ['NTOTCO', 'TEMP', 'B', 'A_Z', 'BG']
 	elif model == "CO" and fixed_b != None:
 		CSV_LST = ['NTOTCO', 'TEMP', 'A_Z']
 	else:
@@ -393,6 +393,12 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 
 	tau = 1 / np.array(n_flux_err)**2
 
+#=========================== Background ================================
+	@pymc.stochastic(dtype=float)
+	def BG(value=1.0, mu=1.0, sig=0.05, doc="BG"):
+		pp = gauss(value, mu, sig)
+		return pp
+
 #======================broadening parameter B============================
 	# Checks if the b is fixed; if not the following prior is assumed:
 	if fixed_b == None:
@@ -442,11 +448,11 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
-	def CO(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTCO=NTOTCO,TEMP=TEMP,BROAD=B,
+	def CO(wav_aa=wav_aa,BG=BG, A_REDSHIFT=A_Z,NTOTCO=NTOTCO,TEMP=TEMP,BROAD=B,
 		redshift=redshift,res=res):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
-		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
+		norm_spec = np.ones(len(wav_aa))*BG # add Background multiplier
 		synspec = SynSpec(wav_aa,redshift,res)
 
 		# add CO
@@ -691,9 +697,13 @@ def main():
 
 		plot_CO(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
 			redshift=redshift,target=target,fb=fixed_b)
+
 		if fixed_b == None:
 			sns_pair_plot_CO(target,var_list=CSV_LST,file="CO_fit.pickle",
 				redshift=redshift)
+		else:
+			sns_pair_plot_CO_fb(target,var_list=CSV_LST,file="CO_fit.pickle",
+				redshift=redshift,fb=fixed_b)	
 
 	if save_pickle != False:
 		os.system("rm -r *.pickle")
