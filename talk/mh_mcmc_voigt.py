@@ -266,8 +266,8 @@ def mcmc(iterations, burn_in, t_guess, N_guess, b_guess, v0_guess,f,gamma,l0):
 
 		############# Plot #############
 
-		if i+1 == i+1:
-		#if i+1 == iterations:
+		#if i+1 == i+1:
+		if i+1 == iterations:
 			fig = figure(figsize=(10, 8))
 			
 			ax = fig.add_axes([0.13, 0.08, 0.37, 0.14])
@@ -399,5 +399,5 @@ f = 0.05399224
 gamma = 0.0623086746483
 l0 = 1608.4509
 
-mcmc(2000, 1500, t_guess=8.0e-17,N_guess=11.0,b_guess=22.0,v0_guess=0.0,f=f,gamma=gamma,l0=l0)
+mcmc(20000, 15000, t_guess=8.0e-17,N_guess=20.0,b_guess=10.0,v0_guess=-50.0,f=f,gamma=gamma,l0=l0)
 

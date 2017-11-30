@@ -73,3 +73,19 @@
 2017-11-29 16:29:58python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1 -m CO -w1 1508.6 -w2 1511.1 -it 12000 -bi 10000 -res 9733 -nrot 0 6 -red 2.710681 
 2017-11-29 16:30:09python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b2 -m CO -w1 1508.6 -w2 1511.1 -it 10000 -bi 8000 -res 9733 -nrot 0 6 -red 2.710681 -fb 2.0 
 2017-11-29 16:30:23python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b10 -m CO -w1 1508.6 -w2 1511.1 -it 10000 -bi 8000 -res 9733 -nrot 0 6 -red 2.710681 -fb 10.0 
+2017-11-29 19:09:13python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v1_b2 -m CO -w1 1508.6 -w2 1511.1 -it 10000 -bi 8000 -res 9733 -nrot 0 6 -red 2.710681 -fb 2.0 
+2017-11-29 19:20:28python molec_mcmc.py -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_CO_v23_b2 -m CO -w1 1445 -w2 1449 -it 12000 -bi 10000 -res 9733 -nrot 0 6 -red 2.710681 -fb 2.0 
+2017-11-29 20:53:15python molec_mcmc.py -f spectra/GRB161023A_OB1UVB.txt -t GRB161023A_CO_v23_b2 -m CO -w1 1445 -w2 1449 -it 12000 -bi 10000 -res 7733 -nrot 0 6 -red 2.710681 -fb 2.0 
+2017-11-30 11:06:27python molec_mcmc.py --help 
+2017-11-30 11:08:32python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:09:37python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:10:00python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:10:47python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:11:33python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:12:22python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:12:42python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 10 -bi 5 -j 0 
+2017-11-30 11:13:31python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 1200 -bi 900 -j 0 
+2017-11-30 11:15:06python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 1200 -bi 900 -j 0 
+2017-11-30 11:15:41python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 12 -bi 9 -j 0 
+2017-11-30 11:16:17python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 12 -bi 9 -j 0 
+2017-11-30 11:16:47python molec_mcmc.py -f spectra/GRB120815A_OB1UVB.txt -t GRB120815A_J0_test -red 2.3581 -m H2s -e H1 -par para_files/120815Apara.csv -w1 980 -w2 1150 -res 10000 -it 1200 -bi 900 -j 0 

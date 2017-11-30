@@ -106,7 +106,6 @@ class SynSpec(object):
 						redshift,res=self.resolution)
 		return spec
 
-
 #	def add_H2J(self, spectrum, broad, NH2J, A_REDSHIFT, J):
 #
 #		redshift = self.redshift
@@ -114,7 +113,6 @@ class SynSpec(object):
 #		spec = spectrum
 #		broad = broad * 1E5
 #		redshift = redshift + A_REDSHIFT
-
 
 	def add_H2(self, spectrum, broad, NTOTH2, TEMP, A_REDSHIFT, NROT):
 		'''
@@ -148,6 +146,34 @@ class SynSpec(object):
 				gamma = float(h2[3])
 				nion = NH2[h2[0]]
 				spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+					redshift,res=self.resolution)
+
+		return spec
+
+	def add_single_H2(self, spectrum, broad, NH2, A_REDSHIFT, J):
+		'''
+		Adding H2
+		broad:		Broadening parameter in km/s
+		NTOTH2:		Total column density of H2
+		TEMP:		Temperature of H2 (Kelvin)
+		A_REDSHIFT:	Offset in redshift in #/100000.0
+		J:			Rotational Level, 0-7
+		'''
+
+		redshift = self.redshift
+		wav_range = self.wav_range
+		spec = spectrum
+		nh2j = 10**NH2
+		broad = broad * 1E5
+		redshift = redshift + A_REDSHIFT
+
+		for h2 in h2_lines:
+			h2 = h2.split()
+			if h2[0] == "H2J" + str(J):
+				lamb = float(h2[1])
+				f = float(h2[2])
+				gamma = float(h2[3])
+				spec *= addAbs(wav_range, nh2j, lamb, f, gamma, broad, \
 					redshift,res=self.resolution)
 
 		return spec
@@ -190,7 +216,6 @@ class SynSpec(object):
 
 		return spec
 
-	
 	def add_vibH2(self, spectrum, h2swl, modspec, tauspec, RES=0.15, \
 				MH2S=0.03, A_REDSHIFT=0.0):
 		'''
@@ -218,22 +243,6 @@ class SynSpec(object):
 	def addHD(self, spectrum, broad, NTOTHD, TEMP, A_REDSHIFT):
 
 		print "hallo world"
-
-#	def smooth_spec(self, spectrum):
-#
-#		wav_range = self.wav_range
-#		spec = spectrum
-#		RES = np.median(np.diff(wav_range))
-#
-#		smooth = gauss1d(spectrum, 0.07/RES)
-#		tckp = splrep(wav_range, smooth, s=3, k=2)
-#		spec_int = splev(wav_range, tckp)
-#
-#		spec *= spec_int
-#
-#		return spec
-
-
 
 #========================================================================
 #========================================================================
