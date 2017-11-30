@@ -366,7 +366,7 @@ def model_single_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 #=======================Redshift freedom A_Z=============================
 	# Redshift is allowed to vary between:
 	@pymc.stochastic(dtype=float)
-	def A_Z(value=0.0, mu=0.0, sig=25.0, doc="A_Z"):
+	def A_Z(value=0.0, mu=0.0, sig=5.0, doc="A_Z"):
 		'''
 		bla
 		'''
@@ -847,9 +847,9 @@ def main():
 			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
 			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b)
 
-		#if fixed_b == None:
-		#	sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
-		#		redshift=redshift)
+		if fixed_b == None:
+			sns_H2s_pair_plot(target, var_list=CSV_LST, file="H2s_fit.pickle",
+				redshift=redshift)
 		#else:
 		#	sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
 		#		redshift=redshift,fb=fixed_b)
