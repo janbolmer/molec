@@ -293,7 +293,7 @@ def addAbs_unconv(wls, N_ion, lamb, f, gamma, broad, redshift):
 
 	return np.exp(-tau)
 
-def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift, res=11800):
+def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift, res):
 	'''
 	Adds an absorption line convolved with the instrumental 
 	resolution R
@@ -343,7 +343,7 @@ def fNHII(T, J):
 		I = 1
 	# Statistical weights
 	gj = (2*J + 1) * (2*I + 1)
-	# Energy difference between the different states 
+	# Energy difference between the different states (J = X --> J = 0)
 	# from Dabrowski, I. 1984, Can. J. Phys., 62, 1639
 	dE0J = {0:0, 1:170.5, 2:509.9, 3:1015.2, 4:1681.7, \
 	5:2503.9, 6:3474.4, 7:4586.4}

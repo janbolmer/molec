@@ -9,7 +9,7 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 =========================================================================
 -target    	target name
 -file 		path to spectrum data file
--model  	Model to use: H2, H2s, H2vib or CO
+-model  	Model to use: H2, H2s, H2all, H2vib or CO
 -elements 	list of additional elements to be included, e.g.: -e HI FeII
 -redshift 	redshift
 -nrot 		number of H2 rotational levels to be fitted, e.g.: -nrot 0 7
@@ -37,7 +37,8 @@ and:			FeIIa, FeIIb, OIa, SiIIa, NiIIa
 CO lines:
 1544.0 - 1545.5 v' = 0
 1509.4 - 1510.3 v' = 1 	-w1 1509.6 -w2 1510.1
-1477.0 - 1478.1 v' = 2 and v' = 3
+1477.0 - 1478.1 v' = 2
+1447.0 - 1448.0 v' = 3
 1418.6 - 1419.4 v' = 4
 =========================================================================
 """
@@ -51,7 +52,7 @@ __email__ = "jbolmer@eso.org"
 __status__ = "Production"
 
 import pymc, math, argparse, os, sys, time
-
+import random
 import numpy as np
 import pandas as pd
 
@@ -98,6 +99,10 @@ def model_csv_file(model, fixed_b):
 		CSV_LST = ['NH2', 'B', 'A_Z']
 	elif model == "H2s" and fixed_b != None:
 		CSV_LST = ['NH2', 'A_Z']
+	if model == "H2all" and fixed_b == None:
+		CSV_LST = ['B', 'A_Z']
+	elif model == "H2all" and fixed_b != None:
+		CSV_LST = ['A_Z']
 	elif model == "H2vib":
 		CSV_LST = ['MH2S', 'A_Z']
 	elif model == "CO" and fixed_b == None:
@@ -331,7 +336,6 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	return locals()
 
 
-
 #========================================================================
 #========================================================================
 
@@ -432,7 +436,7 @@ def model_single_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
 	def H2s(wav_aa=wav_aa,A_REDSHIFT=A_Z,NH2=NH2,BROAD=B,
-		redshift=redshift,vars_dic=vars_dic, res=res):
+		redshift=redshift,vars_dic=vars_dic,res=res):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
@@ -453,6 +457,150 @@ def model_single_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 
 	# Data:
 	y_val = pymc.Normal('y_val',mu=H2s,tau=tau,value=n_flux,observed=True)
+
+	return locals()
+
+
+#========================================================================
+#========================================================================
+
+def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
+	redshift_lst, par_dic, CSV_LST, NROT, fixed_b):
+	'''
+	Defines the model for H2
+	'''
+	tau = 1 / np.array(n_flux_err)**2
+
+#======================broadening parameter B============================
+#	# Checks if the b is fixed; if not the following prior is assumed:
+#	if fixed_b == None:
+#
+#		@pymc.stochastic(dtype=float)
+#		def B(value=2.0, mu=2.0, sig=0.5, doc="B"):
+#			'''
+#			bla
+#			'''
+#			pp = 0.0
+#			if 0 <= value < 25:
+#				pp = gauss(value, mu, sig)
+#			else:
+#				#invalid values
+#				pp = -np.inf
+#			#print value, pp
+#			return pp
+#
+#	if fixed_b != None:
+#		B = fixed_b
+
+
+#======================broadening parameter B============================
+	# Checks if the b is fixed; if not the following prior is assumed:
+	if fixed_b == None:
+		#B = pymc.DiscreteUniform('B',lower=1.0,upper=20.0,doc='B')
+		B = pymc.Exponential('B',beta=0.02,value=2,doc='B')
+
+	if fixed_b != None:
+		B = fixed_b
+
+#=======================Redshift freedom A_Z=============================
+	# Redshift is allowed to vary between:
+	@pymc.stochastic(dtype=float)
+	def A_Z(value=0.0, mu=0.0, sig=0.01, doc="A_Z"):
+		'''
+		bla
+		'''
+		pp = gauss(value, mu, sig)
+		return pp
+
+#=========================H2 Column Densities==============================
+	# Uniform Prior for the individual J - H2 column density
+
+	nhj_dic = {}
+
+	for J in NROT:
+		#NH2J = pymc.Uniform('NH2J'+str(J),lower=0.0,upper=21.0,doc='NH2J'+str(J))
+		NH2J = pymc.Exponential('NH2J'+str(J),beta=0.1,value=2,doc='NH2J'+str(J))
+
+		nhj_dic[J] = NH2J
+		CSV_LST.append('NH2J'+str(J))
+
+	print CSV_LST
+#==========================Absoprtion Lines==============================
+	# Adding other absoprtion lines for major component:
+	vars_dic = {} # dictionary to collect variables
+
+	for elmt in line_lst:
+		if not elmt in par_dic:
+			if elmt == "HI":
+				N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
+					value=21.8,doc='N_'+elmt)
+				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=150.,
+					value=8.,doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150.,upper=+150.,
+					value=0.,doc='A_Z_'+elmt)
+			else:
+				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
+					value=16.0,doc='N_'+elmt)
+				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
+					value=8.,doc='B_'+elmt)
+				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+					value=0.,doc='A_Z_'+elmt)
+
+			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+
+		# Reading data from parameter file:
+		else:
+			# Parameters free
+			if par_dic[elmt][0] == 0:
+				if elmt != "HI":
+					N_E = pymc.Uniform('N_' + elmt,lower=par_dic[elmt][2],
+						upper=par_dic[elmt][3],doc='N_'+elmt)
+
+				if elmt == "HI":
+
+					N_E = pymc.Normal('N_'+elmt,mu=par_dic[elmt][1],
+						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**6),
+						doc='N_'+elmt)
+
+				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
+					upper=par_dic[elmt][6],doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=par_dic[elmt][8],
+					upper=par_dic[elmt][9],doc='A_Z_'+elmt)
+
+				CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
+
+			# Parameters fixed
+			if par_dic[elmt][0] == 1:
+				N_E = par_dic[elmt][1]
+				B_E = par_dic[elmt][4]
+				A_Z_E = par_dic[elmt][7]
+
+		vars_dic[elmt] = N_E, B_E, A_Z_E	
+
+	# Defining the model:
+	@pymc.deterministic(plot=False) 
+	def H2all(wav_aa=wav_aa,A_REDSHIFT=A_Z,BROAD=B,redshift=redshift,
+		vars_dic=vars_dic,nhj_dic=nhj_dic,res=res,NROT=NROT):
+
+		A_REDSHIFT = float(A_REDSHIFT)/100000.0
+		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
+		synspec = SynSpec(wav_aa,redshift,res)
+
+		# add H2
+		for J in NROT:
+			h2spec = synspec.add_single_H2(norm_spec,broad=BROAD,NH2=nhj_dic[J],
+				A_REDSHIFT=A_REDSHIFT,J=J)
+
+		# add other absorption lines
+		for key in vars_dic:
+			A_Z_E = vars_dic[key][2]/100000.00
+			h2spec = synspec.add_ion(h2spec, key,
+				broad=vars_dic[key][1], Natom=vars_dic[key][0],
+				A_REDSHIFT=A_Z_E)
+		return h2spec
+
+	# Data:
+	y_val = pymc.Normal('y_val',mu=H2all,tau=tau,value=n_flux,observed=True)
 
 	return locals()
 
@@ -536,11 +684,8 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 
 		@pymc.stochastic(dtype=float)
 		def B(value=2.0, mu=2.0, sig=2.0, doc="B"):
-			'''
-			bla
-			'''
-			pp = 0.0
-			if value >= 0:
+
+			if 0 <= value < 25:
 				pp = gauss(value, mu, sig)
 			else:
 				#invalid values
@@ -554,20 +699,18 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 #=======================Redshift freedom A_Z=============================
 	# Redshift is allowed to vary between:
 	@pymc.stochastic(dtype=float)
-	def A_Z(value=0.0, mu=0.0, sig=25.0, doc="A_Z"):
-		'''
-		bla
-		'''
-		pp = gauss(value, mu, sig)
+	def A_Z(value=0.0, mu=0.0, sig=5.0, doc="A_Z"):
+		if 0 <= value < 25:
+			pp = gauss(value, mu, sig)
+		else:
+			pp = -np.inf
 		return pp
 
 #===========================Temperature==================================
 	@pymc.stochastic(dtype=float)
 	def TEMP(value=20.0, mu=20.0, sig=180.0, doc="TEMP"):
-		'''
-		bla
-		'''
-		if value >=0:
+
+		if 0 <= value < 1000.0:
 			pp = gauss(value, mu, sig)
 		else:
 			pp = -np.inf
@@ -628,7 +771,6 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 
 		return y_min, y_max, y_min2, y_max2, y_fit
 
-
 	if model_used == "H2s":
 
 		MDL = pymc.MCMC(model_single_H2(wav_aa, n_flux, n_flux_err, redshift,
@@ -649,6 +791,26 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 
 		return y_min, y_max, y_min2, y_max2, y_fit
 
+
+	if model_used == "H2all":
+
+		MDL = pymc.MCMC(model_all_H2(wav_aa, n_flux, n_flux_err, redshift,
+			res, line_lst, redshift_lst, par_dic, CSV_LST, NROT, fixed_b),
+			db='pickle', dbname='H2all_fit.pickle')
+		
+		MDL.db
+		MDL.sample(trials, burn_in, n_thin)
+		MDL.db.close()
+
+		MDL.write_csv(target + "_H2all_results.csv", variables=CSV_LST)
+
+		y_min 	= MDL.stats()[model_used]['quantiles'][2.5]
+		y_max 	= MDL.stats()[model_used]['quantiles'][97.5]
+		y_min2 	= MDL.stats()[model_used]['quantiles'][25]
+		y_max2 	= MDL.stats()[model_used]['quantiles'][75]
+		y_fit 	= MDL.stats()[model_used]['mean']
+
+		return y_min, y_max, y_min2, y_max2, y_fit
 
 	if model_used == "H2vib":
 
@@ -751,6 +913,8 @@ def main():
 	fixed_b = args.fixed_b
 	J = args.j
 
+	print res
+
 	ignore_lst = []
 	for itrvl in ignore:
 		tmp_lst = []
@@ -806,7 +970,7 @@ def main():
 
 	try:
 		wav_aa_pl, n_flux_pl, n_flux_err_pl, flux_pl, flux_err_pl, \
-		grb_name, res, psf_fwhm = get_data(spec_file, redshift,
+		grb_name, resolution, psf_fwhm = get_data(spec_file, redshift,
 			wl_range=True, wl1=w1, wl2=w2)
 	except:
 		sys.exit("ERROR: File not found (-f)")
@@ -853,6 +1017,20 @@ def main():
 		#else:
 		#	sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
 		#		redshift=redshift,fb=fixed_b)
+
+	if model == "H2all":
+
+		plot_spec(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
+			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
+			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b)
+
+		if fixed_b == None:
+			sns_H2all_pair_plot(target, var_list=CSV_LST, file="H2all_fit.pickle",
+				redshift=redshift)
+		#else:
+		#	sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
+		#		redshift=redshift,fb=fixed_b)
+
 
 	if model == "H2vib":
 

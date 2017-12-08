@@ -153,8 +153,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, f, gamma, l0, nvoigts, RES,
 	for i in range(1, nvoigts+1):
 
 		if not "v0" + str(i) in para_dic:
-			v0 = pymc.Uniform('v0'+str(i),lower=-velo_range, upper=velo_range,
-				doc='v0'+str(i))
+			v0 = pymc.Uniform('v0'+str(i),lower=-velo_range, upper=velo_range,doc='v0'+str(i))
 		else:
 			if para_dic["v0"+str(i)][0] == 0:
 				v0 = pymc.Uniform('v0'+str(i),lower=para_dic["v0"+str(i)][2],
@@ -165,7 +164,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, f, gamma, l0, nvoigts, RES,
 					upper=para_dic["v0"+str(i)][1]+0.5, doc='v0'+str(i))
 
 		if not "b" + str(i) in para_dic:
-			b = pymc.Uniform('b'+str(i),lower=5,upper=100,value=15,doc='b'+str(i))
+			b = pymc.Normal('b'+str(i), mu=15, tau=1.0/25, doc='b'+str(i))
 
 		else:
 			if para_dic["b"+str(i)][0] == 0:
@@ -180,7 +179,7 @@ def mult_voigts(velocity, fluxv, fluxv_err, f, gamma, l0, nvoigts, RES,
 					tau=1.0/(para_dic["b"+str(i)][3]-para_dic["b"+str(i)][1])**6,
 					doc='b'+str(i))
 
-		N = pymc.Uniform('N'+str(i),lower=0,upper=24.,value=15,doc='N'+str(i))
+		N = pymc.Exponential('N'+str(i), beta=0.1, value=15.0, doc='N'+str(i))
 
 		CSV_LST.extend(('v0'+str(i),'b'+str(i),'N'+str(i)))
 
@@ -198,7 +197,6 @@ def mult_voigts(velocity, fluxv, fluxv_err, f, gamma, l0, nvoigts, RES,
 		flux = np.ones(len(vv))*a
 
 		for i in range(1, nvoigts + 1):
-			
 			v = vv-vars_dic["v0"+str(i)]
 			flux *= add_abs_velo(v, vars_dic["N"+str(i)],
 				vars_dic["b"+str(i)], gamma, f, l0)
@@ -224,6 +222,12 @@ def do_mcmc(grb,redshift,velocity,fluxv,fluxv_err,grb_name,f,gamma,
 		db='pickle',dbname='velo_fit.pickle')
 
 	MDL.db
+	#MDL.use_step_method(pymc.Metropolis, MDL.a, proposal_sd=0.05, proposal_distribution='Normal')
+	#MDL.use_step_method(pymc.Metropolis, MDL.v0, proposal_sd=velo_range/2.0, proposal_distribution='Normal')
+	#MDL.use_step_method(pymc.Metropolis, MDL.N, proposal_sd=8, proposal_distribution='Normal')
+	#MDL.use_step_method(pymc.Metropolis, MDL.b, proposal_sd=8, proposal_distribution='Normal')
+	#MDL.use_step_method(pymc.AdaptiveMetropolis, [MDL.N, MDL.b], scales={MDL.N:1.0, MDL.b:1.0})
+
 	MDL.sample(iterations, burn_in)
 	MDL.db.close()
 
@@ -515,7 +519,7 @@ if __name__ == "__main__":
 
 		y_min, y_max, y_min2, y_max2, y_fit = do_mcmc(grb_name,
 			redshift,velocity,fluxv,fluxv_err,grb_name,f,gamma,
-			l0,nvoigts,iterations+(nvoigts*400),burn_in+(nvoigts*400),RES,
+			l0,nvoigts,iterations,burn_in,RES,
 			velo_range,para_dic)
 		
 		chi2 = 0
@@ -537,6 +541,7 @@ if __name__ == "__main__":
 
 		print "Components:", print_results(res_file, redshift)
 
+		sns_velo_trace_plot(grb_name,l0,file='velo_fit.pickle',nvoigts=nvoigts)
 		sns_velo_pair_plot(grb_name,l0,file='velo_fit.pickle',nvoigts=nvoigts)
 
 	print "\n Plotting Chi2"
