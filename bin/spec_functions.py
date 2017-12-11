@@ -518,19 +518,19 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 		axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
 			drawstyle='steps-mid', label=r"$\sf Data$")
 
-		axis.plot(wav_aa, y_fit, label=r"$\sf Fit$", color="#2171b5", linewidth=1.8, alpha=0.9)
+		axis.plot(wav_aa[2:-2], y_fit[2:-2], label=r"$\sf Fit$", color="#2171b5", linewidth=1.8, alpha=0.9)
 
 		# fill space between quantiles
-		axis.fill_between(wav_aa, y_min, y_max, color='#2171b5', alpha=0.2)
-		axis.fill_between(wav_aa, y_min2, y_max2, color='#2171b5', alpha=0.4)
+		axis.fill_between(wav_aa[2:-2], y_min[2:-2], y_max[2:-2], color='#2171b5', alpha=0.2)
+		axis.fill_between(wav_aa[2:-2], y_min2[2:-2], y_max2[2:-2], color='#2171b5', alpha=0.4)
 
 		# plot 25% and 75% quantiles
-		axis.plot(wav_aa, y_max2, color="#2171b5", linewidth=1, alpha=0.9, linestyle="dashed")
-		axis.plot(wav_aa, y_min2, color="#2171b5", linewidth=1, alpha=0.9, linestyle="dashed")
+		axis.plot(wav_aa[2:-2], y_max2[2:-2], color="#2171b5", linewidth=1, alpha=0.9, linestyle="dashed")
+		axis.plot(wav_aa[2:-2], y_min2[2:-2], color="#2171b5", linewidth=1, alpha=0.9, linestyle="dashed")
 
 		# plot 2.5& and 97.5% quantiles
-		axis.plot(wav_aa, y_max, color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
-		axis.plot(wav_aa, y_min, color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
+		axis.plot(wav_aa[2:-2], y_max[2:-2], color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
+		axis.plot(wav_aa[2:-2], y_min[2:-2], color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
 
 		#axis.errorbar(x_tell, y_tell, color="gray", fmt='o', markersize=8)
 
