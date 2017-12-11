@@ -424,7 +424,7 @@ def tell_lines(intensity=-0.2, file = 'atoms/tel_lines_uves.dat'):
 		if line != []:
 			if float(line[-2]) < intensity:
 				tell.append(float(line[3]))
-				y_val.append(1.3)
+				y_val.append(2.0)
 	return tell, y_val
 
 def skylines(intensity=10, file= "atoms/sky_lines.dat"):
@@ -511,6 +511,8 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 	ax5 = fig.add_axes([0.08, 0.73, 0.90, 0.11])
 	ax6 = fig.add_axes([0.08, 0.88, 0.90, 0.11])
 
+	#x_tell, y_tell = tell_lines(intensity=-0.2, file = 'atoms/tel_lines_uves.dat')
+
 	for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
 		axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
@@ -529,6 +531,8 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 		# plot 2.5& and 97.5% quantiles
 		axis.plot(wav_aa, y_max, color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
 		axis.plot(wav_aa, y_min, color="#2171b5", linewidth=1, alpha=0.9, linestyle=":")
+
+		#axis.errorbar(x_tell, y_tell, color="gray", fmt='o', markersize=8)
 
 		axis.set_ylim([-0.85, 2.25])
 

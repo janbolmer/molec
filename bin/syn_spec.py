@@ -48,6 +48,18 @@ tauspec = np.array(tauspec[::-1])
 #========================================================================
 #========================================================================
 
+def check_lst(ignore_lst, line):
+	'''
+	Checks if line falls within one the ranges to be ignored
+	'''
+	value = 0.0
+	for [low, up] in ignore_lst:
+		if low <= line <= up:
+			value += 1.0
+		else:
+			value += 0.0
+	return value
+
 class SynSpec(object):
 	"""
 	Class for adding absorption lines to a normalized spectrum,
@@ -67,11 +79,12 @@ class SynSpec(object):
 		add HD:		adds HD lines - Work in progress
 	"""
 
-	def __init__(self, wav_range, redshift, resolution):
+	def __init__(self, wav_range, redshift, resolution, ignore_lst):
 
 		self.wav_range = wav_range
 		self.redshift = redshift
 		self.resolution = resolution # spectral resolution R
+		self.ignore_lst = ignore_lst
 
 	def __len__(self):
 		'''
@@ -90,6 +103,7 @@ class SynSpec(object):
 
 		redshift = self.redshift
 		wav_range = self.wav_range
+		ignore_lst = self.ignore_lst
 		spec = spectrum
 		broad = broad * 1E5
 		nion = 10**Natom
@@ -99,20 +113,13 @@ class SynSpec(object):
 			a = a.split()
 			if str(a[0]) == str(atom_name):
 				if min(wav_range) < float(a[1])*(1+redshift) < max(wav_range):
-					lamb = float(a[1])
-					f = float(a[2])
-					gamma = float(a[3])
-					spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-						redshift,res=self.resolution)
+					if check_lst(ignore_lst, float(a[1])) == 0.0:
+						lamb = float(a[1])
+						f = float(a[2])
+						gamma = float(a[3])
+						spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+							redshift,res=self.resolution)
 		return spec
-
-#	def add_H2J(self, spectrum, broad, NH2J, A_REDSHIFT, J):
-#
-#		redshift = self.redshift
-#		wav_range = self.wav_range
-#		spec = spectrum
-#		broad = broad * 1E5
-#		redshift = redshift + A_REDSHIFT
 
 	def add_H2(self, spectrum, broad, NTOTH2, TEMP, A_REDSHIFT, NROT):
 		'''
@@ -141,12 +148,14 @@ class SynSpec(object):
 		for h2 in h2_lines:
 			h2 = h2.split()
 			if h2[0] in NH2.keys():
-				lamb = float(h2[1])
-				f = float(h2[2])
-				gamma = float(h2[3])
-				nion = NH2[h2[0]]
-				spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-					redshift,res=self.resolution)
+				if min(wav_range) < float(h2[1])*(1+redshift) < max(wav_range):
+					if check_lst(ignore_lst, float(h2[1])) == 0.0:
+						lamb = float(h2[1])
+						f = float(h2[2])
+						gamma = float(h2[3])
+						nion = NH2[h2[0]]
+						spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+							redshift,res=self.resolution)
 
 		return spec
 
@@ -162,6 +171,7 @@ class SynSpec(object):
 
 		redshift = self.redshift
 		wav_range = self.wav_range
+		ignore_lst = self.ignore_lst
 		spec = spectrum
 		nh2j = 10**NH2
 		broad = broad * 1E5
@@ -170,11 +180,13 @@ class SynSpec(object):
 		for h2 in h2_lines:
 			h2 = h2.split()
 			if h2[0] == "H2J" + str(J):
-				lamb = float(h2[1])
-				f = float(h2[2])
-				gamma = float(h2[3])
-				spec *= addAbs(wav_range, nh2j, lamb, f, gamma, broad, \
-					redshift,res=self.resolution)
+				if min(wav_range) < float(h2[1])*(1+redshift) < max(wav_range):
+					if check_lst(ignore_lst, float(h2[1])) == 0.0:
+						lamb = float(h2[1])
+						f = float(h2[2])
+						gamma = float(h2[3])
+						spec *= addAbs(wav_range, nh2j, lamb, f, gamma, broad, \
+							redshift,res=self.resolution)
 
 		return spec
 
@@ -207,12 +219,13 @@ class SynSpec(object):
 
 		for co in co_lines:
 			co = co.split()
-			lamb = float(co[1])
-			f = float(co[2])
-			gamma = float(co[3])
-			nion = NCO[co[0]]
-			spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
-				redshift,res=self.resolution)
+			if min(wav_range) < float(co[1])*(1+redshift) < max(wav_range):
+				lamb = float(co[1])
+				f = float(co[2])
+				gamma = float(co[3])
+				nion = NCO[co[0]]
+				spec *= addAbs(wav_range, nion, lamb, f, gamma, broad, \
+					redshift,res=self.resolution)
 
 		return spec
 
@@ -242,7 +255,7 @@ class SynSpec(object):
 
 	def addHD(self, spectrum, broad, NTOTHD, TEMP, A_REDSHIFT):
 
-		print "hallo world"
+		pass
 
 #========================================================================
 #========================================================================

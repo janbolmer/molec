@@ -129,7 +129,7 @@ def gauss(x, mu, sig):
 #========================================================================
 
 def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
-	redshift_lst, par_dic, CSV_LST, NROT, fixed_b):
+	redshift_lst, ignore_lst, par_dic, CSV_LST, NROT, fixed_b):
 	'''
 	Defines the model for H2
 	'''
@@ -293,7 +293,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	@pymc.deterministic(plot=False) 
 	def H2(wav_aa=wav_aa,A_REDSHIFT=A_Z,NTOTH2=NTOTH2,TEMP=TEMP,BROAD=B,
 		redshift=redshift,vars_dic=vars_dic,vars_dic_add=vars_dic_add,
-		add_h2_dic=add_h2_dic, res=res):
+		add_h2_dic=add_h2_dic,res=res):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
@@ -465,7 +465,7 @@ def model_single_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 #========================================================================
 
 def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
-	redshift_lst, par_dic, CSV_LST, NROT, fixed_b):
+	redshift_lst, ignore_lst, par_dic, CSV_LST, NROT, fixed_b):
 	'''
 	Defines the model for H2
 	'''
@@ -580,11 +580,12 @@ def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
 	def H2all(wav_aa=wav_aa,A_REDSHIFT=A_Z,BROAD=B,redshift=redshift,
-		vars_dic=vars_dic,nhj_dic=nhj_dic,res=res,NROT=NROT):
+		vars_dic=vars_dic,nhj_dic=nhj_dic,res=res,NROT=NROT,
+		ignore_lst=ignore_lst):
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
-		synspec = SynSpec(wav_aa,redshift,res)
+		synspec = SynSpec(wav_aa,redshift,res,ignore_lst=ignore_lst)
 
 		# add H2
 		for J in NROT:
@@ -745,8 +746,8 @@ def model_CO(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 
 
 def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
-	fixed_b, model_used, line_lst, redshift_lst, target, par_dic,
-	redshift, CSV_LST, NROT, J, res):
+	fixed_b, model_used, line_lst, redshift_lst, ignore_lst, target,
+	par_dic, redshift, CSV_LST, NROT, J, res):
 	'''
 	Performing the MCMC
 	'''
@@ -754,8 +755,8 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "H2":
 
 		MDL = pymc.MCMC(model_H2(wav_aa, n_flux, n_flux_err, redshift,
-			res, line_lst, redshift_lst, par_dic, CSV_LST, NROT, fixed_b),
-			db='pickle', dbname='H2_fit.pickle')
+			res, line_lst, redshift_lst, ignore_lst, par_dic, CSV_LST,
+			NROT, fixed_b), db='pickle', dbname='H2_fit.pickle')
 		
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
@@ -795,8 +796,8 @@ def makeMCMC(wav_aa, n_flux, n_flux_err, trials, burn_in, n_thin,
 	if model_used == "H2all":
 
 		MDL = pymc.MCMC(model_all_H2(wav_aa, n_flux, n_flux_err, redshift,
-			res, line_lst, redshift_lst, par_dic, CSV_LST, NROT, fixed_b),
-			db='pickle', dbname='H2all_fit.pickle')
+			res, line_lst, redshift_lst, ignore_lst, par_dic, CSV_LST,
+			NROT, fixed_b), db='pickle', dbname='H2all_fit.pickle')
 		
 		MDL.db
 		MDL.sample(trials, burn_in, n_thin)
@@ -980,8 +981,8 @@ def main():
 
 	y_min, y_max, y_min2, y_max2, y_fit = makeMCMC(wav_aa, n_flux,
 		n_flux_err, iterations, burn_in, 1, fixed_b, model_used=model,
-		line_lst=elements, redshift_lst=redshift_lst, target=target,
-		par_dic=par_dic, redshift=redshift, CSV_LST=CSV_LST,
+		line_lst=elements, redshift_lst=redshift_lst, ignore_lst=ignore_lst,
+		target=target, par_dic=par_dic, redshift=redshift, CSV_LST=CSV_LST,
 		NROT=NROT, J=J, res=res)
 
 	print "\n MCMC finished \n"
