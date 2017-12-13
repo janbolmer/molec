@@ -495,8 +495,9 @@ def get_paras_velo(para_file):
 #========================================================================
 
 
-def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ignore_lst, \
-		a_name, a_wav, ai_name, ai_wav, aex_name, aex_wav, h2_name, h2_wav, target, fb):
+def plot_spec(wav_aa, n_flux, n_flux_err, y_min, y_max, y_min2, y_max2, y_fit,
+	redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, aex_name,
+	aex_wav, h2_name, h2_wav, target, fb, intv_lst):
 
 	sns.set_style("white", {'legend.frameon': True})
 
@@ -517,6 +518,9 @@ def plot_spec(wav_aa, n_flux, y_min, y_max, y_min2, y_max2, y_fit, redshift, ign
 
 		axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
 			drawstyle='steps-mid', label=r"$\sf Data$")
+
+		axis.errorbar(wav_aa, n_flux_err, linestyle='-', color="black",
+			linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$", alpha=0.6)
 
 		axis.plot(wav_aa[2:-2], y_fit[2:-2], label=r"$\sf Fit$", color="#2171b5", linewidth=1.8, alpha=0.9)
 

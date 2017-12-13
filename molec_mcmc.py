@@ -28,6 +28,7 @@ e.g.: molec_mcmc.py -f spectra/GRB120815Auvb.txt -m H2vib -w1 1566
 -rl 		redshifts for additional H2 components, e.g.: -rl 2.03 2.01
 -fb 		to fix the broadening parameter for H2, e.g.: -fb 3.0
 -j 			rotaional level to use for H2s
+-intv 		redshift of intervening systems, e.g. -intv 1.245 1.748
 =========================================================================
 Typical are: 	HI, FeII, MnII, NV, SiII, SII, CIV, OI, CII, NiII, SiIV,
 				AlII, AlIII, CI, ZnII, CrII, MgII, MgI
@@ -113,7 +114,6 @@ def model_csv_file(model, fixed_b):
 		sys.exit("ERROR: Choose one of the following models: H2, H2vib, \
 			or CO")
 
-	print CSV_LST
 	return CSV_LST
 
 #========================================================================
@@ -127,6 +127,23 @@ def gauss(x, mu, sig):
 
 #========================================================================
 #========================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	redshift_lst, ignore_lst, par_dic, CSV_LST, NROT, fixed_b):
@@ -336,6 +353,21 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	return locals()
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #========================================================================
 #========================================================================
 
@@ -461,6 +493,20 @@ def model_single_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	return locals()
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #========================================================================
 #========================================================================
 
@@ -472,31 +518,8 @@ def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	tau = 1 / np.array(n_flux_err)**2
 
 #======================broadening parameter B============================
-#	# Checks if the b is fixed; if not the following prior is assumed:
-#	if fixed_b == None:
-#
-#		@pymc.stochastic(dtype=float)
-#		def B(value=2.0, mu=2.0, sig=0.5, doc="B"):
-#			'''
-#			bla
-#			'''
-#			pp = 0.0
-#			if 0 <= value < 25:
-#				pp = gauss(value, mu, sig)
-#			else:
-#				#invalid values
-#				pp = -np.inf
-#			#print value, pp
-#			return pp
-#
-#	if fixed_b != None:
-#		B = fixed_b
-
-
-#======================broadening parameter B============================
 	# Checks if the b is fixed; if not the following prior is assumed:
 	if fixed_b == None:
-		#B = pymc.DiscreteUniform('B',lower=1.0,upper=20.0,doc='B')
 		B = pymc.Exponential('B',beta=0.02,value=2,doc='B')
 
 	if fixed_b != None:
@@ -506,9 +529,7 @@ def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 	# Redshift is allowed to vary between:
 	@pymc.stochastic(dtype=float)
 	def A_Z(value=0.0, mu=0.0, sig=0.01, doc="A_Z"):
-		'''
-		bla
-		'''
+
 		pp = gauss(value, mu, sig)
 		return pp
 
@@ -539,11 +560,9 @@ def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150.,upper=+150.,
 					value=0.,doc='A_Z_'+elmt)
 			else:
-				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
-					value=16.0,doc='N_'+elmt)
-				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
-					value=8.,doc='B_'+elmt)
-				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
+				N_E = pymc.Exponential('N_'+elmt,beta=0.1,value=2,doc='N_'+elmt)
+				B_E = pymc.Exponential('B_'+elmt,beta=0.02,value=5,doc='B_'+elmt)
+				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
 					value=0.,doc='A_Z_'+elmt)
 
 			CSV_LST.extend(('N_'+elmt,'B_'+elmt,'A_Z_'+elmt))
@@ -576,6 +595,31 @@ def model_all_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 				A_Z_E = par_dic[elmt][7]
 
 		vars_dic[elmt] = N_E, B_E, A_Z_E	
+
+
+
+#======================Additional H2 Components==========================
+	add_h2_dic = {} # dictionary to collect variables
+	if len(redshift_lst) == 0:
+		print "\n no addtional H2 component\n"
+
+	if not len(redshift_lst) == 0:
+		print "\n additonal H2 component(s) at", redshift_lst, "\n"
+
+#		for add_comp in redshift_lst:
+#
+#			B_c = pymc.Exponential('B'+add_comp,beta=0.02,value=2,doc='B'+add_comp)
+#			Z_c = float(add_comp)
+#
+#			for J in NROT:
+#
+#			CSV_LST.extend(('H2'+add_comp,'T'+add_comp,'B'+add_comp))
+#			add_h2_dic[add_comp] = H2_c, T_c, B_c, Z_c
+
+#======================Additional H2 Components==========================
+
+
+
 
 	# Defining the model:
 	@pymc.deterministic(plot=False) 
@@ -661,6 +705,19 @@ def model_H2vib(wav_aa, n_flux, n_flux_err, redshift, res, line_lst, \
 		observed=True)
 
 	return locals()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #========================================================================
 #========================================================================
@@ -881,7 +938,7 @@ def main():
 	parser.add_argument('-ign','--ignore',dest="ignore", nargs='+',
 						default=[])
 	parser.add_argument('-res','--resolution',dest="resolution",
-						default=10000,type=float)
+						default=5000,type=float)
 	parser.add_argument('-it','--iterations',dest="iterations",
 						default=1000, type=int)
 	parser.add_argument('-bi','--burn_in',dest="burn_in",
@@ -892,6 +949,7 @@ def main():
 	parser.add_argument('-rl','--red_lst',dest="red_lst",nargs='+',default=[])
 	parser.add_argument('-fb','--fixed_b',dest="fixed_b",default=None,type=float)
 	parser.add_argument('-j','--j',dest="j",default=None,type=int)
+	parser.add_argument('-intv','--intv',dest="intv",nargs='+',default=[])
 
 	args = parser.parse_args()
 
@@ -913,8 +971,7 @@ def main():
 	red_lst = args.red_lst
 	fixed_b = args.fixed_b
 	J = args.j
-
-	print res
+	intv = args.intv
 
 	ignore_lst = []
 	for itrvl in ignore:
@@ -926,6 +983,10 @@ def main():
 	redshift_lst = []
 	for rds in red_lst:
 		redshift_lst.append(rds)
+
+	intv_lst = []
+	for i in intv:
+		intv_lst.append(float(i))
 
 	if burn_in >= iterations:
 		sys.exit("ERROR: Burn-In cannot be bigger than Iterations")
@@ -943,7 +1004,8 @@ def main():
 	CSV_LST = model_csv_file(model, fixed_b)
 
 	time.sleep(1.0)
-	print "\n Fitting", target, "at redshift", redshift
+	print "\n Fitting", target, "at redshift", redshift, \
+		"with a spectral resolution of R =", res
 	time.sleep(1.0)
 
 	if fixed_b != None:
@@ -995,12 +1057,12 @@ def main():
 
 	if model == "H2":
 
-		plot_spec(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
+		plot_spec(wav_aa_pl,n_flux_pl,n_flux_err_pl,y_min,y_max,y_min2,y_max2,y_fit,
 			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
-			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b)
+			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b,intv_lst=intv_lst)
 
 		if fixed_b == None:
-			sns_pair_plot(target, var_list=CSV_LST, file="H2_fit.pickle",
+			sns_pair_plot(target, var_list=CSV_LST,file="H2_fit.pickle",
 				redshift=redshift)
 		else:
 			sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
@@ -1008,12 +1070,12 @@ def main():
 
 	if model == "H2s":
 
-		plot_spec(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
+		plot_spec(wav_aa_pl,n_flux_pl,n_flux_err_pl,y_min,y_max,y_min2,y_max2,y_fit,
 			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
-			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b)
+			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b,intv_lst=intv_lst)
 
 		if fixed_b == None:
-			sns_H2s_pair_plot(target, var_list=CSV_LST, file="H2s_fit.pickle",
+			sns_H2s_pair_plot(target, var_list=CSV_LST,file="H2s_fit.pickle",
 				redshift=redshift)
 		#else:
 		#	sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
@@ -1021,30 +1083,29 @@ def main():
 
 	if model == "H2all":
 
-		plot_spec(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
+		plot_spec(wav_aa_pl,n_flux_pl,n_flux_err_pl,y_min,y_max,y_min2,y_max2,y_fit,
 			redshift,ignore_lst,a_name,a_wav,ai_name,ai_wav,aex_name,
-			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b)
+			aex_wav,h2_name,h2_wav,target=target,fb=fixed_b,intv_lst=intv_lst)
 
 		if fixed_b == None:
-			sns_H2all_pair_plot(target, var_list=CSV_LST, file="H2all_fit.pickle",
+			sns_H2all_pair_plot(target, var_list=CSV_LST,file="H2all_fit.pickle",
 				redshift=redshift)
 		#else:
 		#	sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
 		#		redshift=redshift,fb=fixed_b)
 
-
 	if model == "H2vib":
 
-		plot_H2vib(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
-			a_name,a_wav,aex_name, aex_wav,target=target)
+		plot_H2vib(wav_aa_pl,n_flux_pl,n_flux_err_pl,y_min,y_max,y_min2,y_max2,y_fit,
+			a_name,a_wav,aex_name, aex_wav,target=target,intv_lst=intv_lst)
 
 		sns_H2vib_plot(target,var_list=CSV_LST,file="H2vib_fit.pickle",
 			redshift=redshift)
 
 	if model == "CO":
 
-		plot_CO(wav_aa_pl,n_flux_pl,y_min,y_max,y_min2,y_max2,y_fit,
-			redshift=redshift,target=target,fb=fixed_b)
+		plot_CO(wav_aa_pl,n_flux_pl,n_flux_err_pl,y_min,y_max,y_min2,y_max2,y_fit,
+			redshift=redshift,target=target,fb=fixed_b,intv_lst=intv_lst)
 
 		if fixed_b == None:
 			sns_pair_plot_CO(target,var_list=CSV_LST,file="CO_fit.pickle",

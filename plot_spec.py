@@ -33,7 +33,7 @@ def get_spec(file):
 		if line.startswith('PSF'):
 			psf_fwhm = float(line.split()[1])
 
-	return wav_aa, flux, flux_err, model
+	return wav_aa, flux, flux_err, model, grb_name
 
 def main():
 
@@ -44,19 +44,27 @@ def main():
 	
 	spec_file = args.file
 
-	wav_aa, flux, flux_err, model = get_spec(spec_file)
+	wav_aa, flux, flux_err, model, grb_name = get_spec(spec_file)
 	
 	fig = figure(figsize=(16, 4))
 	
-	ax1 = fig.add_axes([0.05, 0.1, 0.94, 0.8])
+	ax1 = fig.add_axes([0.07, 0.15, 0.92, 0.78])
 	
-	ax1.errorbar(wav_aa, flux, linestyle='-', color="black", linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$")
-	ax1.plot(wav_aa, model, color="#2171b5", linewidth=1.8, alpha=0.9)
+	ax1.errorbar(wav_aa, flux, linestyle='-', color="black", linewidth=0.4, drawstyle='steps-mid', label=r"$\sf Data$", alpha=0.6)
+
+	ax1.plot(wav_aa, model, color="#2171b5", linewidth=3.0, alpha=1.0)
 	
 	ylim([1e-19, 1e-15])
 	yscale("log")
 	
+	plt.title(str(grb_name))
+
+	ax1.set_xlabel("Observed Wavelength")	
+	ax1.set_ylabel("Flux")
+
 	show()
+	fig.savefig(grb_name+"_inspec.pdf")
+	
 
 if __name__ == "__main__":
 	
