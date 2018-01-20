@@ -96,11 +96,11 @@ def model_csv_file(model, fixed_b):
 		CSV_LST = ['NTOTH2', 'TEMP', 'B', 'A_Z']
 	elif model == "H2" and fixed_b != None:
 		CSV_LST = ['NTOTH2', 'TEMP', 'A_Z']
-	if model == "H2s" and fixed_b == None:
+	elif model == "H2s" and fixed_b == None:
 		CSV_LST = ['NH2', 'B', 'A_Z']
 	elif model == "H2s" and fixed_b != None:
 		CSV_LST = ['NH2', 'A_Z']
-	if model == "H2all" and fixed_b == None:
+	elif model == "H2all" and fixed_b == None:
 		CSV_LST = ['B', 'A_Z']
 	elif model == "H2all" and fixed_b != None:
 		CSV_LST = ['A_Z']
@@ -233,15 +233,15 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 			if elmt == "HI":
 				N_E = pymc.Uniform('N_'+elmt,lower=18.0,upper=23.0,
 					value=21.8,doc='N_'+elmt)
-				B_E = pymc.Uniform('B_'+elmt,lower=0.,upper=150.,
+				B_E = pymc.Uniform('B_'+elmt,lower=8.,upper=150.,
 					value=8.,doc='B_'+elmt)
 				A_Z_E = pymc.Uniform('A_Z_'+elmt,lower=-150.,upper=+150.,
 					value=0.,doc='A_Z_'+elmt)
 			else:
 				N_E=pymc.Uniform('N_'+elmt,lower=0.,upper=20.0,
-					value=16.0,doc='N_'+elmt)
-				B_E=pymc.Uniform('B_'+elmt,lower=0.,upper=30.,
-					value=8.,doc='B_'+elmt)
+					value=15.0,doc='N_'+elmt)
+				B_E=pymc.Uniform('B_'+elmt,lower=8.,upper=100.,
+					value=15.,doc='B_'+elmt)
 				A_Z_E=pymc.Uniform('A_Z_'+elmt,lower=-100.,upper=+100.,
 					value=0.,doc='A_Z_'+elmt)
 
@@ -258,7 +258,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 				if elmt == "HI":
 
 					N_E = pymc.Normal('N_'+elmt,mu=par_dic[elmt][1],
-						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**6),
+						tau=1/((par_dic[elmt][1]-par_dic[elmt][2])**2),
 						doc='N_'+elmt)
 
 				B_E = pymc.Uniform('B_'+elmt,lower=par_dic[elmt][5],
@@ -285,13 +285,13 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 		print "additonal line component(s) at", redshift_lst, "\n"
 		for elmt in line_lst:
 			for add_comp in redshift_lst:
-				print elmt+add_comp
 				if not elmt+add_comp in par_dic:
 
-					if elmt != "HI":
+					if not elmt.startswith("HI"):
+						print elmt+add_comp
 						N_EC=pymc.Uniform('N_'+elmt+add_comp,lower=0.,upper=20.0,
 							value=16.0,doc='N_'+elmt+add_comp)
-						B_EC=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=30.,
+						B_EC=pymc.Uniform('B_'+elmt+add_comp,lower=0.,upper=80.,
 							value=8.,doc='B_'+elmt+add_comp)
 						Z_EC=float(add_comp)
 	
@@ -314,7 +314,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 
 		A_REDSHIFT = float(A_REDSHIFT)/100000.0
 		norm_spec = np.ones(len(wav_aa)) # add Background multiplier
-		synspec = SynSpec(wav_aa,redshift,res)
+		synspec = SynSpec(wav_aa,redshift,res,ignore_lst=ignore_lst)
 
 		# add H2
 		h2spec = synspec.add_H2(norm_spec,broad=BROAD,NTOTH2=NTOTH2,
@@ -372,7 +372,7 @@ def model_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
 #========================================================================
 
 def model_single_H2(wav_aa, n_flux, n_flux_err, redshift, res, line_lst,
-	redshift_lst, par_dic, CSV_LST, J, fixed_b):
+	redshift_lst, ignore_lst, par_dic, CSV_LST, J, fixed_b):
 	'''
 	Defines the model for H2
 	'''
@@ -1067,6 +1067,9 @@ def main():
 		else:
 			sns_pair_plot_fb(target,var_list=CSV_LST,file="H2_fit.pickle",
 				redshift=redshift,fb=fixed_b)
+
+		if "NV" in elements:
+			plot_H2fit_elmt(target,element="NV",file="H2_fit.pickle")
 
 	if model == "H2s":
 

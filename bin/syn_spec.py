@@ -134,6 +134,7 @@ class SynSpec(object):
 
 		redshift = self.redshift
 		wav_range = self.wav_range
+		ignore_lst = self.ignore_lst
 		spec = spectrum
 
 		nJ, NH2 = [], {}

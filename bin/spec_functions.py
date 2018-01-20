@@ -114,7 +114,7 @@ def get_data_ign(file, z, ignore_lst, wl1 = 3300, wl2 = 5000):
 					if wl_low[i] < wav < wl_up[i]:
 						wav_aa = np.append(wav_aa,float(line.split()[0]))
 						n_flux = np.append(n_flux,1.0)
-						n_flux_err = np.append(n_flux_err,0.01)
+						n_flux_err = np.append(n_flux_err,1.0)
 						tester += 1.0
 				if tester == 0.0:
 					wav_aa = np.append(wav_aa,float(line.split()[0]))
@@ -147,6 +147,53 @@ def aa_to_velo(wav_aa, flux, flux_err, line, redshift, wrange=15):
 			fluxv.append(flux[i])
 			fluxv_err.append(flux_err[i])
 	return velocity, fluxv, fluxv_err
+
+
+def aa_to_velo_ign(wav_aa, flux, flux_err, line, redshift, ignore_lst, wrange=15):
+	'''
+	Angstrom to veocity (km/s) for given line (AA) at given redshift
+	around the wavelength range: line (AA) +/- wrange (AA)
+	'''
+
+	c = 299792.458
+	rline = line * (1 + redshift)
+	velocity, fluxv, fluxv_err = [], [], []
+
+	v_low 	= []
+	v_up	= []
+
+	for v_rng in ignore_lst:
+		v_low.append(v_rng[0])
+		v_up.append(v_rng[1])
+
+	for i in np.arange(0, len(wav_aa), 1):
+		velo = abs(wav_aa[i]-rline)*c/rline
+		if wav_aa[i] < rline and wav_aa[i] > rline-wrange:
+			velocity.append(-velo)
+			fluxv.append(flux[i])
+			fluxv_err.append(flux_err[i])
+		if wav_aa[i] > rline and wav_aa[i] < rline+wrange:
+			velocity.append(velo)
+			fluxv.append(flux[i])
+			fluxv_err.append(flux_err[i])
+
+	velocity2, fluxv2, fluxv_err2 = [], [], []
+
+	for i in np.arange(0, len(velocity), 1):
+		tester = 0.0
+		for j in np.arange(0, len(v_low), 1):
+			if v_low[j] < velocity[i] < v_up[j]:
+				#velocity2.append(velocity[i])
+				#fluxv2.append(1.0)
+				#fluxv_err2.append(100.0)
+				tester += 1.0
+		if tester == 0.0:
+			velocity2.append(velocity[i])
+			fluxv2.append(fluxv[i])
+			fluxv_err2.append(fluxv_err[i])
+
+	return velocity2, fluxv2, fluxv_err2
+
 
 #========================================================================
 #========================================================================
@@ -517,10 +564,10 @@ def plot_spec(wav_aa, n_flux, n_flux_err, y_min, y_max, y_min2, y_max2, y_fit,
 	for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
 		axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
-			drawstyle='steps-mid', label=r"$\sf Data$")
+			drawstyle='steps-mid', label=r"$\sf Spec.$")
 
-		axis.errorbar(wav_aa, n_flux_err, linestyle='-', color="black",
-			linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Data$", alpha=0.6)
+		axis.errorbar(wav_aa, n_flux_err, linestyle='dotted', color="black",
+			linewidth=0.5, drawstyle='steps-mid', label=r"$\sf Error Spec.$", alpha=0.6)
 
 		axis.plot(wav_aa[2:-2], y_fit[2:-2], label=r"$\sf Fit$", color="#2171b5", linewidth=1.8, alpha=0.9)
 
@@ -659,7 +706,7 @@ def plot_spec(wav_aa, n_flux, n_flux_err, y_min, y_max, y_min2, y_max2, y_fit,
 				ax2.text(h2_wav[i]+0.2, -0.8, h2_name[i], fontsize=6,color="#a50f15")
 				ax2.axvline(h2_wav[i], ymin=0.0, ymax=0.2, linestyle="-", color="#a50f15", linewidth=0.8)
 
-	lg = ax1.legend(numpoints=1, fontsize=10, loc=1)
+	lg = ax1.legend(numpoints=1, fontsize=10, loc=1, ncol=3)
 
 	ax1.set_xlabel(r"$\sf Observed\, Wavelength (\AA)$", fontsize=24)
 	ax3.set_ylabel(r"$\sf Normalized\, Flux$", fontsize=24)

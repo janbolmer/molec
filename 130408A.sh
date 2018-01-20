@@ -1,0 +1,14 @@
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e SiIV  -line 1393.7602 -z 3.75794 -w 8  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e SiIV  -line 1402.7729 -z 3.75794 -w 8  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e CIV   -line 1550.78   -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e NiII  -line 1709.6001 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e NiII  -line 1741.5486 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 100,50 100,170
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e NiII  -line 1751.9102 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 190,120 110,160
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e AlI   -line 1765.6320 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 150,300
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e SiII  -line 1526.7070 -z 3.75794 -w 8  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv 
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e SiII  -line 1808.0129 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e FeIIa -line 1618.47   -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e MgI   -line 1827.9351 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 120,300
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e AlIII -line 1854.7183 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 100,200
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e AlIII -line 1862.7911 -z 3.75794 -w 9  -vr 330 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 300,180 180,300
+python velop_mcmc.py -f spectra/GRB130408A_OB1VIS.txt -e CrII  -line 2056.2568 -z 3.75794 -w 11 -vr 350 -min 2 -max 2 -it 60000 -bi 55000 -res 22.7 -par para_files/130408A_velo_para.csv -ign 280,100 130,250

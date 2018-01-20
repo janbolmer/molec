@@ -259,6 +259,7 @@ def sns_velo_pair_plot(target, line, file, nvoigts):
 	sns.set_style("ticks")
 	sns.set_context("talk")
 
+
 	for i in np.arange(1, nvoigts + 1, 1):
 
 		data = pd.read_pickle(file)
@@ -267,9 +268,9 @@ def sns_velo_pair_plot(target, line, file, nvoigts):
 		data_f = {}
 
 		for key in data:
-			if key.endswith(str(i)):
+			if key.startswith(("v0", "N", "b")) and key.endswith(str(i)):
 				data_f[key] = data[key][0]
-			if key == "a":
+			if key in ["a", "a1", "a2"]:
 				data_f[key] = data[key][0]
 		
 		df = pd.DataFrame(data_f)
@@ -355,6 +356,32 @@ def sns_velo_trace_plot(target, line, file, nvoigts):
 		axes[3].set_xlabel("Iterations")	
 
 		f.savefig(target+"_"+str(nvoigts)+"_"+str(i)+"_"+str(line)+"_"+"trace_plot.pdf")
+
+
+def plot_H2fit_elmt(target, element, file):
+
+	var_list = ["N_"+element,"B_"+element]
+	data = pd.read_pickle(file)
+	plt.figure()
+
+	data_f = {}
+
+	for key in data:
+		if key.startswith('N_NV') or key.startswith('B_NV'):
+			print key 
+			data_f[key] = data[key][0]
+
+	df = pd.DataFrame(data_f)
+
+	g = sns.PairGrid(df)
+	g.map_upper(sns.kdeplot, cmap="bone_r",n_levels=10,shade=True,
+		shade_lowest=False)
+	g.map_lower(sns.kdeplot, cmap="bone_r",n_levels=10,shade=True,
+		shade_lowest=False)
+	g.map_diag(plt.hist)
+	g.savefig(target+"_"+str(element)+"_pair_plot.pdf")
+
+
 
 
 

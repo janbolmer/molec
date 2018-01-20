@@ -3,8 +3,8 @@
 target = "GRB090809"
 redshift = 2.7373
 
-w1 = 990.4
-w2 = 1116.54
+w1 = 990.
+w2 = 1120.
 
 import matplotlib as plt
 import matplotlib.pyplot as pyplot
@@ -29,18 +29,31 @@ ignore_lst = [[1057.10,1058.40], [1071.98,1073.05], [1105.16,1107.84]]
 norm_spec = np.ones(len(wav_aa)) # add Background multiplier
 
 synspec = SynSpec(wav_aa,redshift,4000,ignore_lst=ignore_lst) # resolution is not correct
-h2spec = synspec.add_ion(norm_spec,"HI",broad=51,Natom=21.70,A_REDSHIFT=-50/100000.0)
+h2spec = synspec.add_ion(norm_spec,"HI",broad=23,Natom=21.50,A_REDSHIFT=-50/100000.0)
 h2spec = synspec.add_ion(h2spec,"ArI",broad=32,Natom=16.75,A_REDSHIFT=29/100000.0)
+h2spec = synspec.add_ion(h2spec,"FeII",broad=84.12,Natom=15.86,A_REDSHIFT=36/100000.0)
+h2spec = synspec.add_ion(h2spec,"OI",broad=36,Natom=17.36,A_REDSHIFT=27/100000.0)
+h2spec = synspec.add_ion(h2spec,"OVI",broad=58,Natom=16.06,A_REDSHIFT=-79/100000.0)
+h2spec = synspec.add_ion(h2spec,"CII",broad=96,Natom=9.91,A_REDSHIFT=10/100000.0)
+
 
 norm_spec = np.ones(len(wav_aa))
 synspec2 = SynSpec(wav_aa,redshift,4000,ignore_lst=ignore_lst)
-h2spec_up = synspec2.add_ion(norm_spec,"HI",broad=20,Natom=21.50,A_REDSHIFT=-50/100000.0)
+h2spec_up = synspec2.add_ion(norm_spec,"HI",broad=3,Natom=21.30,A_REDSHIFT=-50/100000.0)
 h2spec_up = synspec2.add_ion(h2spec_up,"ArI",broad=16,Natom=15.32,A_REDSHIFT=29/100000.0)
+h2spec_up = synspec2.add_ion(h2spec_up,"FeII",broad=67,Natom=15.65,A_REDSHIFT=36/100000.0)
+h2spec_up = synspec2.add_ion(h2spec_up,"OI",broad=31,Natom=15.43,A_REDSHIFT=27/100000.0)
+h2spec_up = synspec2.add_ion(h2spec_up,"OVI",broad=42,Natom=15.46,A_REDSHIFT=-79/100000.0)
+h2spec_up = synspec2.add_ion(h2spec_up,"CII",broad=36,Natom=3.6,A_REDSHIFT=10/100000.0)
 
 norm_spec = np.ones(len(wav_aa))
 synspec3 = SynSpec(wav_aa,redshift,4000,ignore_lst=ignore_lst)
-h2spec_low = synspec3.add_ion(norm_spec,"HI",broad=70,Natom=21.90,A_REDSHIFT=-50/100000.0)
+h2spec_low = synspec3.add_ion(norm_spec,"HI",broad=46,Natom=21.70,A_REDSHIFT=-50/100000.0)
 h2spec_low = synspec3.add_ion(h2spec_low,"ArI",broad=48,Natom=18.18,A_REDSHIFT=29/100000.0)
+h2spec_low = synspec3.add_ion(h2spec_low,"FeII",broad=101,Natom=16.07,A_REDSHIFT=36/100000.0)
+h2spec_low = synspec3.add_ion(h2spec_low,"OI",broad=51,Natom=18.59,A_REDSHIFT=36/100000.0)
+h2spec_low = synspec3.add_ion(h2spec_low,"OVI",broad=74,Natom=16.66,A_REDSHIFT=-79/100000.0)
+h2spec_low = synspec3.add_ion(h2spec_low,"CII",broad=156,Natom=16.6,A_REDSHIFT=10/100000.0)
 
 wav_range = (max(wav_aa)-min(wav_aa))/5.0
 
@@ -55,8 +68,12 @@ ax6 = fig.add_axes([0.08, 0.88, 0.90, 0.11])
 
 for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
+
 	axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
 		drawstyle='steps-mid', label=r"$\sf Data$")
+
+	axis.errorbar(wav_aa, n_flux_err, linestyle='-', color="black", linewidth=0.5, \
+		drawstyle='steps-mid', alpha=0.6)
 
 	axis.plot(wav_aa, h2spec, label=r"$\sf Fit$", color="#2171b5", linewidth=2.0, alpha=0.9)
 

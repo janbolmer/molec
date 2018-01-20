@@ -3,8 +3,16 @@
 target = "GRB090926A"
 redshift = 2.1068
 
+red1 = 2.10702387241
+red2 = 2.10650568989
+
+dr1 = red1-redshift
+dr2 = red2-redshift
+
+
 w1 = 920.0
-w2 = 1116.54
+#w2 = 1116.54
+w2 = 1300
 
 import matplotlib as plt
 import matplotlib.pyplot as pyplot
@@ -27,16 +35,29 @@ wav_aa, n_flux, n_flux_err, flux, flux_err, grb_name, res, psf_fwhm \
 ignore_lst = [[1116.7,1117.5], [1046.1,1047.0], [1055.4,1056.3], [1058.8,1059.4],
  [1083.1,1084.4], [1074.7,1076.0], [1100.8,1103.7], [1110.8,1112.3], [1097.59,1098.87]]
 
-norm_spec = np.ones(len(wav_aa)) # add Background multiplier
-synspec = SynSpec(wav_aa,redshift,12000) # resolution is not correct
+norm_spec = np.ones(len(wav_aa))*1.05 # add Background multiplier
+synspec = SynSpec(wav_aa,redshift,5200.0,ignore_lst=ignore_lst)
 
 
-h2spec = synspec.add_ion(norm_spec,"HI",broad=96,Natom=21.55,A_REDSHIFT=-24.5)
+h2spec = synspec.add_ion(norm_spec,"HI",broad=96,Natom=21.55,A_REDSHIFT=-24.5/100000)
 
-h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=0)
-h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=1)
-h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=2)
-h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=3)
+h2spec = synspec.add_ion(h2spec,"FeII",broad=12,Natom=14.24,A_REDSHIFT=dr1)
+h2spec = synspec.add_ion(h2spec,"FeII",broad=18,Natom=13.4,A_REDSHIFT=dr2)
+
+h2spec = synspec.add_ion(h2spec,"SiII",broad=12,Natom=15.32,A_REDSHIFT=dr1)
+h2spec = synspec.add_ion(h2spec,"SiII",broad=19,Natom=13.8,A_REDSHIFT=dr2)
+
+h2spec = synspec.add_ion(h2spec,"SiIV",broad=12,Natom=15.85,A_REDSHIFT=dr1)
+h2spec = synspec.add_ion(h2spec,"SiIV",broad=19,Natom=14.0,A_REDSHIFT=dr2)
+
+h2spec = synspec.add_ion(h2spec,"OI",broad=12,Natom=16.19,A_REDSHIFT=dr1)
+
+h2spec = synspec.add_ion(h2spec,"ArI",broad=12,Natom=13.76,A_REDSHIFT=dr1)
+
+#h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=0)
+#h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=1)
+#h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=2)
+#h2spec = synspec.add_single_H2(h2spec,broad=2,NH2=15.0,A_REDSHIFT=0.0,J=3)
 
 
 wav_range = (max(wav_aa)-min(wav_aa))/5.0
@@ -55,7 +76,11 @@ for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 	axis.errorbar(wav_aa, n_flux, linestyle='-', color="black", linewidth=0.5, \
 		drawstyle='steps-mid', label=r"$\sf Data$")
 
-	axis.plot(wav_aa, h2spec, label=r"$\sf Fit$", color="#2171b5", linewidth=1.0, alpha=0.9)
+	axis.errorbar(wav_aa, n_flux_err, linestyle='-', color="gray", linewidth=0.5, \
+		drawstyle='steps-mid')
+
+
+	axis.plot(wav_aa, h2spec, label=r"$\sf Fit$", color="#2171b5", linewidth=2.0, alpha=0.9)
 
 	# fill space between quantiles
 	#axis.fill_between(wav_aa, y_min, y_max, color='#2171b5', alpha=0.2)

@@ -55,8 +55,8 @@ def bokeh_inspec(file, redshift):
 	p = bokeh_fig(title="X-shooter spectrum of " + grb_name + "at z = " +
 		str(redshift), x_axis_label='Observed Wavelength',tools="hover",
 		y_axis_label='Normalized Flux', y_range=[-0.8, 2.2],
-		x_range=[min(wav_aa),max(wav_aa)+60],
-		plot_height=400, plot_width=1200, toolbar_location="above")
+		x_range=[min(wav_aa),max(wav_aa)+800],
+		plot_height=400, plot_width=20000, toolbar_location="above")
 
 	for i in np.arange(0, len(h2_name), 1):
 
@@ -99,11 +99,11 @@ def bokeh_inspec(file, redshift):
 	callback = CustomJS(args=dict(x_range=p.x_range), code="""
 	var start = cb_obj.get("value");
 	x_range.set("start", start);
-	x_range.set("end", start+60);
+	x_range.set("end", start+800);
 	""")
 	
 	slider = Slider(start=min(wav_aa),
-		end=max(wav_aa)-60, value=1,
+		end=max(wav_aa)-800, value=1,
 		step=.1, title="Scroll", callback=callback)
 	
 	inputs = widgetbox(slider)
