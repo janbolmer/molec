@@ -18,6 +18,8 @@ from scipy.ndimage import gaussian_filter1d as gauss1d
 from scipy.interpolate import splrep, splev
 from scipy.special import wofz
 
+from numba import jit
+
 from astropy.convolution import Gaussian1DKernel
 
 import importlib
@@ -293,6 +295,7 @@ def v_to_dz(v0, z0):
 #========================================================================
 #========================================================================
 
+@jit
 def voigt(x, sigma, gamma):
 	'''
 	1D voigt profile, e.g.:
@@ -317,6 +320,7 @@ def H(a,x):
 #========================================================================
 #======================================================================== 
 
+@jit
 def addAbs_unconv(wls, N_ion, lamb, f, gamma, broad, redshift):
 	'''
 	Adds an absorption line, which is not(!) convolved with the
@@ -340,6 +344,7 @@ def addAbs_unconv(wls, N_ion, lamb, f, gamma, broad, redshift):
 
 	return np.exp(-tau)
 
+@jit
 def addAbs(wls, N_ion, lamb, f, gamma, broad, redshift, res):
 	'''
 	Adds an absorption line convolved with the instrumental 
@@ -461,17 +466,20 @@ def get_co():
 #========================================================================
 #========================================================================
 
-def tell_lines(intensity=-0.2, file = 'atoms/tel_lines_uves.dat'):
+def tell_lines(intensity=-0.15, file = 'atoms/tel_lines_uves.dat', wav_aa=[]):
+
 	file = open(file, 'r')
-	lines = [line.strip().split() for line in file.readlines() if not line.strip().startswith('#')]
+	lines = [line.strip().split() for line in file.readlines() \
+			if not line.strip().startswith('#')]
 	file.close()
 	tell = []
 	y_val = []
 	for line in lines:
 		if line != []:
 			if float(line[-2]) < intensity:
-				tell.append(float(line[3]))
-				y_val.append(2.0)
+				if min(wav_aa) < float(line[3]) < max(wav_aa):
+					tell.append(float(line[3]))
+					y_val.append(2.0)
 	return tell, y_val
 
 def skylines(intensity=10, file= "atoms/sky_lines.dat"):
@@ -546,6 +554,8 @@ def plot_spec(wav_aa, n_flux, n_flux_err, y_min, y_max, y_min2, y_max2, y_fit,
 	redshift, ignore_lst, a_name, a_wav, ai_name, ai_wav, aex_name,
 	aex_wav, h2_name, h2_wav, target, fb, intv_lst):
 
+	tell_x, tell_y = tell_lines(intensity=-0.2,file='atoms/tel_lines_uves.dat', wav_aa=wav_aa)
+
 	sns.set_style("white", {'legend.frameon': True})
 
 	wav_range = (max(wav_aa)-min(wav_aa))/5.0
@@ -559,7 +569,7 @@ def plot_spec(wav_aa, n_flux, n_flux_err, y_min, y_max, y_min2, y_max2, y_fit,
 	ax5 = fig.add_axes([0.08, 0.73, 0.90, 0.11])
 	ax6 = fig.add_axes([0.08, 0.88, 0.90, 0.11])
 
-	#x_tell, y_tell = tell_lines(intensity=-0.2, file = 'atoms/tel_lines_uves.dat')
+	ax1.scatter(tell_x, tell_y, color="orange")
 
 	for axis in [ax1, ax2, ax3, ax4, ax5, ax6]:
 
@@ -585,7 +595,10 @@ def plot_spec(wav_aa, n_flux, n_flux_err, y_min, y_max, y_min2, y_max2, y_fit,
 
 		#axis.errorbar(x_tell, y_tell, color="gray", fmt='o', markersize=8)
 
-		axis.set_ylim([-0.85, 2.25])
+		if "ele" in str(target):
+			axis.set_ylim([-0.25, 2.25])
+		else:
+			axis.set_ylim([-0.85, 2.25])
 
 		axis.axhline(0.0, linestyle="dashed", color="black", linewidth=2)
 

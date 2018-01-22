@@ -42,6 +42,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+from numba import jit
+
 import matplotlib as plt
 import matplotlib.pyplot as pyplot
 from pylab import *
@@ -116,6 +118,7 @@ def gauss(x, mu, sig):
 #========================================================================
 #========================================================================
 
+@jit
 def add_abs_velo(v, N, b, gamma, f, l0):
 	'''
 	Add an absorption line l0 in velocity space v, given the oscillator

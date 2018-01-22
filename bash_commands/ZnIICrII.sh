@@ -1,0 +1,13 @@
+python molec_mcmc.py -m H2 -f spectra/GRB090809_OB1VIS.txt  -t GRB090809_ele  -red 2.7373 					-it 15000 -bi 10000 -w1 2022 -w2 2069 -e HI ZnII BIII CrII MgI		 -res 9600  -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB090926_OB1VIS.txt  -t GRB090926A_ele -red 2.1068 					-it 15000 -bi 10000 -w1 2022 -w2 2069 -e HI ZnII BIII CrII MgI		 -res 10500 -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB120327A_OB1VIS.txt -t GRB120327A_ele -red 2.8140 -rl 2.8146 2.8151 -it 15000 -bi 10000 -w1 2022 -w2 2069 -e HI ZnII BIII CrII MgI NiIIb -res 15450 -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB120815A_OB1VIS.txt -t GRB120815A_ele -red 2.3582 					-it 15000 -bi 10000 -w1 2020 -w2 2069 -e HI ZnII BIII CrII MgI 		 -res 11800 -nrot 0 0 -ign 2044.5,2060.6
+python molec_mcmc.py -m H2 -f spectra/GRB121024A_OB1VIS.txt -t GRB121024A_ele -red 2.3024 -rl 2.2982 2.2990 2.3018 2.3028 -it 15000 -bi 10000 -w1 2022 -w2 2069 -e HI ZnII BIII CrII MgI NiIIb -res 13000 -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB130408A_OB1VIS.txt -t GRB130408A_ele -red 3.7579 -rl 3.75904 		-it 15000 -bi 10000 -w1 2024 -w2 2058 -e HI ZnII BIII CrII MgI NiIIb -res 13200 -nrot 0 0 -ign 2027.55,2028.18 2041.3,2053.40
+python molec_mcmc.py -m H2 -f spectra/GRB141028A_OB1VIS.txt -t GRB141028A_ele -red 2.3333 -rl 2.3324		-it 15000 -bi 10000 -w1 2024 -w2 2058 -e HI ZnII BIII CrII MgI NiIIb -res 9700  -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB141109A_OB1VIS.txt -t GRB141109A_ele -red 2.9944 -rl 2.9935 2.9907 -it 15000 -bi 10000 -w1 2020 -w2 2070 -e HI ZnII BIII CrII MgI 		 -res 12400 -nrot 0 0 -ign 2027.8,2059.13 2061.38,2061.76
+python molec_mcmc.py -m H2 -f spectra/GRB151021A_comVIS.txt -t GRB151021A_ele -red 2.3300					-it 15000 -bi 10000 -w1 2022 -w2 2069 -e HI ZnII BIII CrII MgI NiIIb -res 10300 -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB151027B_OB1NIR.txt -t GRB151027B_ele -red 4.0650 -rl 4.0635 		-it 15000 -bi 10000 -w1 2022 -w2 2069 -e HI ZnII BIII CrII MgI NiIIb -res 6600  -nrot 0 0
+python molec_mcmc.py -m H2 -f spectra/GRB160203A_comVIS.txt -t GRB160203A_ele -red 3.5188 -rl 3.5177 		-it 15000 -bi 10000 -w1 2024 -w2 2057 -e HI ZnII BIII CrII MgI NiIIb -res 13800 -nrot 0 0 # telluric lines!!!
+python molec_mcmc.py -m H2 -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_ele -red 2.7106 -rl 2.7097 2.7083 -it 15000 -bi 10000 -w1 1600 -w2 2044 -e HI FeII SiII AlII AlIII NiII ZnII CrII MgI -res 11300 -nrot 0 0 -ign 1687,1700 1849,1873 # Telluric lines cover ZnIICrII 2062.
+python molec_mcmc.py -m H2 -f spectra/GRB161023A_OB1VIS.txt -t GRB161023A_ele -red 2.7106 -rl 2.7097 2.7083 -it 15000 -bi 10000 -w1 2020 -w2 2046 -e HI ZnII CrII MgI 			 -res 11300 -nrot 0 0

@@ -1,4 +1,0 @@
-python molec_mcmc.py -m H2 -f spectra/GRB090926_OB1VIS.txt  -t GRB090926A_ele -red 2.1068 					 -it 12000 -bi 8000  -w1 2022 	-w2 2069 -e HI ZnII MgI CrII BIII 		-res 10500 -nrot 0 0
-python molec_mcmc.py -m H2 -f spectra/GRB120327A_OB1VIS.txt -t GRB120327A_ele -red 2.8140  -rl 2.8146 2.8151 -it 15000 -bi 10000 -w1 2022 	-w2 2069 -e HI ZnII BIII CrII MgI NiIIb -res 15450 -nrot 0 0
-python molec_mcmc.py -m H2 -f spectra/GRB130408A_OB1VIS.txt -t GRB130408A_ele -red 3.75794 -rl 3.75904 		 -it 15000 -bi 10000 -w1 2024 	-w2 2058 -e HI ZnII BIII CrII MgI NiIIb -res 13200 -nrot 0 0 -ign 2027.55,2028.18 2041.3,2053.40
-python molec_mcmc.py -m H2 -f spectra/GRB141109A_OB1VIS.txt -t GRB141109A_ele -red 2.9944  -rl 2.9935 2.9907 -it 15000 -bi 10000 -w1 2020 	-w2 2070 -e HI ZnII BIII CrII MgI 	   	-res 12400 -nrot 0 0 -ign 2027.8,2059.13 2061.38,2061.76
